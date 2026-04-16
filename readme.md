@@ -18,7 +18,7 @@ A premium, Windows-exclusive Chrome extension that integrates natively with [yt-
 | **🎨 Modern UI** | Glassmorphism design with YouTube-native aesthetic |
 | **⚡ Dual Interface** | Popup for full control + In-page overlay for quick access |
 | **🎬 Quality Selection** | 360p to 4K (2160p), plus Audio-only (MP3) |
-| **🔞 Age Bypass** | Seamlessly extract local browser session cookies to download age-restricted and Members-Only videos |
+| **🔞 Age & Bot Bypass** | Seamlessly extract local browser session cookies to download age-restricted and Members-Only videos also fixes Sign in to confirm you are not a bot issue |
 | **📜 Subtitles** | Auto-embed manual and auto-generated English captions |
 | **📂 Playlists** | Download entire playlists with organized folders |
 | **🛡️ SponsorBlock** | Automatically remove sponsor segments |
@@ -75,7 +75,7 @@ D:\Downloads\YouTube\
 ```
 
 **Age-Restricted Content**
-If a video requires you to log in to verify your age, simply toggle **Bypass Age Restriction**. The extension will securely pull your active YouTube session cookie, temporarily pass it to the downloader, and instantly delete it once the download starts.
+If a video requires you to log in to verify your age, simply toggle **Bypass Age or Bot Restriction**. The extension will securely pull your active YouTube session cookie, temporarily pass it to the downloader, and instantly delete it once the download starts.
 
 ---
 

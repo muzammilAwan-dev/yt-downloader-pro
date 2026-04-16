@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
   "name": "YT Downloader Pro",
-  "version": "5.1.0",
-  "description": "Premium YouTube downloader with native yt-dlp integration. Features IDM-style overlay, quality selection, and playlist support.",
-  "author": "Your Name",
-  "homepage_url": "https://github.com/yourusername/yt-downloader-pro",
+  "version": "5.3.0",
+  "description": "Premium YouTube downloader with native yt-dlp integration. Features zero-server architecture, age-restriction bypass, and playlist support.",
+  "author": "muzammilAwan-dev",
+  "homepage_url": "https://github.com/muzammilAwan-dev/yt-downloader-pro",
   
   "action": {
     "default_popup": "popup.html",
@@ -14,7 +14,7 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "YT Downloader Pro - Click to download"
+    "default_title": "YT Downloader Pro - Launch UI"
   },
   
   "icons": {
@@ -27,7 +27,8 @@
   "permissions": [
     "activeTab",
     "storage",
-    "notifications"
+    "notifications",
+    "cookies"
   ],
   
   "host_permissions": [
@@ -35,12 +36,16 @@
     "*://youtu.be/*"
   ],
   
+  "background": {
+    "service_worker": "background.js"
+  },
+
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
-      "css": ["content.css"],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "css": ["content.css"],
+      "run_at": "document_end"
     }
   ]
 }

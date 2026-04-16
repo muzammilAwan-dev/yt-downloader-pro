@@ -1,65 +1,85 @@
 /**
- * YT Downloader Pro - Popup Script
- * Handles user interactions in the extension popup and generates yt-dlp commands
- * @version 5.1.1
+ * @fileoverview Popup UI Controller
+ * Manages state binding, validation, and command generation for the extension popup.
+ * @version 5.2.0
  */
 
 (function() {
   'use strict';
 
+  /** @type {Object<string, HTMLElement>} Cached DOM elements */
   const elements = {
     downloadBtn: document.getElementById('downloadBtn'),
     savePath: document.getElementById('savePath'),
     resolution: document.getElementById('resolution'),
     subsToggle: document.getElementById('subsToggle'),
     playlistToggle: document.getElementById('playlistToggle'),
+    cookiesToggle: document.getElementById('cookiesToggle'),
     status: document.getElementById('status')
   };
 
+  /**
+   * Bootstraps UI state and event listeners.
+   */
   function initialize() {
     loadSavedPreferences();
     attachEventListeners();
     validateCurrentTab();
   }
 
+  /**
+   * Retrieves persistent user preferences from Chrome Storage API.
+   */
   async function loadSavedPreferences() {
     try {
       const prefs = await chrome.storage.sync.get([
         'savePath', 
         'resolution', 
         'embedSubs', 
-        'downloadPlaylist'
+        'downloadPlaylist',
+        'useCookies'
       ]);
       
       if (prefs.savePath) elements.savePath.value = prefs.savePath;
       if (prefs.resolution) elements.resolution.value = prefs.resolution;
       if (prefs.embedSubs) elements.subsToggle.checked = prefs.embedSubs;
       if (prefs.downloadPlaylist) elements.playlistToggle.checked = prefs.downloadPlaylist;
+      if (prefs.useCookies) elements.cookiesToggle.checked = prefs.useCookies;
     } catch (error) {
-      console.warn('Failed to load preferences:', error);
+      console.warn('Preferences load failed:', error);
     }
   }
 
+  /**
+   * Persists current UI state to Chrome Storage API.
+   */
   async function savePreferences() {
     try {
       await chrome.storage.sync.set({
         savePath: elements.savePath.value,
         resolution: elements.resolution.value,
         embedSubs: elements.subsToggle.checked,
-        downloadPlaylist: elements.playlistToggle.checked
+        downloadPlaylist: elements.playlistToggle.checked,
+        useCookies: elements.cookiesToggle.checked
       });
     } catch (error) {
-      console.warn('Failed to save preferences:', error);
+      console.warn('Preferences save failed:', error);
     }
   }
 
+  /**
+   * Binds UI interaction events.
+   */
   function attachEventListeners() {
     elements.downloadBtn.addEventListener('click', handleDownload);
     
-    [elements.savePath, elements.resolution, elements.subsToggle, elements.playlistToggle]
+    [elements.savePath, elements.resolution, elements.subsToggle, elements.playlistToggle, elements.cookiesToggle]
       .forEach(el => el.addEventListener('change', savePreferences));
   }
 
+  /**
+   * Validates if the active tab contains a supported YouTube URL.
+   */
   async function validateCurrentTab() {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -73,6 +93,11 @@
     }
   }
 
+  /**
+   * Regex validation for standard YouTube video and playlist schemas.
+   * @param {string} url 
+   * @returns {boolean}
+   */
   function isValidYouTubeUrl(url) {
     if (!url) return false;
     const patterns = [
@@ -83,6 +108,9 @@
     return patterns.some(pattern => pattern.test(url));
   }
 
+  /**
+   * Entry point for download execution flow.
+   */
   async function handleDownload() {
     const btn = elements.downloadBtn;
     const originalText = btn.innerHTML;
@@ -101,7 +129,6 @@
       await executeCommand(command);
       
       showStatus('Download started! Check your terminal window.', 'success');
-      
       setTimeout(() => window.close(), 2000);
       
     } catch (error) {
@@ -111,6 +138,11 @@
     }
   }
 
+  /**
+   * Constructs the base shell command for yt-dlp execution.
+   * @param {string} videoUrl 
+   * @returns {string} 
+   */
   function buildYtDlpCommand(videoUrl) {
     const settings = {
       savePath: elements.savePath.value.trim(),
@@ -120,16 +152,15 @@
     };
 
     let saveDir = settings.savePath || '~/Downloads/YT-Downloads/';
-    
-    // Format path for Windows Batch safety
     saveDir = saveDir.replace(/[/\\]$/, '') + '\\';
     saveDir = saveDir.replace(/\\/g, '\\\\');
 
     const formatConfig = buildFormatConfig(settings.resolution);
     const outputTemplate = buildOutputTemplate(saveDir, settings.isPlaylist, formatConfig.extension);
     
+    // Limits subtitles to English variants to prevent HTTP 429 rate-limiting
     const subOptions = (settings.embedSubs && settings.resolution !== 'audio') 
-      ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*,all" ' 
+      ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*" ' 
       : '';
     
     const playlistOptions = settings.isPlaylist ? '--yes-playlist ' : '--no-playlist ';
@@ -152,6 +183,11 @@
     return command;
   }
 
+  /**
+   * Maps UI resolution values to yt-dlp format selection flags.
+   * @param {string} resolution 
+   * @returns {Object} 
+   */
   function buildFormatConfig(resolution) {
     if (resolution === 'audio') {
       return {
@@ -168,6 +204,13 @@
     };
   }
 
+  /**
+   * Handles directory routing for playlists vs single files.
+   * @param {string} saveDir 
+   * @param {boolean} isPlaylist 
+   * @param {string} extension 
+   * @returns {string} 
+   */
   function buildOutputTemplate(saveDir, isPlaylist, extension) {
     if (isPlaylist) {
       return `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d - %(title)s.${extension}"`;
@@ -175,15 +218,34 @@
     return `-o "${saveDir}%(title)s.${extension}"`;
   }
 
+  /**
+   * Orchestrates payload transmission to native host via custom protocol.
+   * Integrates background cookie extraction if bypass is enabled.
+   * @param {string} command 
+   */
   async function executeCommand(command) {
-    // Safely encode command to Base64 (avoids Call Stack limits of TextEncoder arrays)
-    const encodedCommand = btoa(unescape(encodeURIComponent(command)));
-    const protocolUrl = `ytdlp://${encodedCommand}`;
+    let encodedCommand = btoa(unescape(encodeURIComponent(command)));
     
+    if (elements.cookiesToggle.checked) {
+        const cookieBase64 = await new Promise(resolve => {
+            chrome.runtime.sendMessage({ action: "get_cookies" }, response => resolve(response));
+        });
+        
+        if (cookieBase64) {
+            encodedCommand += `||${cookieBase64}`;
+        }
+    }
+
+    const protocolUrl = `ytdlp://${encodedCommand}`;
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     await chrome.tabs.update(tab.id, { url: protocolUrl });
   }
 
+  /**
+   * Displays localized status alerts.
+   * @param {string} message 
+   * @param {string} type 
+   */
   function showStatus(message, type = 'info') {
     const statusEl = elements.status;
     statusEl.textContent = message;
@@ -196,6 +258,7 @@
     }
   }
 
+  // Initialization Hook
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initialize);
   } else {

@@ -1,29 +1,36 @@
 /**
- * YT Downloader Pro - Content Script
- * Injects download button into YouTube video player with MutationObserver
- * @version 5.1.1
+ * @fileoverview DOM Injection Controller
+ * Integrates glassmorphism download overlay directly into YouTube player hierarchy.
+ * Utilizes MutationObserver to ensure persistence across SPA navigations.
+ * @version 5.2.0
  */
 
 (function() {
   'use strict';
 
+  /** @type {Object} Injection constraints and identifiers */
   const CONFIG = {
     CONTAINER_ID: 'yt-dlp-container',
     CHECK_INTERVAL: 1000, 
-    MAX_RETRIES: 10,
+    MAX_RETRIES: 50,
     PLAYER_SELECTOR: '#movie_player, #player-container, .html5-video-player'
   };
 
   let observer = null;
   let retryCount = 0;
-  let isInjected = false;
 
+  /**
+   * Bootstraps DOM observer and initial injection cycle.
+   */
   function initialize() {
     setupMutationObserver();
     setInterval(checkAndInject, CONFIG.CHECK_INTERVAL);
     checkAndInject();
   }
 
+  /**
+   * Monitors dynamic node additions to catch asynchronous player rendering.
+   */
   function setupMutationObserver() {
     if (observer) return;
     
@@ -46,18 +53,31 @@
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
+  /**
+   * Verifies player existence and guarantees UI injection state.
+   */
   function checkAndInject() {
-    if (isInjected || retryCount >= CONFIG.MAX_RETRIES) return;
-    
     const player = document.querySelector(CONFIG.PLAYER_SELECTOR);
-    if (player && !player.querySelector(`#${CONFIG.CONTAINER_ID}`)) {
+    
+    if (!player) {
+      if (retryCount < CONFIG.MAX_RETRIES) {
+        retryCount++;
+      }
+      return;
+    }
+
+    retryCount = 0;
+
+    // Guaranteed persistence: Restores UI if destroyed by SPA state routing
+    if (!document.getElementById(CONFIG.CONTAINER_ID)) {
       injectDownloadButton(player);
-      isInjected = true;
-    } else {
-      retryCount++;
     }
   }
 
+  /**
+   * Constructs and attaches DOM tree.
+   * @param {Element} player 
+   */
   function injectDownloadButton(player) {
     const container = createContainer();
     const button = createMainButton();
@@ -162,7 +182,8 @@
     
     const toggles = [
       { id: 'float-subs', label: 'Embed Subtitles', storageKey: 'embedSubs' },
-      { id: 'float-playlist', label: 'Full Playlist', storageKey: 'downloadPlaylist' }
+      { id: 'float-playlist', label: 'Full Playlist', storageKey: 'downloadPlaylist' },
+      { id: 'float-cookies', label: 'Bypass Age Lock', storageKey: 'useCookies' }
     ];
     
     toggles.forEach(toggle => {
@@ -175,12 +196,10 @@
       
       const checkbox = label.querySelector('input');
       
-      // Load saved state from global memory
       chrome.storage.sync.get([toggle.storageKey], (result) => {
         if (result[toggle.storageKey]) checkbox.checked = true;
       });
 
-      // Save state back to global memory if clicked
       checkbox.addEventListener('change', (e) => {
         chrome.storage.sync.set({ [toggle.storageKey]: e.target.checked });
       });
@@ -191,38 +210,50 @@
     return container;
   }
 
+  /**
+   * Gathers active state and triggers execution.
+   * @param {string} resolution 
+   */
   async function handleQualitySelect(resolution) {
     const wantsSubs = document.getElementById('float-subs')?.checked || false;
     const wantsPlaylist = document.getElementById('float-playlist')?.checked || false;
+    const wantsCookies = document.getElementById('float-cookies')?.checked || false;
     
     try {
-      await launchDownload(resolution, wantsSubs, wantsPlaylist);
+      await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies);
       showToast('Download started! Check terminal window.');
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error('Download execution failed:', error);
       showToast('Failed to start download. Check URL.', 'error');
     }
   }
 
-  async function launchDownload(resolution, wantsSubs, wantsPlaylist) {
+  /**
+   * Compiles execution payload and triggers native handler.
+   * @param {string} resolution 
+   * @param {boolean} wantsSubs 
+   * @param {boolean} wantsPlaylist 
+   * @param {boolean} wantsCookies 
+   */
+  async function launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies) {
     const videoUrl = window.location.href;
     
     if (!videoUrl.match(/youtube\.com|youtu\.be/)) {
-      throw new Error('Not a valid YouTube URL');
+      throw new Error('Invalid YouTube Context');
     }
     
-    // Dynamically fetch user's saved path, or fallback to default
     const prefs = await chrome.storage.sync.get(['savePath']);
     let saveDir = prefs.savePath ? prefs.savePath.trim() : '~/Downloads/YT-Downloads/';
     
-    // Format path for Windows Batch safety
     saveDir = saveDir.replace(/[/\\]$/, '') + '\\';
     saveDir = saveDir.replace(/\\/g, '\\\\');
 
     const formatConfig = getFormatConfig(resolution);
+    
     const subCommand = (wantsSubs && resolution !== 'audio') 
-      ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*,all" ' 
+      ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*" ' 
       : '';
+      
     const playlistCommand = wantsPlaylist ? '--yes-playlist ' : '--no-playlist ';
     
     const outputTemplate = wantsPlaylist
@@ -243,11 +274,27 @@
       `"${videoUrl}"`
     ].join(' ');
     
-    // Safely encode command
-    const encoded = btoa(unescape(encodeURIComponent(command)));
+    let encoded = btoa(unescape(encodeURIComponent(command)));
+
+    // Request session cookies from background worker if bypass is required
+    if (wantsCookies) {
+        const cookieBase64 = await new Promise(resolve => {
+            chrome.runtime.sendMessage({ action: "get_cookies" }, response => resolve(response));
+        });
+        
+        if (cookieBase64) {
+            encoded += `||${cookieBase64}`;
+        }
+    }
+
     window.location.href = `ytdlp://${encoded}`;
   }
 
+  /**
+   * Maps UI resolution values to yt-dlp format selection flags.
+   * @param {string} resolution 
+   * @returns {Object} 
+   */
   function getFormatConfig(resolution) {
     if (resolution === 'audio') {
       return {
@@ -264,6 +311,11 @@
     };
   }
 
+  /**
+   * Renders non-blocking UI notifications.
+   * @param {string} message 
+   * @param {string} type 
+   */
   function showToast(message, type = 'success') {
     const existing = document.querySelector('.yt-dlp-toast');
     if (existing) existing.remove();
@@ -286,6 +338,9 @@
     }, 3000);
   }
 
+  /**
+   * Handles YouTube's asynchronous page transitions without full reloads.
+   */
   function setupNavigationHandler() {
     let lastUrl = location.href;
     
@@ -293,7 +348,6 @@
       const currentUrl = location.href;
       if (currentUrl !== lastUrl) {
         lastUrl = currentUrl;
-        isInjected = false;
         retryCount = 0;
         
         const existing = document.getElementById(CONFIG.CONTAINER_ID);
@@ -304,5 +358,6 @@
     }).observe(document, { subtree: true, childList: true });
   }
 
+  // Initialization Hook
   initialize();
 })();

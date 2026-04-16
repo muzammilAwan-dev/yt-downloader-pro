@@ -1,76 +1,47 @@
 /**
  * @fileoverview DOM Injection Controller
  * Integrates glassmorphism download overlay directly into YouTube player hierarchy.
- * Utilizes MutationObserver to ensure persistence across SPA navigations.
- * @version 5.2.0
+ * Uses Infinite State Enforcement to guarantee survival against YouTube's SPA routing.
+ * @version 5.4.0
  */
 
 (function() {
   'use strict';
 
-  /** @type {Object} Injection constraints and identifiers */
   const CONFIG = {
     CONTAINER_ID: 'yt-dlp-container',
     CHECK_INTERVAL: 1000, 
-    MAX_RETRIES: 50,
-    PLAYER_SELECTOR: '#movie_player, #player-container, .html5-video-player'
+    PLAYER_SELECTOR: '#movie_player'
   };
 
-  let observer = null;
-  let retryCount = 0;
-
   /**
-   * Bootstraps DOM observer and initial injection cycle.
+   * Bootstraps the Infinite State Enforcement loop.
    */
   function initialize() {
-    setupMutationObserver();
-    setInterval(checkAndInject, CONFIG.CHECK_INTERVAL);
-    checkAndInject();
+    // Run the enforcer every 1 second, forever.
+    setInterval(enforceButtonPresence, CONFIG.CHECK_INTERVAL);
+    enforceButtonPresence();
   }
 
   /**
-   * Monitors dynamic node additions to catch asynchronous player rendering.
+   * The core logic loop. Relentlessly ensures the button exists on video pages,
+   * and cleans it up if the user navigates away to the homepage.
    */
-  function setupMutationObserver() {
-    if (observer) return;
-    
-    observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === 'childList') {
-          for (const node of mutation.addedNodes) {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              if (node.matches?.(CONFIG.PLAYER_SELECTOR) || 
-                  node.querySelector?.(CONFIG.PLAYER_SELECTOR)) {
-                checkAndInject();
-                return;
-              }
-            }
-          }
-        }
-      }
-    });
-    
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
-  /**
-   * Verifies player existence and guarantees UI injection state.
-   */
-  function checkAndInject() {
+  function enforceButtonPresence() {
+    const isWatchPage = window.location.href.includes('/watch');
     const player = document.querySelector(CONFIG.PLAYER_SELECTOR);
-    
-    if (!player) {
-      if (retryCount < CONFIG.MAX_RETRIES) {
-        retryCount++;
-      }
-      return;
-    }
+    const existingButton = document.getElementById(CONFIG.CONTAINER_ID);
 
-    retryCount = 0;
-
-    // Guaranteed persistence: Restores UI if destroyed by SPA state routing
-    if (!document.getElementById(CONFIG.CONTAINER_ID)) {
-      injectDownloadButton(player);
+    if (isWatchPage && player) {
+        // If we are watching a video but our button is missing, inject it!
+        if (!existingButton) {
+            injectDownloadButton(player);
+        }
+    } else {
+        // If we navigated back to the YouTube homepage, clean up the button
+        if (existingButton) {
+            existingButton.remove();
+        }
     }
   }
 
@@ -86,8 +57,6 @@
     container.appendChild(button);
     container.appendChild(dropdown);
     player.appendChild(container);
-    
-    setupNavigationHandler();
   }
 
   function createContainer() {
@@ -249,6 +218,7 @@
     saveDir = saveDir.replace(/\\/g, '\\\\');
 
     const formatConfig = getFormatConfig(resolution);
+    const resLabel = resolution === 'audio' ? 'Audio' : `${resolution}p`;
     
     const subCommand = (wantsSubs && resolution !== 'audio') 
       ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*" ' 
@@ -257,8 +227,8 @@
     const playlistCommand = wantsPlaylist ? '--yes-playlist ' : '--no-playlist ';
     
     const outputTemplate = wantsPlaylist
-      ? `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d - %(title)s.${formatConfig.ext}"`
-      : `-o "${saveDir}%(title)s.${formatConfig.ext}"`;
+      ? `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d_%(title)s_${resLabel}.${formatConfig.ext}"`
+      : `-o "${saveDir}%(title)s_${resLabel}.${formatConfig.ext}"`;
     
     const command = [
       'yt-dlp',
@@ -336,26 +306,6 @@
       toast.classList.remove('show');
       setTimeout(() => toast.remove(), 300);
     }, 3000);
-  }
-
-  /**
-   * Handles YouTube's asynchronous page transitions without full reloads.
-   */
-  function setupNavigationHandler() {
-    let lastUrl = location.href;
-    
-    new MutationObserver(() => {
-      const currentUrl = location.href;
-      if (currentUrl !== lastUrl) {
-        lastUrl = currentUrl;
-        retryCount = 0;
-        
-        const existing = document.getElementById(CONFIG.CONTAINER_ID);
-        if (existing) existing.remove();
-        
-        setTimeout(checkAndInject, 500);
-      }
-    }).observe(document, { subtree: true, childList: true });
   }
 
   // Initialization Hook

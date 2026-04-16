@@ -1,7 +1,7 @@
 /**
  * @fileoverview Popup UI Controller
  * Manages state binding, validation, and command generation for the extension popup.
- * @version 5.2.0
+ * @version 5.4.0
  */
 
 (function() {
@@ -156,7 +156,7 @@
     saveDir = saveDir.replace(/\\/g, '\\\\');
 
     const formatConfig = buildFormatConfig(settings.resolution);
-    const outputTemplate = buildOutputTemplate(saveDir, settings.isPlaylist, formatConfig.extension);
+    const outputTemplate = buildOutputTemplate(saveDir, settings.isPlaylist, formatConfig.extension, settings.resolution);
     
     // Limits subtitles to English variants to prevent HTTP 429 rate-limiting
     const subOptions = (settings.embedSubs && settings.resolution !== 'audio') 
@@ -205,17 +205,20 @@
   }
 
   /**
-   * Handles directory routing for playlists vs single files.
+   * Handles directory routing for playlists vs single files with dynamic resolution tags.
    * @param {string} saveDir 
    * @param {boolean} isPlaylist 
    * @param {string} extension 
+   * @param {string} resolution
    * @returns {string} 
    */
-  function buildOutputTemplate(saveDir, isPlaylist, extension) {
+  function buildOutputTemplate(saveDir, isPlaylist, extension, resolution) {
+    const resLabel = resolution === 'audio' ? 'Audio' : `${resolution}p`;
+    
     if (isPlaylist) {
-      return `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d - %(title)s.${extension}"`;
+      return `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d_%(title)s_${resLabel}.${extension}"`;
     }
-    return `-o "${saveDir}%(title)s.${extension}"`;
+    return `-o "${saveDir}%(title)s_${resLabel}.${extension}"`;
   }
 
   /**

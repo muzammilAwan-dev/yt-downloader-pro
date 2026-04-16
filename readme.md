@@ -44,7 +44,7 @@ A premium, Windows-exclusive Chrome extension that integrates natively with [yt-
 Because this extension interfaces directly with your PC's command line, it is not hosted on the Chrome Web Store. You will install it locally:
 
 1. Download `yt-downloader-extension.zip` from the **[Releases](../../releases/latest)** page.
-2. Extract the folder to a safe place on your computer.
+2. Extract the folder to a safe place on your computer.(Note:Use extract Here option for extraction)
 3. Open Chrome and navigate to `chrome://extensions/`.
 4. Turn on **Developer mode** (toggle in the top-right corner).
 5. Click **Load unpacked** in the top-left corner.

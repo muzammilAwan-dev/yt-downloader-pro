@@ -2,7 +2,7 @@
  * @fileoverview Background Service Worker
  * Handles secure cookie extraction and formats them to the Netscape standard
  * required by yt-dlp for age-restriction bypass functionality.
- * @version 5.2.0
+ * @version 5.3.0
  */
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

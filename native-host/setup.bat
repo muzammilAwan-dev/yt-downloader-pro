@@ -26,6 +26,10 @@ if %errorlevel% neq 0 (
 )
 echo [OK] Winget found.
 
+:: --- Upgrade Winget Engine ---
+echo [*] Ensuring Windows Package Manager is up to date...
+winget upgrade Microsoft.AppInstaller --accept-package-agreements --accept-source-agreements --silent >nul 2>&1
+
 :: --- Setup Directory ---
 set "INSTALL_DIR=%LOCALAPPDATA%\YT-Downloader-Pro"
 if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"

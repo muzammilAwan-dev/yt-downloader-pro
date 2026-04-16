@@ -5,7 +5,7 @@
 [![yt-dlp](https://img.shields.io/badge/yt--dlp-latest-green?style=flat-square)](https://github.com/yt-dlp/yt-dlp)
 [![Platform](https://img.shields.io/badge/Platform-Windows_10%2F11-0078D6?style=flat-square&logo=windows)](https://microsoft.com)
 
-A premium, Windows-exclusive Chrome extension that integrates natively with [yt-dlp](https://github.com/yt-dlp/yt-dlp) to download YouTube videos in various qualities, featuring a modern in-page overlay, real-time terminal output, and native age-restriction bypass.
+A premium, Windows-exclusive Chrome extension that integrates natively with [yt-dlp](https://github.com/yt-dlp/yt-dlp) to download YouTube videos in various qualities, featuring a modern in-page overlay, IDM-style concurrent download speeds, and native age-restriction/bot bypass.
 
 ![Extension Screenshot](docs/demo.gif)
 
@@ -16,11 +16,11 @@ A premium, Windows-exclusive Chrome extension that integrates natively with [yt-
 | Feature | Description |
 |---------|-------------|
 | **🎨 Modern UI** | Glassmorphism design with YouTube-native aesthetic |
-| **⚡ Dual Interface** | Popup for full control + In-page overlay for quick access |
+| **⚡ IDM-Style Speeds** | Bypass YouTube throttling using Concurrent Connections (up to 8x) |
 | **🎬 Quality Selection** | 360p to 4K (2160p), plus Audio-only (MP3) |
 | **🔞 Age & Bot Bypass** | Seamlessly extract local browser session cookies to download age-restricted and Members-Only videos also fixes Sign in to confirm you are not a bot issue |
 | **📜 Subtitles** | Auto-embed manual and auto-generated English captions |
-| **📂 Playlists** | Download entire playlists with organized folders |
+| **📂 Smart Playlists** | Download full playlists or select specific ranges (e.g., `1-5, 8`) |
 | **🛡️ SponsorBlock** | Automatically remove sponsor segments |
 | **🔄 SPA Compatible** | Works seamlessly with YouTube's dynamic page navigation |
 | **📊 Real-time Output** | Native terminal shows live download progress, speed, and ETA |
@@ -34,13 +34,13 @@ A premium, Windows-exclusive Chrome extension that integrates natively with [yt-
 1. Go to the **[Releases](../../releases/latest)** page.
 2. Download `setup.bat`.
 3. Double-click `setup.bat`. 
-   * *Note: The script will automatically request Administrator privileges. It uses Microsoft's native **WinGet** to silently install `yt-dlp` and `FFmpeg` globally on your system and configures the `ytdlp://` protocol handler.*
+   * *Note: The script will automatically request Administrator privileges. It uses Microsoft's native **WinGet** to silently verify its engine, install `yt-dlp` and `FFmpeg` globally, and configure the `ytdlp://` protocol handler.*
 
 ### Step 2: Install Chrome Extension
 
 Because this extension interfaces directly with your PC's command line and extracts session cookies, it must be installed locally via Developer Mode:
 
-1. Download `yt-downloader-extension.zip` from the **[Releases](../../releases/latest)** page.
+1. Download `yt-downloader-extension-v6.0.0.zip` from the **[Releases](../../releases/latest)** page.
 2. Extract the folder to a safe place on your computer.
 3. Open Chrome and navigate to `chrome://extensions/`.
 4. Turn on **Developer mode** (toggle in the top-right corner).
@@ -55,13 +55,14 @@ Because this extension interfaces directly with your PC's command line and extra
 1. Navigate to any YouTube video.
 2. Hover over the video player and click the floating **Download** button in the top-right corner.
 3. Select your desired quality from the dropdown. 
-4. Check the toggles for Subtitles, Playlists, or Age Bypass if needed.
+4. Check the toggles for Subtitles, Playlists, or Age/Bot Bypass if needed.
 5. The terminal opens immediately and begins downloading to your default folder.
 
 ### Method 2: Popup Interface (Full Control)
 1. Click the **YT Downloader Pro** puzzle piece icon in your Chrome toolbar.
-2. Configure your custom save location, default quality, and preferred toggles.
-3. Click **Launch Download**.
+2. Open the **Settings Gear** to configure IDM-Style Concurrent Download Speeds.
+3. Set your custom save location, default quality, and preferred toggles.
+4. Click **Launch Download**.
 
 ---
 
@@ -74,8 +75,14 @@ C:\Users\YourName\Videos\
 D:\Downloads\YouTube\
 ```
 
-**Age-Restricted Content**
-If a video requires you to log in to verify your age, simply toggle **Bypass Age or Bot Restriction**. The extension will securely pull your active YouTube session cookie, temporarily pass it to the downloader, and instantly delete it once the download starts.
+**Playlist Ranges**
+When the "Full Playlist" toggle is active, an input box will appear. You can leave it blank to download everything, or type specific ranges like `1-5, 8, 11-13` to only download the exact videos you need.
+
+**Age-Restricted & Bot Content**
+If a video requires you to log in to verify your age or confirm you are not a bot, simply toggle **Bypass Age or Bot Restriction**. The extension will securely pull your active YouTube session cookie, temporarily pass it to the downloader, and instantly delete it once the download starts.
+
+**Multi-Part Downloading (Speed Booster)**
+If you are downloading massive 4K or 2K videos and notice slow speeds, click the Settings Gear in the extension popup and change the Speed to **Fast (4x)** or **Extreme (8x)**. This forces yt-dlp to open multiple connections to YouTube simultaneously, acting like an Internet Download Manager.
 
 ---
 

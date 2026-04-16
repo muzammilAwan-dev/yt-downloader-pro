@@ -1,195 +1,235 @@
 /**
- * @fileoverview Overlay CSS
- * Implements modern glassmorphism styling and custom animations 
- * for the embedded YouTube player UI.
- * @version 5.2.0
+ * @fileoverview content.css
+ * Styling for the YT Downloader Pro floating in-page overlay.
+ * Features glassmorphism UI, strict overflow containment, and custom scrollbars.
+ * @version 5.3.0
  */
 
+/* --- MASTER CONTAINER --- */
 #yt-dlp-container {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 2147483647; /* Guarantees highest z-index plane in standard DOM */
-  font-family: "Roboto", "Arial", sans-serif;
-  user-select: none;
+  top: 15px;
+  right: 65px; /* Offset to not block YouTube's native UI buttons */
+  z-index: 2147483647; /* Maximum possible z-index to guarantee it stays on top */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* Glassmorphism Implementation */
+/* --- FLOATING DOWNLOAD BUTTON --- */
 .yt-dlp-btn {
+  background: rgba(15, 15, 15, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(28, 28, 28, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #f1f1f1;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .yt-dlp-btn:hover {
-  background: rgba(45, 45, 45, 0.95);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(30, 30, 30, 0.9);
+  border-color: rgba(255, 255, 255, 0.3);
   transform: translateY(-1px);
 }
 
-.yt-dlp-btn:active {
-  transform: translateY(0);
-}
-
-.yt-dlp-btn svg {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
-}
-
-/* Invisible Hover Bridge for standard UX gap closure */
-.yt-dlp-dropdown::before {
-  content: "";
-  position: absolute;
-  top: -10px;
-  right: 0;
-  width: 100%;
-  height: 10px;
-  background: transparent;
-}
-
-/* Dropdown Menu Architecture */
+/* --- DROPDOWN MENU --- */
 .yt-dlp-dropdown {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   right: 0;
   width: 240px;
-  background: rgba(28, 28, 28, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 15, 15, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
-  padding: 8px 0;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-8px);
+  transform: translateY(-10px);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
+  
+  /* SCROLLING & STRICT OVERFLOW FIX */
+  max-height: 250px; 
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
 }
 
 .yt-dlp-dropdown.show {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
-  pointer-events: auto;
 }
 
-/* Action Items */
+/* Custom Sleek Scrollbar */
+.yt-dlp-dropdown::-webkit-scrollbar { 
+  width: 5px; 
+}
+.yt-dlp-dropdown::-webkit-scrollbar-track { 
+  background: rgba(0, 0, 0, 0.2); 
+  border-radius: 4px; 
+  margin: 4px; 
+}
+.yt-dlp-dropdown::-webkit-scrollbar-thumb { 
+  background: rgba(255, 255, 255, 0.2); 
+  border-radius: 4px; 
+}
+.yt-dlp-dropdown::-webkit-scrollbar-thumb:hover { 
+  background: rgba(62, 166, 255, 0.8); 
+}
+
+/* --- MENU OPTIONS --- */
 .yt-dlp-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   width: 100%;
-  padding: 10px 16px;
   background: transparent;
   border: none;
-  color: #fff;
+  color: #ffffff;
+  padding: 12px 16px;
+  text-align: left;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s;
-  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
 }
 
 .yt-dlp-option:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .option-badge {
-  background: rgba(255, 255, 255, 0.15);
+  font-size: 10px;
+  background: rgba(62, 166, 255, 0.2);
+  color: #3ea6ff;
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: 11px;
-  color: #ccc;
+  font-weight: 500;
 }
 
 .yt-dlp-separator {
   height: 1px;
   background: rgba(255, 255, 255, 0.1);
-  margin: 6px 0;
+  margin: 4px 0;
 }
 
-/* Internal Component Toggles */
+/* --- TOGGLES SECTION --- */
 .yt-dlp-toggles {
-  padding: 4px 16px;
+  padding: 8px 0;
 }
 
 .yt-dlp-toggle-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 0;
+  gap: 10px;
+  padding: 8px 16px;
   cursor: pointer;
-  color: #ccc;
+  color: #ffffff;
   font-size: 13px;
-  transition: color 0.2s;
 }
 
 .yt-dlp-toggle-label:hover {
-  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .yt-dlp-toggle-label input[type="checkbox"] {
-  accent-color: #3ea6ff;
-  width: 14px;
-  height: 14px;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: transparent;
   cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
 }
 
-/* Notification System */
+.yt-dlp-toggle-label input[type="checkbox"]:checked {
+  background: #3ea6ff;
+  border-color: #3ea6ff;
+}
+
+.yt-dlp-toggle-label input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* --- PLAYLIST INPUT CONTAINER --- */
+.yt-dlp-playlist-input-container {
+  padding: 0 16px 10px 16px;
+}
+
+.yt-dlp-playlist-input-container input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.yt-dlp-playlist-input-container input:focus {
+  border-color: #3ea6ff;
+}
+
+.yt-dlp-playlist-input-container .helper-text {
+  font-size: 9px;
+  color: #aaaaaa;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* --- TOAST NOTIFICATION --- */
 .yt-dlp-toast {
   position: fixed;
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%) translateY(100px);
-  background: rgba(28, 28, 28, 0.95);
+  background: rgba(15, 15, 15, 0.95);
   color: #fff;
-  padding: 14px 24px;
+  padding: 12px 24px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 2147483647;
   opacity: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2147483647;
   pointer-events: none;
-  max-width: 90vw;
-  text-align: center;
 }
 
 .yt-dlp-toast.show {
-  opacity: 1;
   transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.yt-dlp-toast.success {
+  border-left: 4px solid #4caf50;
 }
 
 .yt-dlp-toast.error {
-  background: rgba(244, 67, 54, 0.95);
-  border-color: rgba(244, 67, 54, 0.3);
-}
-
-/* Responsive Scaling */
-@media (max-width: 768px) {
-  #yt-dlp-container {
-    top: 12px;
-    right: 12px;
-  }
-  
-  .yt-dlp-btn {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
+  border-left: 4px solid #f44336;
 }

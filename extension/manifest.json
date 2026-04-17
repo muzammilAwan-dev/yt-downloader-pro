@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YT Downloader Pro",
-  "version": "5.3.0",
+  "version": "5.4.0",
   "description": "Premium YouTube downloader with native yt-dlp integration. Features zero-server architecture, age-restriction bypass, and playlist support.",
   "author": "muzammilAwan-dev",
   "homepage_url": "https://github.com/muzammilAwan-dev/yt-downloader-pro",

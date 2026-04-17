@@ -1,139 +1,121 @@
-# YT Downloader Pro
+# 🚀 YT Downloader Pro (v5.4.0)
 
-[![License](https://img.shields.io/github/license/muzammilAwan-dev/yt-downloader-pro?style=flat-square)](LICENSE)
-[![Manifest Version](https://img.shields.io/badge/Manifest-V3-blue?style=flat-square)](https://developer.chrome.com/docs/extensions/mv3/intro/)
-[![yt-dlp](https://img.shields.io/badge/yt--dlp-latest-green?style=flat-square)](https://github.com/yt-dlp/yt-dlp)
-[![Platform](https://img.shields.io/badge/Platform-Windows_10%2F11-0078D6?style=flat-square&logo=windows)](https://microsoft.com)
+![Version](https://img.shields.io/badge/version-5.4.0-blue.svg)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Chrome%20%7C%20Edge-lightgrey.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Dependencies](https://img.shields.io/badge/dependencies-yt--dlp%20%7C%20FFmpeg-orange.svg)
 
-A premium, Windows-exclusive Chrome extension that integrates natively with [yt-dlp](https://github.com/yt-dlp/yt-dlp) to download YouTube videos in various qualities, featuring a modern in-page overlay, IDM-style concurrent download speeds, and native age-restriction/bot bypass.
+A premium, zero-server Chromium Extension that bridges the gap between your browser and the incredible power of `yt-dlp`. 
 
-![Extension Screenshot](docs/demo.gif)
-
----
-
-## ✨ Features
-
-| Feature | Description |
-|---------|-------------|
-| **🎨 Modern UI** | Glassmorphism design with YouTube-native aesthetic |
-| **⚡ IDM-Style Speeds** | Bypass YouTube throttling using Concurrent Connections (up to 8x) |
-| **🎬 Quality Selection** | 360p to 4K (2160p), plus Audio-only (MP3) |
-| **🔞 Age & Bot Bypass** | Seamlessly extract local browser session cookies to download age-restricted and Members-Only videos also fixes Sign in to confirm you are not a bot issue |
-| **📜 Subtitles** | Auto-embed manual and auto-generated English captions |
-| **📂 Smart Playlists** | Download full playlists or select specific ranges (e.g., `1-5, 8`) |
-| **🛡️ SponsorBlock** | Automatically remove sponsor segments |
-| **🔄 SPA Compatible** | Works seamlessly with YouTube's dynamic page navigation |
-| **📊 Real-time Output** | Native terminal shows live download progress, speed, and ETA |
+Instead of relying on slow, ad-ridden web converters, this extension communicates directly with your local Windows terminal using a secure, custom `ytdlp://` protocol. Get 4K downloads, lossless audiophile formats, and age-restriction bypasses directly from the YouTube video player.
 
 ---
 
-## 🚀 Installation
-
-### Step 1: Install Native Component (Windows Backend)
-
-1. Go to the **[Releases](../../releases/latest)** page.
-2. Download `setup.bat`.
-3. Double-click `setup.bat`. 
-   * *Note: The script will automatically request Administrator privileges. It uses Microsoft's native **WinGet** to silently verify its engine, install `yt-dlp` and `FFmpeg` globally, and configure the `ytdlp://` protocol handler.*
-
-### Step 2: Install Chrome Extension
-
-Because this extension interfaces directly with your PC's command line and extracts session cookies, it must be installed locally via Developer Mode:
-
-1. Download `yt-downloader-extension-v6.0.0.zip` from the **[Releases](../../releases/latest)** page.
-2. Extract the folder to a safe place on your computer.
-3. Open Chrome and navigate to `chrome://extensions/`.
-4. Turn on **Developer mode** (toggle in the top-right corner).
-5. Click **Load unpacked** in the top-left corner.
-6. Select the folder you just extracted.
+## 📸 Screenshots
+*(Add your screenshots here!)*
+> `![Popup Menu](link_to_image)` | `![Floating Shorts Button](link_to_image)`
 
 ---
 
-## 📖 Usage Guide
-
-### Method 1: In-Page Overlay (Quick Access)
-1. Navigate to any YouTube video.
-2. Hover over the video player and click the floating **Download** button in the top-right corner.
-3. Select your desired quality from the dropdown. 
-4. Check the toggles for Subtitles, Playlists, or Age/Bot Bypass if needed.
-5. The terminal opens immediately and begins downloading to your default folder.
-
-### Method 2: Popup Interface (Full Control)
-1. Click the **YT Downloader Pro** puzzle piece icon in your Chrome toolbar.
-2. Open the **Settings Gear** to configure IDM-Style Concurrent Download Speeds.
-3. Set your custom save location, default quality, and preferred toggles.
-4. Click **Launch Download**.
+## ✨ What's New in Version 5.4.0 (Major Update)
+* **✂️ Timestamp Cropper:** Only want a 10-second clip? Input start and end times to download specific video sections natively, saving massive amounts of bandwidth.
+* **🎵 Audiophile Formats:** Expanded audio support to include FLAC (Lossless), WAV (Uncompressed), and M4A alongside standard MP3. *(Includes a Smart WAV Fix to prevent FFmpeg metadata crashes).*
+* **📱 YouTube Shorts Support:** The floating glassmorphism button now dynamically tracks and injects itself into infinite-scrolling YouTube Shorts!
+* **⚙️ Custom Command Override:** Terminal junkies can now write custom `yt-dlp` commands in the extension settings and execute them directly via the UI.
+* **📡 Smart Auto-Updater:** The extension now checks GitHub APIs natively and notifies you when a new release is available!
+* **🍪 "Cookie Diet" Bypass:** Optimized the age/bot bypass logic to strictly fetch essential authentication tokens, completely eliminating Windows OS 2048-character URL limit crashes.
 
 ---
 
-## ⚙️ Configuration & Tips
-
-**Custom Save Paths**
-Leave the save path blank in the extension menu to use the default `~/Downloads/YT-Downloads/` folder. For custom paths, use standard Windows formatting:
-```batch
-C:\Users\YourName\Videos\
-D:\Downloads\YouTube\
-```
-
-**Playlist Ranges**
-When the "Full Playlist" toggle is active, an input box will appear. You can leave it blank to download everything, or type specific ranges like `1-5, 8, 11-13` to only download the exact videos you need.
-
-**Age-Restricted & Bot Content**
-If a video requires you to log in to verify your age or confirm you are not a bot, simply toggle **Bypass Age or Bot Restriction**. The extension will securely pull your active YouTube session cookie, temporarily pass it to the downloader, and instantly delete it once the download starts.
-
-**Multi-Part Downloading (Speed Booster)**
-If you are downloading massive 4K or 2K videos and notice slow speeds, click the Settings Gear in the extension popup and change the Speed to **Fast (4x)** or **Extreme (8x)**. This forces yt-dlp to open multiple connections to YouTube simultaneously, acting like an Internet Download Manager.
+## 🌟 Key Features
+* **Zero-Touch Architecture:** No intermediate servers. The extension sends commands directly to your local PC.
+* **In-Page Floating UI:** A sleek, glassmorphism dropdown menu injected right into the YouTube video player.
+* **4K & 2K Video Support:** Automatically merges the highest quality video and audio streams using FFmpeg into MKV or MP4 containers.
+* **Full Playlist Support:** Download entire playlists or specific ranges (e.g., `1-5, 8, 11-13`).
+* **Anti-Bot & Age Restriction Bypass:** Seamlessly grabs your active YouTube session cookies to bypass age gates and bot-verification locks.
+* **Rich Metadata:** Auto-embeds English subtitles, video thumbnails, and YouTube chapter metadata directly into the media file.
+* **SponsorBlock Integration:** Automatically removes baked-in sponsor segments from downloaded videos.
 
 ---
 
-## 🔒 Privacy & Security Policy
-
-YT Downloader Pro operates with a strict **local-only** philosophy.
-
-**What We Don't Do:**
-- ❌ No analytics, telemetry, or download tracking.
-- ❌ No external server connections (completely serverless).
-- ❌ Cookies are **never** exported permanently or sent across the internet. They are passed directly to your local terminal via Base64 and destroyed immediately after initialization.
-
-**Security Best Practices:**
-- Uses a **Custom URI Protocol (`ytdlp://`)** to safely bridge the browser to your native OS shell.
-- Installation utilizes official Microsoft `winget` repositories for dependency fetching.
+## 🛑 Prerequisites
+Before installing, ensure your system meets the following requirements:
+* **Operating System:** Windows 10 or Windows 11 (Required for the `setup.bat` native bridge).
+* **Browser:** Google Chrome, Microsoft Edge, Brave, or any Chromium-based browser.
+* **Permissions:** Administrator privileges on your Windows PC (only needed once during installation).
 
 ---
 
-## 📝 System Requirements
+## 🛠️ Installation Guide
 
-| Component | Minimum Version | Purpose |
-|-----------|----------------|---------|
-| **Windows** | 10 (1903+) | Native protocol and WinGet support |
-| **Browser** | Chrome/Edge 88+ | Manifest V3 & Cookie API support |
-| **WinGet** | 1.0+ | Dependency package manager |
+Because this extension executes native Windows commands, installation is a quick two-step process:
 
----
+### Step 1: Install the Windows Bridge (`setup.bat`)
+Chrome cannot run local `.exe` files for security reasons. We solve this by registering a custom Windows URL protocol (`ytdlp://`).
+1. Download the latest `.zip` from the [Releases](https://github.com/muzammilAwan-dev/yt-downloader-pro/releases) page.
+2. Extract the folder to a permanent location.
+3. Right-click **`setup.bat`** and select **Run as Administrator**.
+   * *Note: This script safely creates a `C:\bin` directory, downloads the latest official `yt-dlp.exe` and `FFmpeg` binaries via PowerShell, and updates your System PATH and Registry.*
 
-## ❓ FAQ & Troubleshooting
-
-**Q: `setup.bat` closes instantly or says WinGet is missing?** A: Ensure your Windows is up to date. You can manually install the Windows Package Manager by downloading "App Installer" from the Microsoft Store.
-
-**Q: The terminal says "yt-dlp is not recognized"?** A: The script automatically refreshes your PATH variables, but in rare cases on older Windows builds, you may need to restart your browser once after running the setup script.
-
-**Q: Why do subtitle downloads fail with HTTP 429 errors?** A: By default, the extension limits subtitle downloads to English (`en.*`) to prevent YouTube from rate-limiting your IP address for pulling too many automated captions simultaneously.
-
----
-
-## 🙏 Acknowledgments
-
-- **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** - The incredibly powerful core download engine.
-- **[FFmpeg](https://ffmpeg.org/)** - The multimedia framework powering the format conversions.
-- **[SponsorBlock](https://sponsor.ajay.app/)** - The crowdsourced database enabling automatic sponsor skipping.
+### Step 2: Load the Chrome Extension
+1. Open your browser and navigate to `chrome://extensions/`.
+2. Toggle **Developer mode** ON (top right corner).
+3. Click **Load unpacked** (top left).
+4. Select the extracted extension folder.
 
 ---
 
-## ⚖️ Legal Notice
+## 📖 How to Use
+1. Navigate to any YouTube Video, Playlist, or Short.
+2. Look for the floating **Download** button in the top right corner of the video player.
+3. Click it to open the glassmorphism menu.
+4. Select your desired resolution, toggle any advanced options (like Crop Video or Full Playlist), and watch your terminal spring to life!
+5. *(Optional)* Click the extension puzzle piece icon in your browser toolbar to access global defaults and Advanced Custom Command settings.
 
-**YT Downloader Pro** is an independent tool and is:
-- **NOT** affiliated with YouTube LLC or Google LLC.
-- **NOT** affiliated with the yt-dlp project.
-- **NOT** a DRM circumvention tool.
+---
 
-**Disclaimer:** This extension is for personal use only. Respect copyright laws and YouTube's Terms of Service. Downloading copyrighted content without authorization violates YouTube's Terms of Service and potentially copyright law in your jurisdiction. The developers assume no liability for misuse.
+## 💡 Troubleshooting & FAQ
+
+**"Uncaught Error: Extension context invalidated"**
+* **Cause:** You reloaded the extension code in the background while developing.
+* **Fix:** Simply press `Ctrl + F5` to hard-refresh the YouTube tab. 
+
+**"The setup.bat file triggered Windows Defender / SmartScreen"**
+* **Cause:** The script uses PowerShell to download `.exe` files (`yt-dlp` and `FFmpeg`) from GitHub, which triggers generic antivirus warnings. 
+* **Fix:** The code is 100% open-source. You can open `setup.bat` in Notepad to verify it. Click "More Info" -> "Run anyway".
+
+**"4K MKV files don't show thumbnails in Windows Explorer"**
+* **Cause:** The Windows OS natively lacks the codec to read embedded metadata cover art inside `.mkv` files.
+* **Fix:** The extension embeds the thumbnail perfectly. Use a modern media player like VLC, MPC-HC, or Plex, and the cover art will display beautifully.
+
+**"My custom command failed to execute"**
+* **Fix:** Ensure you did not type the YouTube URL in the custom command box. Just type your flags (e.g., `yt-dlp -f bestaudio`). The extension automatically appends the current video URL for you!
+
+---
+
+## 🗺️ Roadmap
+- [ ] Add support for Twitter/X and Reddit video downloads.
+- [ ] Implement Light/Dark mode syncing with system preferences.
+- [ ] Add an in-extension Download History log.
+- [ ] Direct MP3 tagging with Spotify/Apple Music metadata APIs.
+
+---
+
+## 💻 Tech Stack
+* **Frontend:** Vanilla JavaScript, HTML5, CSS3 (Glassmorphism UI)
+* **Backend / System:** Windows Batch (`.bat`), PowerShell, Windows Registry
+* **Core Engine:** `yt-dlp`, FFmpeg
+* **APIs:** Chrome Extension Manifest V3 (`chrome.storage`, `chrome.cookies`, `chrome.tabs`)
+
+---
+
+## ⚠️ Disclaimer
+This tool is built strictly for educational purposes, personal archiving, and downloading royalty-free or creative commons content. The developer does not condone or support the piracy of copyrighted material. By using this software, you agree to bear full responsibility for your actions and to comply with the Terms of Service of the platforms you download from.
+
+---
+
+## 🤝 Contributing
+Feel free to open issues or submit pull requests. If you want to add support for a new site, improve the floating UI, or optimize the `yt-dlp` arguments, contributions are highly welcome!
+
+## 📜 License
+This project is open-source and available under the **MIT License**.

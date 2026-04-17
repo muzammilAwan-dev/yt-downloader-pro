@@ -1,8 +1,8 @@
 /**
  * @fileoverview Background Service Worker
- * Handles secure cookie extraction and formats them to the Netscape standard
- * required by yt-dlp for age-restriction bypass functionality.
- * @version 5.3.0
+ * Handles secure cookie extraction and formats them to the Netscape standard.
+ * Features Cookie-Dieting to bypass the 2048-character Windows URL limit.
+ * @version 5.4.0
  */
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -14,13 +14,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 return;
             }
 
+            // The "Cookie Diet"
+            // Only extract the exact cookies yt-dlp needs to verify login/age.
+            // This prevents the Base64 string from exceeding the Windows URL character limit.
+            const essentialKeys = [
+                '__Secure-1PSID', 
+                '__Secure-3PSID', 
+                '__Secure-1PSIDTS', 
+                'LOGIN_INFO', 
+                'VISITOR_INFO1_LIVE'
+            ];
+            
+            const filteredCookies = cookies.filter(c => essentialKeys.includes(c.name));
+
             // Construct Netscape HTTP Cookie File header
             let netscapeFormat = "# Netscape HTTP Cookie File\n";
             netscapeFormat += "# http://curl.haxx.se/rfc/cookie_spec.html\n";
             netscapeFormat += "# This is a generated file!  Do not edit.\n\n";
 
-            // Map Chrome cookie objects to Netscape tab-separated standard
-            cookies.forEach(c => {
+            // Map ONLY the essential Chrome cookies to Netscape standard
+            filteredCookies.forEach(c => {
                 const domain = c.domain;
                 const includeSubdomains = domain.startsWith('.') ? 'TRUE' : 'FALSE';
                 const path = c.path;
@@ -30,11 +43,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 netscapeFormat += `${domain}\t${includeSubdomains}\t${path}\t${secure}\t${expiry}\t${c.name}\t${c.value}\n`;
             });
 
-            // Encode payload to safely pass through custom URI protocol
+            // Encode the much smaller payload
             const encodedPayload = btoa(unescape(encodeURIComponent(netscapeFormat)));
             sendResponse(encodedPayload);
         });
         
-        return true; // Keep message channel open for asynchronous response
+        return true; 
     }
 });

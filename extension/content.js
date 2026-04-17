@@ -1,8 +1,8 @@
 /**
  * @fileoverview DOM Injection Controller
- * Integrates glassmorphism download overlay with Playlist Ranges.
- * Includes Anti-Lag Debouncing and YouTube Hotkey Hijack Blocker.
- * @version 5.3.0
+ * Includes IDM-Style Shorts support, Timestamp Cropper, Audio Formats, and Advanced Custom Commands.
+ * Features Smart WAV Fix to prevent FFmpeg crashes.
+ * @version 5.4.0
  */
 
 (function() {
@@ -10,8 +10,7 @@
 
   const CONFIG = {
     CONTAINER_ID: 'yt-dlp-container',
-    CHECK_INTERVAL: 1000, 
-    PLAYER_SELECTOR: '#movie_player'
+    CHECK_INTERVAL: 1000
   };
 
   function initialize() {
@@ -21,19 +20,42 @@
 
   function enforceButtonPresence() {
     const isWatchPage = window.location.href.includes('/watch');
-    const player = document.querySelector(CONFIG.PLAYER_SELECTOR);
+    const isShortsPage = window.location.href.includes('/shorts');
+
     const existingButton = document.getElementById(CONFIG.CONTAINER_ID);
 
-    if (isWatchPage && player) {
-        if (!existingButton) injectDownloadButton(player);
+    if (isWatchPage) {
+        // Standard YouTube Video: Attach inside the player
+        const player = document.querySelector('#movie_player');
+        if (player) {
+            if (existingButton && existingButton.parentElement !== player) {
+                existingButton.remove();
+                injectDownloadButton(player, false);
+            } else if (!existingButton) {
+                injectDownloadButton(player, false);
+            }
+        }
+    } else if (isShortsPage) {
+        // IDM METHOD FOR SHORTS: Attach directly to the global body to bypass hidden layers
+        if (existingButton && existingButton.parentElement !== document.body) {
+            existingButton.remove();
+            injectDownloadButton(document.body, true);
+        } else if (!existingButton) {
+            injectDownloadButton(document.body, true);
+        }
     } else {
+        // Not on a video page? Clean up the button.
         if (existingButton) existingButton.remove();
     }
   }
 
-  function injectDownloadButton(player) {
+  function injectDownloadButton(player, isShortsPage) {
     const container = document.createElement('div');
     container.id = CONFIG.CONTAINER_ID;
+    
+    if (isShortsPage) {
+        container.classList.add('shorts-mode');
+    }
     
     const button = document.createElement('button');
     button.className = 'yt-dlp-btn';
@@ -60,6 +82,15 @@
     
     const fragment = document.createDocumentFragment();
 
+    const customBtn = document.createElement('button');
+    customBtn.className = 'yt-dlp-option custom-cmd';
+    customBtn.innerHTML = `<span>⚙️ Run Custom Command</span>`;
+    customBtn.addEventListener('click', () => { 
+        dropdown.classList.remove('show');
+        handleQualitySelect('custom'); 
+    });
+    fragment.appendChild(customBtn);
+
     const qualities = [
       { value: 'audio', label: '🎵 Audio Only' },
       { value: '2160', label: '4K (2160p)' },
@@ -79,7 +110,6 @@
         dropdown.classList.remove('show');
         handleQualitySelect(q.value); 
       });
-      
       fragment.appendChild(btn);
     });
     
@@ -98,18 +128,47 @@
         return lbl;
     };
 
+    const audioContainer = document.createElement('div');
+    audioContainer.className = 'yt-dlp-input-container';
+    audioContainer.innerHTML = `<label>Audio Format</label><select id="float-audio-format"><option value="mp3">MP3</option><option value="flac">FLAC</option><option value="wav">WAV</option><option value="m4a">M4A</option></select>`;
+    const audioSelect = audioContainer.querySelector('select');
+    chrome.storage.sync.get(['audioFormat'], res => { if(res.audioFormat) audioSelect.value = res.audioFormat; });
+    audioSelect.addEventListener('change', e => chrome.storage.sync.set({ audioFormat: e.target.value }));
+    togglesContainer.appendChild(audioContainer);
+
     togglesContainer.appendChild(buildToggle('float-subs', 'Embed Subtitles', 'embedSubs'));
     
+    const cropToggle = buildToggle('float-crop', 'Crop Video section', 'useCrop');
+    togglesContainer.appendChild(cropToggle);
+
+    const timeContainer = document.createElement('div');
+    timeContainer.className = 'yt-dlp-input-container';
+    timeContainer.style.display = 'none';
+    timeContainer.innerHTML = `
+        <div class="yt-dlp-time-row">
+            <input type="text" id="float-start-time" placeholder="Start (MM:SS or HH:MM:SS)">
+            <input type="text" id="float-end-time" placeholder="End (MM:SS or HH:MM:SS)">
+        </div>
+    `;
+    const startBox = timeContainer.querySelector('#float-start-time');
+    const endBox = timeContainer.querySelector('#float-end-time');
+    
+    cropToggle.querySelector('input').addEventListener('change', e => {
+        timeContainer.style.display = e.target.checked ? 'block' : 'none';
+    });
+    togglesContainer.appendChild(timeContainer);
+
+    ['keydown', 'keyup', 'keypress'].forEach(eventType => {
+        startBox.addEventListener(eventType, e => e.stopPropagation());
+        endBox.addEventListener(eventType, e => e.stopPropagation());
+    });
+
     const plToggle = buildToggle('float-playlist', 'Full Playlist', 'downloadPlaylist');
     togglesContainer.appendChild(plToggle);
 
     const plInputContainer = document.createElement('div');
-    plInputContainer.className = 'yt-dlp-playlist-input-container';
-    plInputContainer.innerHTML = `
-        <input type="text" id="float-playlist-items" placeholder="e.g. 1-5, 8">
-        <div class="helper-text">Specific videos (optional)</div>
-    `;
-    
+    plInputContainer.className = 'yt-dlp-input-container';
+    plInputContainer.innerHTML = `<input type="text" id="float-playlist-items" placeholder="e.g. 1-5, 8"><div class="helper-text">Specific videos (optional)</div>`;
     const playlistInputBox = plInputContainer.querySelector('input');
 
     chrome.storage.sync.get(['downloadPlaylist', 'playlistItems'], res => {
@@ -121,30 +180,21 @@
         plInputContainer.style.display = e.target.checked ? 'block' : 'none';
     });
 
-    // --- THE HOTKEY FIX ---
-    // This physically stops YouTube from seeing your keystrokes while typing in the box.
-    // It prevents the video from seeking and instantly cures the "lag".
-    ['keydown', 'keyup', 'keypress'].forEach(eventType => {
-        playlistInputBox.addEventListener(eventType, e => e.stopPropagation());
-    });
-    // ----------------------
+    ['keydown', 'keyup', 'keypress'].forEach(eventType => playlistInputBox.addEventListener(eventType, e => e.stopPropagation()));
     
     let saveTimeout;
     playlistInputBox.addEventListener('input', e => {
         clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => {
-            chrome.storage.sync.set({ playlistItems: e.target.value.trim() });
-        }, 500);
+        saveTimeout = setTimeout(() => chrome.storage.sync.set({ playlistItems: e.target.value.trim() }), 500);
     });
-    
     togglesContainer.appendChild(plInputContainer);
-    togglesContainer.appendChild(buildToggle('float-cookies', 'Bypass Age & Bot issue', 'useCookies'));
+    
+    togglesContainer.appendChild(buildToggle('float-cookies', 'Bypass Age & Bot Lock', 'useCookies'));
     
     fragment.appendChild(togglesContainer);
     dropdown.appendChild(fragment);
     
     document.addEventListener('click', () => dropdown.classList.remove('show'));
-    
     return dropdown;
   }
 
@@ -155,11 +205,7 @@
   }
 
   function sanitizePlaylistItems(rawInput) {
-      return rawInput.toLowerCase()
-          .replace(/\s+(to|through)\s+/g, '-')
-          .replace(/[^0-9,\-]/g, '')
-          .replace(/,+/g, ',')
-          .replace(/(^,)|(,$)/g, '');
+      return rawInput.toLowerCase().replace(/\s+(to|through)\s+/g, '-').replace(/[^0-9,\-]/g, '').replace(/,+/g, ',').replace(/(^,)|(,$)/g, '');
   }
 
   async function handleQualitySelect(resolution) {
@@ -168,27 +214,58 @@
     const wantsCookies = document.getElementById('float-cookies')?.checked || false;
     const wantsItems = document.getElementById('float-playlist-items')?.value.trim() || '';
     
+    const isCropped = document.getElementById('float-crop')?.checked || false;
+    const sTime = document.getElementById('float-start-time')?.value.trim() || '';
+    const eTime = document.getElementById('float-end-time')?.value.trim() || '';
+
     try {
-      await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems);
+      await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems, isCropped, sTime, eTime);
       showToast('Download started! Check terminal window.');
-    } catch (error) { showToast('Failed to start download.', 'error'); }
+    } catch (error) { 
+      console.error('[YT-DLP Extension Error]:', error);
+      showToast(`Error: ${error.message}`, 'error'); 
+    }
   }
 
-  async function launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, playlistItems) {
+  async function launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, playlistItems, isCropped, sTime, eTime) {
     const videoUrl = window.location.href;
-    const prefs = await chrome.storage.sync.get(['savePath', 'concurrentDownloads']);
+    const prefs = await chrome.storage.sync.get(['savePath', 'concurrentDownloads', 'customCommand', 'audioFormat', 'flagMetadata', 'flagThumbnail', 'flagSponsor']);
     
+    if (resolution === 'custom') {
+        const rawCustom = prefs.customCommand ? prefs.customCommand.trim() : '';
+        let finalCustom = rawCustom ? rawCustom : 'yt-dlp';
+        if (!finalCustom.includes(videoUrl)) finalCustom += ` "${videoUrl}"`;
+        await executeFinalCommand(finalCustom, wantsCookies);
+        return;
+    }
+
     let saveDir = prefs.savePath ? prefs.savePath.trim().replace(/[/\\]$/, '') + '\\' : '~/Downloads/YT-Downloads/';
     saveDir = saveDir.replace(/\\/g, '\\\\');
+    const speed = prefs.concurrentDownloads || '4'; 
+    const audioFmt = prefs.audioFormat || 'mp3';
 
-    const speed = prefs.concurrentDownloads || '4';
-
-    const fmt = resolution === 'audio' 
-        ? { f: 'ba', opt: '--extract-audio --audio-format mp3 --audio-quality 0', ext: 'mp3' }
-        : { f: `bv*[height<=${resolution}]+ba/b[height<=${resolution}]/bv*+ba/b`, opt: '--merge-output-format mp4', ext: 'mp4' };
+    let fmt;
+    if (resolution === 'audio') {
+        let quality = audioFmt === 'flac' || audioFmt === 'wav' ? '' : '--audio-quality 0';
+        fmt = { f: 'ba', opt: `--extract-audio --audio-format ${audioFmt} ${quality}`.trim(), ext: audioFmt };
+    } else if (resolution === '1440' || resolution === '2160') {
+        fmt = { f: `bv*[height<=${resolution}]+ba/b[height<=${resolution}]/bv*+ba/b`, opt: '--merge-output-format mkv', ext: 'mkv' };
+    } else {
+        fmt = { f: `bv*[height<=${resolution}]+ba/b[height<=${resolution}]/bv*+ba/b`, opt: '--merge-output-format mp4', ext: 'mp4' };
+    }
     
     const resLabel = resolution === 'audio' ? 'Audio' : `${resolution}p`;
-    const subCmd = (wantsSubs && resolution !== 'audio') ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*" ' : '';
+    
+    let cropperCmd = '';
+    if (isCropped && (sTime || eTime)) {
+        const startSec = sTime ? sTime : '00:00:00';
+        const endSec = eTime ? eTime : 'inf';
+        cropperCmd = `--download-sections "*${startSec}-${endSec}" --force-keyframes-at-cuts `;
+    }
+
+    const subCmd = (wantsSubs && resolution !== 'audio') 
+        ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*" --sleep-subtitles 2 ' 
+        : '';
     
     let plCmd = '--no-playlist ';
     if (wantsPlaylist) {
@@ -198,19 +275,40 @@
             if (clean) plCmd += `--playlist-items "${clean}" `;
         }
     }
+
+    const metaFlag = (prefs.flagMetadata !== false) ? '--embed-metadata' : '';
+    
+    // SMART WAV FIX: Disable thumbnail embedding if format is WAV
+    const thumbFlag = (prefs.flagThumbnail !== false && fmt.ext !== 'wav') 
+        ? '--embed-thumbnail --convert-thumbnails jpg' 
+        : '';
+        
+    const sponsorFlag = (prefs.flagSponsor !== false) ? '--sponsorblock-remove all' : '';
     
     const outTemplate = wantsPlaylist
       ? `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d_%(title)s_${resLabel}.${fmt.ext}"`
       : `-o "${saveDir}%(title)s_${resLabel}.${fmt.ext}"`;
     
-   const command = ['yt-dlp', '-f', `"${fmt.f}"`, fmt.opt, `-N ${speed}`, subCmd, plCmd, '--sponsorblock-remove all', '--restrict-filenames', '--embed-metadata', '--embed-thumbnail', '--progress', outTemplate, `"${videoUrl}"`].join(' ');
+    const command = ['yt-dlp', '-f', `"${fmt.f}"`, fmt.opt, `-N ${speed}`, cropperCmd, subCmd, plCmd, sponsorFlag, '--restrict-filenames', metaFlag, thumbFlag, '--no-warnings', '--progress', outTemplate, `"${videoUrl}"`].filter(Boolean).join(' ');
     
-    let encoded = btoa(unescape(encodeURIComponent(command)));
-    if (wantsCookies) {
-        const cookies = await new Promise(res => chrome.runtime.sendMessage({ action: "get_cookies" }, res));
-        if (cookies) encoded += `||${cookies}`;
-    }
-    window.location.href = `ytdlp://${encoded}`;
+    await executeFinalCommand(command, wantsCookies);
+  }
+
+  async function executeFinalCommand(command, wantsCookies) {
+      let encoded = btoa(unescape(encodeURIComponent(command)));
+      if (wantsCookies) {
+          const cookies = await new Promise((resolve, reject) => {
+              chrome.runtime.sendMessage({ action: "get_cookies" }, (response) => {
+                  if (chrome.runtime.lastError) {
+                      console.error("Background Error:", chrome.runtime.lastError);
+                      return reject(new Error("Cookie error: " + chrome.runtime.lastError.message));
+                  }
+                  resolve(response);
+              });
+          });
+          if (cookies) encoded += `||${cookies}`;
+      }
+      window.location.href = `ytdlp://${encoded}`;
   }
 
   function showToast(msg, type = 'success') {

@@ -37,10 +37,11 @@ The extension requires our lightweight Windows Host to bridge the browser to you
 
 1. Go to the **[Releases](../../releases/latest)** page.
 2. Download and run **`YTDownloaderPro_Setup.exe`**.
-3. The automated installer will safely:
+4. The automated installer will safely:
    * Install the Native GUI Client.
    * Download the latest official `yt-dlp` and `FFmpeg` binaries in the background.
    * Register the secure `ytdlp://` protocol handler to your Windows Registry.
+5.  Download and Extract (Extract Here) the **`yt-downloader-extension.rar`**. 
 
 ### Step 2: Install Chrome Extension
 

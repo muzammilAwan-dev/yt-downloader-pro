@@ -2,7 +2,7 @@
  * @fileoverview content.css
  * Styling for the YT Downloader Pro floating in-page overlay.
  * Features glassmorphism UI, strict overflow containment, and custom scrollbars.
- * @version 5.4.0
+ * @version 6.0.0
  */
 
 #yt-dlp-container {
@@ -105,6 +105,14 @@
 /* --- SHORTS MODE (IDM STYLE) OVERRIDE --- */
 #yt-dlp-container.shorts-mode {
   position: fixed;
-  top: 80px;
-  right: 30px;
+  top: 80px;         /* Keeps it safely below the YouTube top search bar */
+  right: auto;       /* Removes right anchoring */
+  left: 30px;        /* Adds a nice margin from the left edge */
+  align-items: flex-start; /* Aligns dropdown to open gracefully to the right */
+}
+
+/* Ensure the dropdown menu expands out to the right so it isn't cut off */
+#yt-dlp-container.shorts-mode .yt-dlp-dropdown {
+  right: auto;
+  left: 0;
 }

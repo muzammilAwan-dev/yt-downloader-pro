@@ -2,7 +2,7 @@
  * @fileoverview Background Service Worker
  * Handles secure cookie extraction and formats them to the Netscape standard.
  * Features Cookie-Dieting to bypass the 2048-character Windows URL limit.
- * @version 5.4.0
+ * @version 6.0.0
  */
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

@@ -2,7 +2,7 @@
  * @fileoverview DOM Injection Controller
  * Includes IDM-Style Shorts support, Timestamp Cropper, Audio Formats, and Advanced Custom Commands.
  * Features Smart WAV Fix to prevent FFmpeg crashes.
- * @version 5.4.0
+ * @version 6.0.0
  */
 
 (function() {
@@ -220,7 +220,7 @@
 
     try {
       await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems, isCropped, sTime, eTime);
-      showToast('Download started! Check terminal window.');
+      showToast('Download started! Check the application.');
     } catch (error) { 
       console.error('[YT-DLP Extension Error]:', error);
       showToast(`Error: ${error.message}`, 'error'); 

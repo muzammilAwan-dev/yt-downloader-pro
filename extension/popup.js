@@ -1,7 +1,7 @@
 /**
  * @fileoverview Popup UI Controller
  * Integrates Audio Formats, Timestamp Cropper, Advanced Settings, and Auto-Update Checker.
- * @version 5.4.0
+ * @version 6.0.0
  */
 
 (function() {
@@ -159,7 +159,7 @@
       if (!isValidYouTubeUrl(tab.url)) throw new Error('Invalid YouTube URL.');
 
       await executeCommand(buildYtDlpCommand(tab.url));
-      showStatus('Download started! Check your terminal window.', 'success');
+      showStatus('Download started! Check the application.', 'success');
       setTimeout(() => window.close(), 2000);
     } catch (error) {
       showStatus(error.message, 'error');

@@ -308,7 +308,16 @@
           });
           if (cookies) encoded += `||${cookies}`;
       }
-      window.location.href = `ytdlp://${encoded}`;
+      
+      // THE FIX: URL-Encode the entire payload so strict browsers allow the '||' separator
+      const protocolUrl = `ytdlp://${encodeURIComponent(encoded)}`;
+      
+      const iframe = document.createElement('iframe');
+      iframe.src = protocolUrl;
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+      
+      setTimeout(() => iframe.remove(), 1000);
   }
 
   function showToast(msg, type = 'success') {

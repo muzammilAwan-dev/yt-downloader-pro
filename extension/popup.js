@@ -273,9 +273,16 @@
         });
         if (cookieBase64) encodedCommand += `||${cookieBase64}`;
     }
-    const protocolUrl = `ytdlp://${encodedCommand}`;
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    await chrome.tabs.update(tab.id, { url: protocolUrl });
+    
+    // THE FIX: URL-Encode the entire payload so strict browsers allow the '||' separator
+    const protocolUrl = `ytdlp://${encodeURIComponent(encodedCommand)}`;
+    
+    const iframe = document.createElement('iframe');
+    iframe.src = protocolUrl;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    
+    setTimeout(() => iframe.remove(), 1000);
   }
 
   function showStatus(msg, type = 'info') {

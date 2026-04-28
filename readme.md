@@ -36,7 +36,7 @@ A premium, Windows-exclusive Chrome extension that integrates natively with [yt-
 The extension requires our lightweight Windows Host to bridge the browser to your local file system.
 
 1. Go to the **[Releases](../../releases/latest)** page.
-2. Download and run **`YTDownloaderPro_Setup.exe`**.
+2. Download extract and run **`YTDownloaderPro_Setup.exe`**.
 4. The automated installer will safely:
    * Install the Native GUI Client.
    * Download the latest official `yt-dlp` and `FFmpeg` binaries in the background.

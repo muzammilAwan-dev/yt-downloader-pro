@@ -18,8 +18,9 @@ A premium, Windows-exclusive Chrome extension that integrates natively with [yt-
     <td><img src="docs/4.webp" alt="Image 4" width="300"></td>
   </tr>
   <tr>
-    <td><img src="docs/5.webp" alt="Image 5" width="300"></td>
-    <td></td>
+    <td colspan="2" align="center">
+      <img src="docs/5.webp" alt="Image 5" width="610">
+    </td>
   </tr>
 </table>
 

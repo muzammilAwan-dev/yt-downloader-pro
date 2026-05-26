@@ -1,8 +1,8 @@
 /**
  * @fileoverview DOM Injection Controller
- * Includes IDM-Style Shorts support, Timestamp Cropper, Audio Formats, and Advanced Custom Commands.
- * Features Smart WAV Fix to prevent FFmpeg crashes.
- * @version 6.0.0
+ * High-performance UI injection for standard videos and Shorts.
+ * Matches C# Host parity for audio extraction and metadata handling.
+ * @version 6.1.0
  */
 
 (function() {
@@ -19,13 +19,19 @@
   }
 
   function enforceButtonPresence() {
-    const isWatchPage = window.location.href.includes('/watch');
-    const isShortsPage = window.location.href.includes('/shorts');
+    // OPTIMIZATION 2: O(1) Pathname routing instead of slow string includes()
+    const path = window.location.pathname;
+    const isWatchPage = path.startsWith('/watch');
+    const isShortsPage = path.startsWith('/shorts');
 
     const existingButton = document.getElementById(CONFIG.CONTAINER_ID);
 
+    if (!isWatchPage && !isShortsPage) {
+        if (existingButton) existingButton.remove();
+        return;
+    }
+
     if (isWatchPage) {
-        // Standard YouTube Video: Attach inside the player
         const player = document.querySelector('#movie_player');
         if (player) {
             if (existingButton && existingButton.parentElement !== player) {
@@ -36,16 +42,12 @@
             }
         }
     } else if (isShortsPage) {
-        // IDM METHOD FOR SHORTS: Attach directly to the global body to bypass hidden layers
         if (existingButton && existingButton.parentElement !== document.body) {
             existingButton.remove();
             injectDownloadButton(document.body, true);
         } else if (!existingButton) {
             injectDownloadButton(document.body, true);
         }
-    } else {
-        // Not on a video page? Clean up the button.
-        if (existingButton) existingButton.remove();
     }
   }
 
@@ -53,9 +55,7 @@
     const container = document.createElement('div');
     container.id = CONFIG.CONTAINER_ID;
     
-    if (isShortsPage) {
-        container.classList.add('shorts-mode');
-    }
+    if (isShortsPage) container.classList.add('shorts-mode');
     
     const button = document.createElement('button');
     button.className = 'yt-dlp-btn';
@@ -146,8 +146,8 @@
     timeContainer.style.display = 'none';
     timeContainer.innerHTML = `
         <div class="yt-dlp-time-row">
-            <input type="text" id="float-start-time" placeholder="Start (MM:SS or HH:MM:SS)">
-            <input type="text" id="float-end-time" placeholder="End (MM:SS or HH:MM:SS)">
+            <input type="text" id="float-start-time" placeholder="Start (MM:SS)">
+            <input type="text" id="float-end-time" placeholder="End (MM:SS)">
         </div>
     `;
     const startBox = timeContainer.querySelector('#float-start-time');
@@ -222,13 +222,12 @@
       await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems, isCropped, sTime, eTime);
       showToast('Download started! Check the application.');
     } catch (error) { 
-      console.error('[YT-DLP Extension Error]:', error);
       showToast(`Error: ${error.message}`, 'error'); 
     }
   }
 
   async function launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, playlistItems, isCropped, sTime, eTime) {
-    const videoUrl = window.location.href;
+    const videoUrl = window.location.href.split('&')[0]; // Strip tracking parameters for cleaner URL
     const prefs = await chrome.storage.sync.get(['savePath', 'concurrentDownloads', 'customCommand', 'audioFormat', 'flagMetadata', 'flagThumbnail', 'flagSponsor']);
     
     if (resolution === 'custom') {
@@ -278,7 +277,7 @@
 
     const metaFlag = (prefs.flagMetadata !== false) ? '--embed-metadata' : '';
     
-    // SMART WAV FIX: Disable thumbnail embedding if format is WAV
+    // OPTIMIZATION 3: Synchronized WAV logic with C# Host to prevent duplicate flag crashes
     const thumbFlag = (prefs.flagThumbnail !== false && fmt.ext !== 'wav') 
         ? '--embed-thumbnail --convert-thumbnails jpg' 
         : '';
@@ -300,8 +299,7 @@
           const cookies = await new Promise((resolve, reject) => {
               chrome.runtime.sendMessage({ action: "get_cookies" }, (response) => {
                   if (chrome.runtime.lastError) {
-                      console.error("Background Error:", chrome.runtime.lastError);
-                      return reject(new Error("Cookie error: " + chrome.runtime.lastError.message));
+                      return reject(new Error("Cookie mapping failed. Please refresh."));
                   }
                   resolve(response);
               });
@@ -309,7 +307,6 @@
           if (cookies) encoded += `||${cookies}`;
       }
       
-      // THE FIX: URL-Encode the entire payload so strict browsers allow the '||' separator
       const protocolUrl = `ytdlp://${encodeURIComponent(encoded)}`;
       
       const iframe = document.createElement('iframe');

@@ -1,7 +1,7 @@
 /**
  * @fileoverview Popup UI Controller
- * Integrates Audio Formats, Timestamp Cropper, Advanced Settings, and Auto-Update Checker.
- * @version 6.0.0
+ * Features command generation parity with the content script.
+ * @version 6.1.0
  */
 
 (function() {
@@ -46,6 +46,8 @@
     try {
       const currentVersion = chrome.runtime.getManifest().version;
       const res = await fetch('https://api.github.com/repos/muzammilAwan-dev/yt-downloader-pro/releases/latest');
+      if (!res.ok) return; // Fail silently to keep console clean if rate-limited
+      
       const data = await res.json();
       const latestVersion = data.tag_name.replace('v', '');
       
@@ -53,7 +55,7 @@
         elements.updateNotice.innerHTML = `Update available: v${latestVersion}! <a href="${data.html_url}" target="_blank">Download here</a>`;
         elements.updateNotice.style.display = 'block';
       }
-    } catch (e) { console.warn('Update check failed quietly.', e); }
+    } catch (e) { /* Fail silently */ }
   }
 
   async function loadSavedPreferences() {
@@ -84,7 +86,7 @@
       }
       if (prefs.playlistItems) elements.playlistItems.value = prefs.playlistItems;
       if (prefs.useCookies) elements.cookiesToggle.checked = prefs.useCookies;
-    } catch (error) { console.warn('Preferences load failed:', error); }
+    } catch (error) { }
   }
 
   async function savePreferences() {
@@ -102,7 +104,7 @@
         flagThumbnail: elements.flagThumbnail.checked,
         flagSponsor: elements.flagSponsor.checked
       });
-    } catch (error) { console.warn('Preferences save failed:', error); }
+    } catch (error) { }
   }
 
   function toggleAudioDropdown(resolutionVal) {
@@ -158,7 +160,7 @@
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!isValidYouTubeUrl(tab.url)) throw new Error('Invalid YouTube URL.');
 
-      await executeCommand(buildYtDlpCommand(tab.url));
+      await executeCommand(buildYtDlpCommand(tab.url.split('&')[0]));
       showStatus('Download started! Check the application.', 'success');
       setTimeout(() => window.close(), 2000);
     } catch (error) {
@@ -217,7 +219,6 @@
 
     const metaFlag = elements.flagMetadata.checked ? '--embed-metadata' : '';
     
-    // SMART WAV FIX: Disable thumbnail embedding if format is WAV
     const thumbFlag = (elements.flagThumbnail.checked && formatConfig.extension !== 'wav') 
         ? '--embed-thumbnail --convert-thumbnails jpg' 
         : '';
@@ -265,8 +266,7 @@
         const cookieBase64 = await new Promise((resolve, reject) => {
             chrome.runtime.sendMessage({ action: "get_cookies" }, (response) => {
                 if (chrome.runtime.lastError) {
-                    console.error("Background Error:", chrome.runtime.lastError);
-                    return reject(new Error("Cookie error: " + chrome.runtime.lastError.message));
+                    return reject(new Error("Cookie error. Please refresh the page."));
                 }
                 resolve(response);
             });
@@ -274,7 +274,6 @@
         if (cookieBase64) encodedCommand += `||${cookieBase64}`;
     }
     
-    // THE FIX: URL-Encode the entire payload so strict browsers allow the '||' separator
     const protocolUrl = `ytdlp://${encodeURIComponent(encodedCommand)}`;
     
     const iframe = document.createElement('iframe');

@@ -9,26 +9,18 @@ A premium, Windows-exclusive Chrome extension that integrates natively with [yt-
 
 ## SCREENSHOTS
 
-<table style="border-collapse: separate; border-spacing: 12px; width: 100%; border: none;">
+<table border="0" cellpadding="0" cellspacing="12">
   <tr>
-    <td style="width: 50%; padding: 0;">
-      <img src="docs/1.webp" alt="Image 1" style="width: 100%; height: 200px; object-fit: cover; display: block;">
-    </td>
-    <td style="width: 50%; padding: 0;">
-      <img src="docs/2.webp" alt="Image 2" style="width: 100%; height: 200px; object-fit: cover; display: block;">
-    </td>
+    <td><img src="docs/1.webp" alt="Image 1" width="300"></td>
+    <td><img src="docs/2.webp" alt="Image 2" width="300"></td>
   </tr>
   <tr>
-    <td style="width: 50%; padding: 0;">
-      <img src="docs/3.webp" alt="Image 3" style="width: 100%; height: 200px; object-fit: cover; display: block;">
-    </td>
-    <td style="width: 50%; padding: 0;">
-      <img src="docs/4.webp" alt="Image 4" style="width: 100%; height: 200px; object-fit: cover; display: block;">
-    </td>
+    <td><img src="docs/3.webp" alt="Image 3" width="300"></td>
+    <td><img src="docs/4.webp" alt="Image 4" width="300"></td>
   </tr>
   <tr>
-    <td colspan="2" style="width: 100%; padding: 0;">
-      <img src="docs/5.webp" alt="Image 5" style="width: 100%; height: 250px; object-fit: cover; display: block;">
+    <td colspan="2" align="center">
+      <img src="docs/5.webp" alt="Image 5" width="612">
     </td>
   </tr>
 </table>

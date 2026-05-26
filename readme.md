@@ -8,21 +8,23 @@
 A premium, Windows-exclusive Chrome extension that integrates natively with [yt-dlp](https://github.com/yt-dlp/yt-dlp) to download YouTube videos in various qualities. Featuring a modern in-page glassmorphism overlay, IDM-style concurrent download speeds, and a **brand new Native Windows GUI** to seamlessly manage your download queue without messy terminal windows.
 
 ## SCREENSHOTS
-<table>
+
+<table style="border-collapse: separate; border-spacing: 12px; width: 100%; border: none;">
   <tr>
-    <td><img src="docs/1.webp" alt="Image 1" width="300"></td>
-    <td><img src="docs/2.webp" alt="Image 2" width="300"></td>
+    <td style="width: 50%; padding: 0;"><img src="docs/1.webp" alt="Image 1" style="width: 100%; display: block;"></td>
+    <td style="width: 50%; padding: 0;"><img src="docs/2.webp" alt="Image 2" style="width: 100%; display: block;"></td>
   </tr>
   <tr>
-    <td><img src="docs/3.webp" alt="Image 3" width="300"></td>
-    <td><img src="docs/4.webp" alt="Image 4" width="300"></td>
+    <td style="width: 50%; padding: 0;"><img src="docs/3.webp" alt="Image 3" style="width: 100%; display: block;"></td>
+    <td style="width: 50%; padding: 0;"><img src="docs/4.webp" alt="Image 4" style="width: 100%; display: block;"></td>
   </tr>
   <tr>
-    <td colspan="2" align="center">
-      <img src="docs/5.webp" alt="Image 5" width="610">
+    <td colspan="2" style="width: 100%; padding: 0;">
+      <img src="docs/5.webp" alt="Image 5" style="width: 100%; display: block;">
     </td>
   </tr>
 </table>
+
 
 ## ✨ Features
 

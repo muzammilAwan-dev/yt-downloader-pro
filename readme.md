@@ -10,15 +10,15 @@ A premium, Windows-exclusive Chrome extension that integrates natively with [yt-
 ## SCREENSHOTS
 <table>
   <tr>
-    <td><img src="docs/1.webp" alt="Image 1" width="100%"></td>
-    <td><img src="docs/2.webp" alt="Image 2" width="100%"></td>
+    <td><img src="docs/1.webp" alt="Image 1" width="300"></td>
+    <td><img src="docs/2.webp" alt="Image 2" width="300"></td>
   </tr>
   <tr>
-    <td><img src="docs/3.webp" alt="Image 3" width="100%"></td>
-    <td><img src="docs/4.webp" alt="Image 4" width="100%"></td>
+    <td><img src="docs/3.webp" alt="Image 3" width="300"></td>
+    <td><img src="docs/4.webp" alt="Image 4" width="300"></td>
   </tr>
   <tr>
-    <td><img src="docs/5.webp" alt="Image 5" width="100%"></td>
+    <td><img src="docs/5.webp" alt="Image 5" width="300"></td>
     <td></td>
   </tr>
 </table>

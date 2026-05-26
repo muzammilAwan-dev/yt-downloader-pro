@@ -11,16 +11,24 @@ A premium, Windows-exclusive Chrome extension that integrates natively with [yt-
 
 <table style="border-collapse: separate; border-spacing: 12px; width: 100%; border: none;">
   <tr>
-    <td style="width: 50%; padding: 0;"><img src="docs/1.webp" alt="Image 1" style="width: 100%; display: block;"></td>
-    <td style="width: 50%; padding: 0;"><img src="docs/2.webp" alt="Image 2" style="width: 100%; display: block;"></td>
+    <td style="width: 50%; padding: 0;">
+      <img src="docs/1.webp" alt="Image 1" style="width: 100%; height: 200px; object-fit: cover; display: block;">
+    </td>
+    <td style="width: 50%; padding: 0;">
+      <img src="docs/2.webp" alt="Image 2" style="width: 100%; height: 200px; object-fit: cover; display: block;">
+    </td>
   </tr>
   <tr>
-    <td style="width: 50%; padding: 0;"><img src="docs/3.webp" alt="Image 3" style="width: 100%; display: block;"></td>
-    <td style="width: 50%; padding: 0;"><img src="docs/4.webp" alt="Image 4" style="width: 100%; display: block;"></td>
+    <td style="width: 50%; padding: 0;">
+      <img src="docs/3.webp" alt="Image 3" style="width: 100%; height: 200px; object-fit: cover; display: block;">
+    </td>
+    <td style="width: 50%; padding: 0;">
+      <img src="docs/4.webp" alt="Image 4" style="width: 100%; height: 200px; object-fit: cover; display: block;">
+    </td>
   </tr>
   <tr>
     <td colspan="2" style="width: 100%; padding: 0;">
-      <img src="docs/5.webp" alt="Image 5" style="width: 100%; display: block;">
+      <img src="docs/5.webp" alt="Image 5" style="width: 100%; height: 250px; object-fit: cover; display: block;">
     </td>
   </tr>
 </table>

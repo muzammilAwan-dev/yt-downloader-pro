@@ -8,12 +8,20 @@
 A premium, Windows-exclusive Chrome extension that integrates natively with [yt-dlp](https://github.com/yt-dlp/yt-dlp) to download YouTube videos in various qualities. Featuring a modern in-page glassmorphism overlay, IDM-style concurrent download speeds, and a **brand new Native Windows GUI** to seamlessly manage your download queue without messy terminal windows.
 
 ## SCREENSHOTS
-
-<img src="docs/1.webp" width="22%" />
-<img src="docs/2.webp" width="22%" />
-<img src="docs/3.webp" width="30%" />
-<img src="docs/4.webp" width="17%" />
-<img src="docs/5.webp" width="40%" />
+<table>
+  <tr>
+    <td><img src="docs/1.webp" alt="Image 1" width="100%"></td>
+    <td><img src="docs/2.webp" alt="Image 2" width="100%"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/3.webp" alt="Image 3" width="100%"></td>
+    <td><img src="docs/4.webp" alt="Image 4" width="100%"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/5.webp" alt="Image 5" width="100%"></td>
+    <td></td>
+  </tr>
+</table>
 
 ## ✨ Features
 

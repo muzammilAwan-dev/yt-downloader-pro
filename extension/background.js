@@ -1,8 +1,8 @@
 /**
  * @fileoverview Background Service Worker
  * Handles secure cookie extraction and formats them to the Netscape standard.
- * Features Cookie-Dieting to bypass the 2048-character Windows URL limit.
- * @version 6.0.0
+ * Features an upgraded Anti-Bot Cookie Diet to bypass YouTube's latest DRM.
+ * @version 6.1.0
  */
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -14,25 +14,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 return;
             }
 
-            // The "Cookie Diet"
-            // Only extract the exact cookies yt-dlp needs to verify login/age.
-            // This prevents the Base64 string from exceeding the Windows URL character limit.
+            // OPTIMIZATION 1: Expanded the Cookie Diet to include 'SOCS', 'YSC', and 'PREF'
+            // YouTube's latest anti-bot DRM requires these to validate the session.
             const essentialKeys = [
                 '__Secure-1PSID', 
                 '__Secure-3PSID', 
                 '__Secure-1PSIDTS', 
                 'LOGIN_INFO', 
-                'VISITOR_INFO1_LIVE'
+                'VISITOR_INFO1_LIVE',
+                'VISITOR_PRIVACY_METADATA',
+                'SOCS',
+                'YSC',
+                'PREF'
             ];
             
             const filteredCookies = cookies.filter(c => essentialKeys.includes(c.name));
 
-            // Construct Netscape HTTP Cookie File header
             let netscapeFormat = "# Netscape HTTP Cookie File\n";
             netscapeFormat += "# http://curl.haxx.se/rfc/cookie_spec.html\n";
             netscapeFormat += "# This is a generated file!  Do not edit.\n\n";
 
-            // Map ONLY the essential Chrome cookies to Netscape standard
             filteredCookies.forEach(c => {
                 const domain = c.domain;
                 const includeSubdomains = domain.startsWith('.') ? 'TRUE' : 'FALSE';
@@ -43,7 +44,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 netscapeFormat += `${domain}\t${includeSubdomains}\t${path}\t${secure}\t${expiry}\t${c.name}\t${c.value}\n`;
             });
 
-            // Encode the much smaller payload
+            // Modern, safe UTF-8 to Base64 encoding
             const encodedPayload = btoa(unescape(encodeURIComponent(netscapeFormat)));
             sendResponse(encodedPayload);
         });

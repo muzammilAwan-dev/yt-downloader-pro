@@ -223,7 +223,7 @@
     }
 
     const subOptions = (settings.embedSubs && settings.resolution !== 'audio') 
-        ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*" --sleep-subtitles 2 ' 
+        ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*" --sleep-subtitles 5 ' 
         : '';
     
     let playlistOptions = '--no-playlist ';

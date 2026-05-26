@@ -293,7 +293,7 @@
     }
 
     const subCmd = (wantsSubs && resolution !== 'audio') 
-        ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*" --sleep-subtitles 2 ' 
+        ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*" --sleep-subtitles 5 ' 
         : '';
     
     let plCmd = '--no-playlist ';

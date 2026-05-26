@@ -1,7 +1,7 @@
 /**
  * @fileoverview Popup UI Controller
- * Features command generation parity with the content script.
- * @version 6.1.0
+ * Integrates Compatibility Mode, Default Toggle Behaviors, and Auto-Uncheck flows.
+ * @version 6.1.1
  */
 
 (function() {
@@ -29,6 +29,7 @@
     flagMetadata: document.getElementById('flagMetadata'),
     flagThumbnail: document.getElementById('flagThumbnail'),
     flagSponsor: document.getElementById('flagSponsor'),
+    compatMode: document.getElementById('compatMode'),
     customCommand: document.getElementById('customCommand'),
     concurrentDownloads: document.getElementById('concurrentDownloads'), 
     
@@ -46,8 +47,7 @@
     try {
       const currentVersion = chrome.runtime.getManifest().version;
       const res = await fetch('https://api.github.com/repos/muzammilAwan-dev/yt-downloader-pro/releases/latest');
-      if (!res.ok) return; // Fail silently to keep console clean if rate-limited
-      
+      if (!res.ok) return;
       const data = await res.json();
       const latestVersion = data.tag_name.replace('v', '');
       
@@ -63,7 +63,7 @@
       const prefs = await chrome.storage.sync.get([
         'savePath', 'resolution', 'audioFormat', 'embedSubs', 'downloadPlaylist',
         'playlistItems', 'useCookies', 'concurrentDownloads', 
-        'flagMetadata', 'flagThumbnail', 'flagSponsor'
+        'flagMetadata', 'flagThumbnail', 'flagSponsor', 'compatMode'
       ]);
       
       if (prefs.savePath) elements.savePath.value = prefs.savePath;
@@ -74,9 +74,12 @@
       }
       if (prefs.audioFormat) elements.audioFormat.value = prefs.audioFormat;
 
-      if (prefs.flagMetadata !== undefined) elements.flagMetadata.checked = prefs.flagMetadata;
-      if (prefs.flagThumbnail !== undefined) elements.flagThumbnail.checked = prefs.flagThumbnail;
-      if (prefs.flagSponsor !== undefined) elements.flagSponsor.checked = prefs.flagSponsor;
+      // Ensure defaults logic maps to the new UI behaviors
+      elements.flagMetadata.checked = prefs.flagMetadata === true;
+      elements.flagThumbnail.checked = prefs.flagThumbnail !== false;
+      elements.flagSponsor.checked = prefs.flagSponsor === true;
+      elements.compatMode.checked = prefs.compatMode === true;
+      
       elements.concurrentDownloads.value = prefs.concurrentDownloads || "4"; 
 
       if (prefs.embedSubs) elements.subsToggle.checked = prefs.embedSubs;
@@ -102,7 +105,8 @@
         concurrentDownloads: elements.concurrentDownloads.value,
         flagMetadata: elements.flagMetadata.checked,
         flagThumbnail: elements.flagThumbnail.checked,
-        flagSponsor: elements.flagSponsor.checked
+        flagSponsor: elements.flagSponsor.checked,
+        compatMode: elements.compatMode.checked
       });
     } catch (error) { }
   }
@@ -132,7 +136,7 @@
       savePreferences();
     });
     
-    [elements.savePath, elements.audioFormat, elements.subsToggle, elements.playlistItems, elements.cookiesToggle, elements.concurrentDownloads, elements.flagMetadata, elements.flagThumbnail, elements.flagSponsor]
+    [elements.savePath, elements.audioFormat, elements.subsToggle, elements.playlistItems, elements.cookiesToggle, elements.concurrentDownloads, elements.flagMetadata, elements.flagThumbnail, elements.flagSponsor, elements.compatMode]
       .forEach(el => el.addEventListener('change', savePreferences));
   }
 
@@ -161,6 +165,12 @@
       if (!isValidYouTubeUrl(tab.url)) throw new Error('Invalid YouTube URL.');
 
       await executeCommand(buildYtDlpCommand(tab.url.split('&')[0]));
+      
+      // AUTO-UNCHECK FIX: Silently reset high-friction toggles after launch
+      elements.cookiesToggle.checked = false;
+      elements.playlistToggle.checked = false;
+      await chrome.storage.sync.set({ useCookies: false, downloadPlaylist: false });
+      
       showStatus('Download started! Check the application.', 'success');
       setTimeout(() => window.close(), 2000);
     } catch (error) {
@@ -220,14 +230,18 @@
     const metaFlag = elements.flagMetadata.checked ? '--embed-metadata' : '';
     
     const thumbFlag = (elements.flagThumbnail.checked && formatConfig.extension !== 'wav') 
-        ? '--embed-thumbnail --convert-thumbnails jpg' 
+        ? '--embed-thumbnail' 
         : '';
         
     const sponsorFlag = elements.flagSponsor.checked ? '--sponsorblock-remove all' : '';
     
+    // COMPATIBILITY FIX: Injects logic to force H.264 video and AAC audio formatting
+    const compatFlag = elements.compatMode.checked ? '-S "vcodec:h264,res,acodec:m4a"' : '';
+    
     return [
       'yt-dlp',
       '-f', `"${formatConfig.formatString}"`,
+      compatFlag,
       formatConfig.mediaOptions,
       `-N ${settings.concurrentDownloads}`,
       cropperOptions,
@@ -261,6 +275,7 @@
   }
 
   async function executeCommand(command) {
+    console.log("[YT-DLP Extension] Executing Command:", command); // Debug Log
     let encodedCommand = btoa(unescape(encodeURIComponent(command)));
     if (elements.cookiesToggle.checked) {
         const cookieBase64 = await new Promise((resolve, reject) => {

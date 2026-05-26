@@ -1,7 +1,7 @@
 /**
  * @fileoverview DOM Injection Controller
- * Integrates Auto-Uncheck flows, Default Toggles, and Native WebP logic.
- * @version 6.1.1
+ * Integrates Auto-Uncheck flows for highly situational variables.
+ * @version 6.1.2
  */
 
 (function() {
@@ -219,18 +219,36 @@
     try {
       await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems, isCropped, sTime, eTime);
       
-      // AUTO-UNCHECK FIX: Visually clear checkboxes from the on-page float menu
+      // AUTO-UNCHECK FIX: Visually clear situational checkboxes
       const cookiesToggle = document.getElementById('float-cookies');
       const playlistToggle = document.getElementById('float-playlist');
+      const cropToggle = document.getElementById('float-crop');
+      const startInput = document.getElementById('float-start-time');
+      const endInput = document.getElementById('float-end-time');
+
       if (cookiesToggle) cookiesToggle.checked = false;
+      
       if (playlistToggle) {
           playlistToggle.checked = false;
           const plInputContainer = document.getElementById('float-playlist-items')?.parentElement;
           if (plInputContainer) plInputContainer.style.display = 'none';
       }
       
-      // Reset memory so the Popup also registers the un-checks
-      chrome.storage.sync.set({ useCookies: false, downloadPlaylist: false });
+      if (cropToggle) {
+          cropToggle.checked = false;
+          const timeContainer = document.querySelector('.yt-dlp-time-row')?.parentElement;
+          if (timeContainer) timeContainer.style.display = 'none';
+      }
+      
+      if (startInput) startInput.value = '';
+      if (endInput) endInput.value = '';
+      
+      // Reset persistent memory for situational toggles
+      chrome.storage.sync.set({ 
+          useCookies: false, 
+          downloadPlaylist: false, 
+          useCrop: false 
+      });
 
       showToast('Download started! Check the application.');
     } catch (error) { 
@@ -307,7 +325,6 @@
   }
 
   async function executeFinalCommand(command, wantsCookies) {
-      console.log("[YT-DLP Extension] Executing Command:", command); 
       let encoded = btoa(unescape(encodeURIComponent(command)));
       if (wantsCookies) {
           const cookies = await new Promise((resolve, reject) => {

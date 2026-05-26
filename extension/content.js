@@ -1,8 +1,7 @@
 /**
  * @fileoverview DOM Injection Controller
- * High-performance UI injection for standard videos and Shorts.
- * Matches C# Host parity for audio extraction and metadata handling.
- * @version 6.1.0
+ * Integrates Auto-Uncheck flows, Default Toggles, and Native WebP logic.
+ * @version 6.1.1
  */
 
 (function() {
@@ -19,7 +18,6 @@
   }
 
   function enforceButtonPresence() {
-    // OPTIMIZATION 2: O(1) Pathname routing instead of slow string includes()
     const path = window.location.pathname;
     const isWatchPage = path.startsWith('/watch');
     const isShortsPage = path.startsWith('/shorts');
@@ -220,6 +218,20 @@
 
     try {
       await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems, isCropped, sTime, eTime);
+      
+      // AUTO-UNCHECK FIX: Visually clear checkboxes from the on-page float menu
+      const cookiesToggle = document.getElementById('float-cookies');
+      const playlistToggle = document.getElementById('float-playlist');
+      if (cookiesToggle) cookiesToggle.checked = false;
+      if (playlistToggle) {
+          playlistToggle.checked = false;
+          const plInputContainer = document.getElementById('float-playlist-items')?.parentElement;
+          if (plInputContainer) plInputContainer.style.display = 'none';
+      }
+      
+      // Reset memory so the Popup also registers the un-checks
+      chrome.storage.sync.set({ useCookies: false, downloadPlaylist: false });
+
       showToast('Download started! Check the application.');
     } catch (error) { 
       showToast(`Error: ${error.message}`, 'error'); 
@@ -227,8 +239,8 @@
   }
 
   async function launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, playlistItems, isCropped, sTime, eTime) {
-    const videoUrl = window.location.href.split('&')[0]; // Strip tracking parameters for cleaner URL
-    const prefs = await chrome.storage.sync.get(['savePath', 'concurrentDownloads', 'customCommand', 'audioFormat', 'flagMetadata', 'flagThumbnail', 'flagSponsor']);
+    const videoUrl = window.location.href.split('&')[0]; 
+    const prefs = await chrome.storage.sync.get(['savePath', 'concurrentDownloads', 'customCommand', 'audioFormat', 'flagMetadata', 'flagThumbnail', 'flagSponsor', 'compatMode']);
     
     if (resolution === 'custom') {
         const rawCustom = prefs.customCommand ? prefs.customCommand.trim() : '';
@@ -275,25 +287,27 @@
         }
     }
 
-    const metaFlag = (prefs.flagMetadata !== false) ? '--embed-metadata' : '';
+    const metaFlag = (prefs.flagMetadata === true) ? '--embed-metadata' : '';
     
-    // OPTIMIZATION 3: Synchronized WAV logic with C# Host to prevent duplicate flag crashes
     const thumbFlag = (prefs.flagThumbnail !== false && fmt.ext !== 'wav') 
-        ? '--embed-thumbnail --convert-thumbnails jpg' 
+        ? '--embed-thumbnail' 
         : '';
         
-    const sponsorFlag = (prefs.flagSponsor !== false) ? '--sponsorblock-remove all' : '';
+    const sponsorFlag = (prefs.flagSponsor === true) ? '--sponsorblock-remove all' : '';
+    
+    const compatFlag = (prefs.compatMode === true) ? '-S "vcodec:h264,res,acodec:m4a"' : '';
     
     const outTemplate = wantsPlaylist
       ? `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d_%(title)s_${resLabel}.${fmt.ext}"`
       : `-o "${saveDir}%(title)s_${resLabel}.${fmt.ext}"`;
     
-    const command = ['yt-dlp', '-f', `"${fmt.f}"`, fmt.opt, `-N ${speed}`, cropperCmd, subCmd, plCmd, sponsorFlag, '--restrict-filenames', metaFlag, thumbFlag, '--no-warnings', '--progress', outTemplate, `"${videoUrl}"`].filter(Boolean).join(' ');
+    const command = ['yt-dlp', '-f', `"${fmt.f}"`, compatFlag, fmt.opt, `-N ${speed}`, cropperCmd, subCmd, plCmd, sponsorFlag, '--restrict-filenames', metaFlag, thumbFlag, '--no-warnings', '--progress', outTemplate, `"${videoUrl}"`].filter(Boolean).join(' ');
     
     await executeFinalCommand(command, wantsCookies);
   }
 
   async function executeFinalCommand(command, wantsCookies) {
+      console.log("[YT-DLP Extension] Executing Command:", command); 
       let encoded = btoa(unescape(encodeURIComponent(command)));
       if (wantsCookies) {
           const cookies = await new Promise((resolve, reject) => {

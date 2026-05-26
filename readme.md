@@ -1,4 +1,4 @@
-# YT Downloader Pro (v6.1.2)
+# YT Downloader Pro (v6.1.0)
 
 [![License](https://img.shields.io/github/license/muzammilAwan-dev/yt-downloader-pro?style=flat-square)](LICENSE)
 [![Manifest Version](https://img.shields.io/badge/Manifest-V3-blue?style=flat-square)](https://developer.chrome.com/docs/extensions/mv3/intro/)
@@ -9,11 +9,11 @@ A premium, Windows-exclusive Chrome extension that integrates natively with [yt-
 
 ## SCREENSHOTS
 
-<img src="docs/1.webp" width="45%" />
-<img src="docs/2.webp" width="45%" />
-<img src="docs/3.webp" width="60%" />
-<img src="docs/4.webp" width="35%" />
-<img src="docs/5.webp" width="80%" />
+<img src="docs/1.webp" width="22%" />
+<img src="docs/2.webp" width="22%" />
+<img src="docs/3.webp" width="30%" />
+<img src="docs/4.webp" width="17%" />
+<img src="docs/5.webp" width="40%" />
 
 ## ✨ Features
 

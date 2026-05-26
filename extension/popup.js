@@ -1,7 +1,7 @@
 /**
  * @fileoverview Popup UI Controller
  * Integrates Compatibility Mode, Default Toggle Behaviors, and Auto-Uncheck flows.
- * @version 6.1.1
+ * @version 6.1.2
  */
 
 (function() {
@@ -74,7 +74,6 @@
       }
       if (prefs.audioFormat) elements.audioFormat.value = prefs.audioFormat;
 
-      // Ensure defaults logic maps to the new UI behaviors
       elements.flagMetadata.checked = prefs.flagMetadata === true;
       elements.flagThumbnail.checked = prefs.flagThumbnail !== false;
       elements.flagSponsor.checked = prefs.flagSponsor === true;
@@ -166,10 +165,19 @@
 
       await executeCommand(buildYtDlpCommand(tab.url.split('&')[0]));
       
-      // AUTO-UNCHECK FIX: Silently reset high-friction toggles after launch
+      // AUTO-UNCHECK FIX: Silently reset highly-situational toggles
       elements.cookiesToggle.checked = false;
       elements.playlistToggle.checked = false;
-      await chrome.storage.sync.set({ useCookies: false, downloadPlaylist: false });
+      
+      // ADDED: Clears crop times since they are strictly video-specific
+      elements.startTime.value = '';
+      elements.endTime.value = '';
+      
+      await chrome.storage.sync.set({ 
+          useCookies: false, 
+          downloadPlaylist: false,
+          useCrop: false 
+      });
       
       showStatus('Download started! Check the application.', 'success');
       setTimeout(() => window.close(), 2000);
@@ -235,7 +243,6 @@
         
     const sponsorFlag = elements.flagSponsor.checked ? '--sponsorblock-remove all' : '';
     
-    // COMPATIBILITY FIX: Injects logic to force H.264 video and AAC audio formatting
     const compatFlag = elements.compatMode.checked ? '-S "vcodec:h264,res,acodec:m4a"' : '';
     
     return [
@@ -275,7 +282,6 @@
   }
 
   async function executeCommand(command) {
-    console.log("[YT-DLP Extension] Executing Command:", command); // Debug Log
     let encodedCommand = btoa(unescape(encodeURIComponent(command)));
     if (elements.cookiesToggle.checked) {
         const cookieBase64 = await new Promise((resolve, reject) => {

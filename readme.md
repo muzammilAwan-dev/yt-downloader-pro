@@ -1,166 +1,150 @@
-# YT Downloader Pro (v6.1.0)
+# YT Downloader Pro
 
+[![Build YTDLPHost](https://github.com/muzammilAwan-dev/yt-downloader-pro/actions/workflows/build.yml/badge.svg)](../../actions/workflows/build.yml)
 [![License](https://img.shields.io/github/license/muzammilAwan-dev/yt-downloader-pro?style=flat-square)](LICENSE)
 [![Manifest Version](https://img.shields.io/badge/Manifest-V3-blue?style=flat-square)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![yt-dlp](https://img.shields.io/badge/yt--dlp-latest-green?style=flat-square)](https://github.com/yt-dlp/yt-dlp)
 [![Platform](https://img.shields.io/badge/Platform-Windows_10%2F11-0078D6?style=flat-square&logo=windows)](https://microsoft.com)
 
-A premium, Windows-exclusive Chrome extension that integrates natively with [yt-dlp](https://github.com/yt-dlp/yt-dlp) to download YouTube videos in various qualities. Featuring a modern in-page glassmorphism overlay, IDM-style concurrent download speeds, and a **brand new Native Windows GUI** to seamlessly manage your download queue without messy terminal windows.
+A premium, Windows-exclusive **Chrome extension + native desktop host**, built around [yt-dlp](https://github.com/yt-dlp/yt-dlp), for downloading YouTube videos in any quality. This repo contains both halves of the product:
 
-## SCREENSHOTS
+| Component | What it is | Lives in |
+|---|---|---|
+| **Chrome Extension** | Manifest V3 extension: in-page glassmorphism download button, popup UI, cookie/session capture | [`extension/`](extension) |
+| **Native Host (YTDLPHost)** | .NET 8 WPF desktop app: receives `ytdlp://` links, runs `yt-dlp`/`ffmpeg`/`deno` in a sandboxed queue, dark-themed GUI | [`host/`](host) |
+
+They're released and versioned together from this single repo.
+
+## Screenshots
 
 <table border="0" cellpadding="0" cellspacing="12">
   <tr>
-    <td><img src="docs/1.webp" alt="Image 1" width="300"></td>
-    <td><img src="docs/2.webp" alt="Image 2" width="300"></td>
+    <td><img src="extension/docs/1.webp" alt="Image 1" width="300"></td>
+    <td><img src="extension/docs/2.webp" alt="Image 2" width="300"></td>
   </tr>
   <tr>
-    <td><img src="docs/3.webp" alt="Image 3" width="300"></td>
-    <td><img src="docs/4.webp" alt="Image 4" width="300"></td>
+    <td><img src="extension/docs/3.webp" alt="Image 3" width="300"></td>
+    <td><img src="extension/docs/4.webp" alt="Image 4" width="300"></td>
   </tr>
   <tr>
-    <td colspan="2" align="center">
-      <img src="docs/5.webp" alt="Image 5" width="612">
-    </td>
+    <td colspan="2" align="center"><img src="extension/docs/5.webp" alt="Image 5" width="612"></td>
   </tr>
 </table>
-
 
 ## ✨ Features
 
 | Feature | Description |
-|---------|-------------|
-| **🖥️ Native Desktop GUI** | Sends downloads straight to a custom-built, dark-themed Windows WPF application. |
-| **🚦 Queue Management** | IDM-style threading handles multiple downloads flawlessly with dynamic Hot-Swapping. |
-| **🎨 Modern Web UI** | Glassmorphism design with a YouTube-native aesthetic inside the browser. |
-| **⚡ IDM-Style Speeds** | Bypass YouTube throttling using Concurrent Connections (Defaults to 4x). |
-| **🎬 Quality Selection** | 360p to 4K (2160p), plus dynamic Audiophile formats (MP3, FLAC, WAV, M4A). |
-| **📺 Compatibility Mode** | Optionally force H.264/AAC encoding to ensure playback on legacy TVs and old phones. |
-| **✂️ Timestamp Cropper** | Download specific video sections natively by inputting start/end times. |
-| **📱 YouTube Shorts** | Floating button dynamically tracks infinite-scrolling Shorts with O(1) DOM routing. |
-| **🔞 Expanded Anti-Bot** | Captures lightweight session cookies (including SOCS, YSC, and PREF) to crush DRM. |
-| **📂 Smart Playlists** | Download full playlists or select specific ranges (e.g., `1-5, 8`). |
-
----
+|---|---|
+| 🖥️ Native Desktop GUI | Sends downloads to a custom-built, dark-themed WPF host app |
+| 🚦 Queue Management | IDM-style concurrent downloads with dynamic hot-swapping of speed/thread settings |
+| 🎨 Modern Web UI | Glassmorphism in-page overlay with a YouTube-native aesthetic |
+| ⚡ IDM-Style Speeds | Bypass YouTube throttling via concurrent connections (default 4x) |
+| 🎬 Quality Selection | 360p up to 4K (2160p), plus MP3 / FLAC / WAV / M4A audio |
+| 📺 Compatibility Mode | Forces H.264/AAC for playback on legacy TVs and phones |
+| ✂️ Timestamp Cropper | Download only a specific start/end section of a video |
+| 📱 YouTube Shorts | Floating button tracks infinite-scrolling Shorts |
+| 📂 Smart Playlists | Full playlists or specific ranges (e.g. `1-5, 8`) |
+| 🔁 Smart Auto-Recovery | Debounced JSON queue state survives crashes/restarts |
+| 🛡️ Anti-Bot Shield | Bundles the Deno JS engine to bypass YouTube's signature puzzles |
 
 ## 🚀 Installation
 
-### Step 1: Install the Native Windows Client
+### 1. Install the native host
 
-The extension requires our lightweight Windows Host to bridge the browser to your local file system.
+1. Go to [Releases](../../releases/latest) and download `YTDownloaderPro_Setup.exe`.
+2. Run it. This installs the WPF host to `C:\Program Files\YT Downloader Pro` and registers the `ytdlp://` protocol.
+3. On first launch, the host silently fetches `yt-dlp`, `ffmpeg`, and `deno` into `%LOCALAPPDATA%\YTDownloaderProEngine`.
 
-1. Go to the **[Releases](../../releases/latest)** page.
-2. Download extract and run **`YTDownloaderPro_Setup.exe`**.
-3. The automated installer will safely install the Native GUI Client and register the secure `ytdlp://` protocol handler.
-4. Download and Extract (Extract Here) the **`yt-downloader-extension.rar`**. 
+### 2. Install the Chrome extension
 
-### Step 2: Install Chrome Extension
+Because this extension talks to the native host and reads session cookies, it must be loaded unpacked:
 
-Because this extension interfaces directly with your PC's native client and extracts secure session cookies, it must be installed locally via Developer Mode:
+1. Open `chrome://extensions/` and enable **Developer mode**.
+2. Click **Load unpacked**.
+3. Select the [`extension/`](extension) folder from this repo.
 
-1. Open Chrome and navigate to `chrome://extensions/`.
-2. Turn on **Developer mode** (toggle in the top-right corner).
-3. Click **Load unpacked** in the top-left corner.
-4. Select the extracted extension folder.
+## 📖 Usage
 
----
+**In-page overlay:** open any YouTube video/Short → click the floating **Download** button → pick quality/format/timestamps → the host app opens and starts the download.
 
-## 📖 Usage Guide
+**Popup:** click the toolbar icon → open **Settings** for advanced flags, compatibility mode, custom commands, and speed → **Launch Download**.
 
-### Method 1: In-Page Overlay (Quick Access)
-1. Navigate to any YouTube Video or Short.
-2. Look for the floating **Download** button (top-right of standard videos, or floating IDM-style on the right for Shorts).
-3. Click it to open the glassmorphism menu.
-4. Select your desired quality, audio format, or input custom timestamps. 
-5. The **YT Downloader Pro Windows App** will instantly open and begin processing your download! Highly situational settings (like Crop Times or Playlist toggles) auto-reset after launching.
+## ⚙️ Configuration tips
 
-### Method 2: Popup Interface (Full Control)
-1. Click the **YT Downloader Pro** puzzle piece icon in your Chrome toolbar.
-2. Open the **Settings Gear** to access Advanced Custom Commands, Compatibility Mode, and Metadata flags.
-3. Set your custom save location, default quality, and preferred speeds.
-4. Click **Launch Download**.
+- **Compatibility Mode (H.264/AAC):** turn on if downloads show a black screen or no audio on older TVs/phones (modern YouTube serves VP9/AV1 by default).
+- **Timestamp cropping:** enter start/end (e.g. `01:15`–`01:25`) to download only that clip instead of the whole video.
+- **Multi-connection speed:** for large 4K files, set speed to Fast (4x) or Extreme (8x) in Settings.
 
----
+## 🔍 How it works (Browser → OS → Host)
 
-## ⚙️ Configuration & Tips
+1. **Extension:** `popup.js`/`content.js` build a `yt-dlp ...` command string, `background.js` grabs the needed session cookies, both get Base64-encoded and joined as `ytdlp://<command>||<cookies>`, fired via a hidden `<iframe>`.
+2. **OS handoff:** Windows resolves the `ytdlp://` protocol from the registry and launches `YTDLPHost.exe "<payload>"`.
+3. **Single instance:** if the host is already running, the new process drops the payload into `%LOCALAPPDATA%\YT Downloader Pro\Payloads`, pings the running instance's named pipe as a "doorbell," and exits — no duplicate windows, no orphaned processes.
+4. **Execution:** the primary instance decodes, validates (path/flag safety checks), and queues the task, then runs `yt-dlp.exe` in a sandboxed, console-free child process with live progress parsed straight into the WPF UI.
 
-**Compatibility Mode (H.264/AAC)**
-Modern YouTube serves VP9 and AV1 codecs. If your downloaded videos have a black screen or no audio on older TVs, iPhones, or consoles, open Settings and check "Compatibility Mode". 
+## 🔒 Privacy & Security
 
-**Timestamp Cropping**
-If you only want a 10-second clip of a 2-hour podcast, enter a Start and End time (e.g., `01:15` to `01:25`). The extension will force `yt-dlp` to download *only* that chunk, saving massive amounts of bandwidth.
+- **Local-only:** no analytics, telemetry, or external servers besides YouTube/yt-dlp/ffmpeg/deno downloads themselves.
+- Session cookies are captured only when you enable "Bypass Age & Bot issue," passed locally via Base64, written to a temp file for the duration of that download, and deleted immediately after — they are never committed to the queue's persisted history.
+- Command payloads are validated against a blocklist of dangerous `yt-dlp` flags (`--exec`, `--postprocessor-args`, etc.) and blocked path traversal before execution.
 
-**Multi-Part Downloading (Speed Booster)**
-If you are downloading massive 4K videos, ensure your speed is set to **Fast (4x)** or **Extreme (8x)** in the Settings menu. This forces yt-dlp to open multiple connections to YouTube simultaneously.
+## 🗑️ Uninstallation
 
----
+Settings → Apps → Installed Apps → uninstall **YT Downloader Pro**. This removes the host binaries, unregisters the protocol handler, and wipes the dynamic `%LOCALAPPDATA%` engine/payload folders. Remove the Chrome extension separately from `chrome://extensions/`.
 
-## 🔒 Privacy & Security Policy
+## 🛠️ Building from source
 
-YT Downloader Pro operates with a strict **local-only** philosophy.
+```
+git clone https://github.com/muzammilAwan-dev/yt-downloader-pro.git
+cd yt-downloader-pro
 
-**What We Don't Do:**
-- ❌ No analytics, telemetry, or download tracking.
-- ❌ No external server connections (completely serverless).
-- ❌ Cookies are **never** exported permanently or sent across the internet. They are extracted safely, passed locally via Base64, and destroyed immediately.
+# Host app (requires .NET 8 SDK, Windows)
+dotnet build host/YTDLPHost.sln --configuration Release
 
-**Security Best Practices:**
-- Uses a **Custom URI Protocol (`ytdlp://`)** to safely bridge the browser to your native OS shell.
-- The desktop host validates and sanitizes all incoming commands to prevent injection attacks.
+# Installer (requires Inno Setup, Windows) - optional, only if packaging a setup.exe
+iscc "host/installer/setup.iss"
+```
 
----
+CI (`.github/workflows/build.yml`) builds and publishes `YTDLPHost.exe` as a GitHub Actions artifact on every push to `host/**`. Build outputs (`bin/`, `obj/`, `publish/`, `installer/Output/`) are not committed — see `.gitignore`.
 
-## 📝 System Requirements
+## 📁 Repository structure
 
-| Component | Minimum Version | Purpose |
-|-----------|----------------|---------|
-| **Windows** | 10 or 11 | Required for the Native WPF Desktop Client |
-| **.NET Runtime**| .NET 8.0 Desktop | Powers the desktop GUI application |
-| **Browser** | Chrome/Edge 88+ | Manifest V3 & Cookie API support |
-
----
+```
+yt-downloader-pro/
+├── .github/workflows/build.yml   # CI: build + publish YTDLPHost.exe
+├── extension/                    # Chrome extension (Manifest V3)
+│   ├── docs/                     # Screenshots used in this README
+│   ├── icons/
+│   ├── background.js
+│   ├── content.js / content.css
+│   ├── manifest.json
+│   └── popup.html / popup.js
+├── host/                         # Native Windows GUI host
+│   ├── YTDLPHost.sln
+│   ├── YTDLPHost/
+│   │   ├── Assets/                (icon.ico)
+│   │   ├── Converters/
+│   │   ├── Models/                (AppSettings, DownloadTask)
+│   │   ├── Services/              (AppLogger, HistoryManager, ProtocolHandler,
+│   │   │                           SingleInstanceManager, TrayIconService, YtDlpRunner)
+│   │   ├── ViewModels/            (MainViewModel, DownloadItemViewModel)
+│   │   ├── App.xaml(.cs)
+│   │   ├── MainWindow.xaml(.cs)
+│   │   └── YTDLPHost.csproj
+│   └── installer/                 # Inno Setup packaging (renamed from "YTDLP_Installer maker")
+│       ├── Assets/icon.ico
+│       └── setup.iss
+├── .gitignore
+├── LICENSE
+└── README.md
+```
 
 ## ⚖️ Legal Notice
 
-**YT Downloader Pro** is an independent tool and is:
-- **NOT** affiliated with YouTube LLC or Google LLC.
-- **NOT** affiliated with the yt-dlp project.
-- **NOT** a DRM circumvention tool.
+**YT Downloader Pro** is an independent tool, **not affiliated** with YouTube LLC, Google LLC, or the yt-dlp project, and is **not** a DRM circumvention tool.
 
-**Disclaimer:** This extension is for educational purposes, personal archiving, and downloading royalty-free content. Respect copyright laws and YouTube's Terms of Service. Downloading copyrighted content without authorization violates Terms of Service and potentially copyright law in your jurisdiction. The developers assume no liability for misuse.
-🎓 The Masterclass: How the Extension & Host Perform the "Magic Handshake"
-Many modern browser extensions that communicate with desktop apps require you to install a Node.js or Python local web server that constantly runs in the background (listening on localhost:8080).
+For educational purposes, personal archiving, and royalty-free content only. Respect copyright law and YouTube's Terms of Service — downloading copyrighted content without authorization may violate both. The developers assume no liability for misuse.
 
-You achieved this Zero-Server Architecture by perfectly executing a technique called URI Protocol Registration combined with Named Pipes. Here is the exact step-by-step breakdown of how the data flows from a browser click to a downloaded file:
+## License
 
-Phase 1: The Browser Sandbox Escape (JavaScript)
-
-The Click: The user clicks "Launch Download" in the Extension.
-
-The Builder: popup.js (or content.js) grabs all the UI settings and builds the raw string (e.g., yt-dlp -f ba --embed-thumbnail).
-
-The Cookie Diet: background.js uses Chrome's isolated API to silently grab your YouTube session cookies, filtering out junk to keep the text size small, and formats them into the Netscape standard.
-
-The Base64 Encoding: Because browsers hate spaces, quotes, and special characters in URLs, the extension squashes the command and the cookies into two safe Base64 strings separated by a double-pipe || (e.g., eXQtZ...||Q29va2ll...).
-
-The Escape Hatch: The extension creates an invisible <iframe> and points its source to: ytdlp://eXQtZ...||Q29va2ll....
-
-Phase 2: The Operating System Handoff (Windows Registry)
-
-Chrome sees the ytdlp:// protocol and says, "I don't know what to do with this." It hands it off to Windows.
-
-Windows checks its Registry (HKLM\SOFTWARE\Classes\ytdlp) which was set up by your Inno Setup Installer.
-
-Windows finds the instruction: Launch "C:\Program Files\YT Downloader Pro\YTDLPHost.exe" "%1".
-
-Windows automatically boots your C# Host App, feeding it the massive Base64 string as a launch argument!
-
-Phase 3: The Inter-Process Communication (IPC) Doorbell (C# Host)
-
-The Clash Check: If you click "Download" 5 times fast, Windows tries to open 5 separate instances of YTDLPHost.exe. This would crash your computer.
-
-The Mutex: Your C# app uses SingleInstanceManager.cs. As it boots, it checks for a Global Mutex lock.
-
-The Doorbell Drop: If the app realizes an instance is already running, it writes the Base64 string into a tiny .txt file in your %LOCALAPPDATA% folder, pings the running app's "Named Pipe" (like ringing a doorbell), and instantly kills itself.
-
-The Wake-Up: The main application hears the doorbell, wakes up its UI, reads the .txt files left on the doorstep, decodes the Base64 strings, and dumps them perfectly into your WPF ObservableCollection queue!
+[MIT](LICENSE) © 2026 Muhammad Muzammil

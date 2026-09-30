@@ -1,0 +1,21 @@
+# .NET build outputs (host/)
+bin/
+obj/
+publish/
+
+# Inno Setup build output (host/installer/)
+installer/Output/
+*.exe
+*.bat
+
+# Visual Studio / Rider
+.vs/
+*.user
+*.suo
+
+# Logs
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db

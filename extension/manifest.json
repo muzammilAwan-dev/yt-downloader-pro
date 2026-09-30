@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
   "name": "YT Downloader Pro",
-  "version": "6.1.0",
-  "description": "Premium YouTube downloader with native yt-dlp integration. Features zero-server architecture, age-restriction bypass, and playlist support.",
+  "version": "6.2.1",
+  "description": "Premium multi-site downloader with native yt-dlp integration. Works automatically on YouTube, Twitter/X, Instagram, TikTok, Facebook, Reddit, Twitch, Vimeo, and SoundCloud - toggle any site off in Settings if you don't want it there.",
   "author": "muzammilAwan-dev",
   "homepage_url": "https://github.com/muzammilAwan-dev/yt-downloader-pro",
-  
+
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -16,34 +16,62 @@
     },
     "default_title": "YT Downloader Pro - Launch UI"
   },
-  
+
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  
+
   "permissions": [
     "activeTab",
     "storage",
     "notifications",
     "cookies"
   ],
-  
+
   "host_permissions": [
     "*://*.youtube.com/*",
-    "*://youtu.be/*"
+    "*://youtu.be/*",
+    "*://twitter.com/*",
+    "*://x.com/*",
+    "*://www.instagram.com/*",
+    "*://instagram.com/*",
+    "*://www.tiktok.com/*",
+    "*://tiktok.com/*",
+    "*://www.facebook.com/*",
+    "*://facebook.com/*",
+    "*://fb.watch/*",
+    "*://www.reddit.com/*",
+    "*://reddit.com/*",
+    "*://old.reddit.com/*",
+    "*://www.twitch.tv/*",
+    "*://twitch.tv/*",
+    "*://clips.twitch.tv/*",
+    "*://vimeo.com/*",
+    "*://player.vimeo.com/*",
+    "*://soundcloud.com/*"
   ],
-  
+
   "background": {
     "service_worker": "background.js"
   },
 
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/*"],
-      "js": ["content.js"],
+      "matches": [
+        "*://*.youtube.com/*", "*://youtu.be/*",
+        "*://twitter.com/*", "*://x.com/*",
+        "*://www.instagram.com/*", "*://instagram.com/*",
+        "*://www.tiktok.com/*", "*://tiktok.com/*",
+        "*://www.facebook.com/*", "*://facebook.com/*", "*://fb.watch/*",
+        "*://www.reddit.com/*", "*://reddit.com/*", "*://old.reddit.com/*",
+        "*://www.twitch.tv/*", "*://twitch.tv/*", "*://clips.twitch.tv/*",
+        "*://vimeo.com/*", "*://player.vimeo.com/*",
+        "*://soundcloud.com/*"
+      ],
+      "js": ["sites.js", "content.js"],
       "css": ["content.css"],
       "run_at": "document_end"
     }

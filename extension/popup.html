@@ -38,8 +38,7 @@
 
     .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
     .header-left { display: flex; align-items: center; gap: 12px; }
-    .header-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #ff0000, #cc0000); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3); }
-    .header-icon svg { width: 20px; height: 20px; fill: white; }
+    .header-icon { width: 32px; height: 32px; border-radius: var(--radius-sm); display: block; }
     .header-title { font-size: 18px; font-weight: 600; letter-spacing: 0.2px; }
     
     .gear-btn { background: transparent; border: none; cursor: pointer; color: var(--text-secondary); padding: 6px; border-radius: 50%; transition: all 0.2s ease; display: flex; align-items: center; }
@@ -84,6 +83,18 @@
     .status.success { background-color: rgba(76, 175, 80, 0.1); color: var(--success); border: 1px solid rgba(76, 175, 80, 0.2); }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    #siteBanner { padding: 10px 12px; border-radius: var(--radius-sm); font-size: 12px; margin-bottom: 16px; }
+    #siteBanner.unsupported { background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.25); color: var(--warning); }
+    #siteBanner.disabled { background: rgba(62, 166, 255, 0.1); border: 1px solid rgba(62, 166, 255, 0.25); color: var(--accent-hover); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    #siteBanner .enable-btn { background: var(--accent-primary); color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    #siteBanner .enable-btn:hover { background: var(--accent-hover); }
+
+    .site-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
+    .site-row:last-child { border-bottom: none; }
+    .site-row .site-label { font-size: 13px; }
+    .site-row .site-note { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+    .site-row .site-builtin-badge { font-size: 10px; color: var(--text-muted); }
   </style>
 </head>
 <body>
@@ -92,7 +103,7 @@
 
   <div class="header">
     <div class="header-left">
-      <div class="header-icon"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></div>
+      <img class="header-icon" src="icons/icon32.png" alt="YT Downloader Pro" width="32" height="32">
       <div class="header-title">YT Downloader Pro</div>
     </div>
     <button class="gear-btn" id="settingsBtn" aria-label="Settings">
@@ -102,6 +113,8 @@
       </svg>
     </button>
   </div>
+
+  <div id="siteBanner" style="display:none;"></div>
 
   <div id="settingsPanel" class="settings-panel">
     <div class="adv-checkbox-group">
@@ -127,6 +140,12 @@
         <option value="4" selected>Fast (4x Connections)</option>
         <option value="8">Extreme (8x Connections)</option>
       </select>
+    </div>
+
+    <div class="form-group" style="margin-top: 20px; margin-bottom: 0;">
+      <label class="form-label" style="color: var(--accent-primary);">🌐 Supported Sites</label>
+      <div id="siteManagerList"></div>
+      <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px;">Enabling a site asks Chrome to grant it access - nothing is enabled without your confirmation.</div>
     </div>
   </div>
 
@@ -218,6 +237,7 @@
 
   <div id="status" class="status" role="alert"></div>
 
+  <script src="sites.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

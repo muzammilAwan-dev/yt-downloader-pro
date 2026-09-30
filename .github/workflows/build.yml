@@ -1,0 +1,48 @@
+name: Build YTDLPHost
+
+on:
+  push:
+    branches: [main, master]
+    # Only re-run this workflow when the host app actually changes -
+    # extension-only commits no longer trigger a Windows build.
+    paths:
+      - 'host/**'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # NOTE: path updated - YTDLPHost now lives under host/ in the unified repo
+      - name: Restore dependencies
+        run: dotnet restore host/YTDLPHost/YTDLPHost.csproj
+
+      - name: Build
+        run: dotnet build host/YTDLPHost/YTDLPHost.csproj --configuration Release --no-restore
+
+      - name: Publish Single File
+        run: |
+          dotnet publish host/YTDLPHost/YTDLPHost.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained false `
+            /p:PublishSingleFile=true `
+            /p:IncludeNativeLibrariesForSelfExtract=true `
+            --output ./publish
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: YTDLPHost-Release
+          path: ./publish/YTDLPHost.exe

@@ -3,11 +3,9 @@ name: Build YTDLPHost
 on:
   push:
     branches: [main, master]
-    # Only re-run this workflow when the host app actually changes -
-    # extension-only commits no longer trigger a Windows build.
+    # Only re-run this workflow when the host app changes
     paths:
       - 'host/**'
-      - '.github/workflows/build.yml'
   workflow_dispatch:  # Allows manual trigger
 
 jobs:
@@ -24,7 +22,6 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      # NOTE: path updated - YTDLPHost now lives under host/ in the unified repo
       - name: Restore dependencies
         run: dotnet restore host/YTDLPHost/YTDLPHost.csproj
 

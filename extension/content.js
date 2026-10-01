@@ -147,6 +147,163 @@
     return false;
   }
 
+  // ===========================================================================
+  // FEED WIDGET (instagram / facebook / tiktok - any site marked feedStyle)
+  //
+  // Per-video inline buttons fundamentally don't work on these: content is
+  // virtualized/prefetched off-screen, swiping to the next item often swaps
+  // the video in place with no DOM mutation, and reel modals can render
+  // before they're sized. Chasing each of those individually is a losing
+  // game - IDM and similar tools don't try to anchor a button to any
+  // specific video's spot in the page; they scan for every video that
+  // exists and list them in their OWN fixed UI, decoupled from the host
+  // page's layout entirely. Doing the same thing here.
+  // ===========================================================================
+
+  const feedSeen = new Map(); // dedupe key -> { el, url, label, row }
+  const permalinkCache = new WeakMap(); // video element -> resolved permalink (or null), computed once per element
+
+  /**
+   * The current page URL is just the feed - not any specific post. Find
+   * that post's own permalink by looking for a nearby <a> whose href looks
+   * like a post/reel/video URL, since that's the actual yt-dlp target.
+   */
+  function findPostPermalink(videoEl) {
+    if (permalinkCache.has(videoEl)) return permalinkCache.get(videoEl);
+    const linkSelector = 'a[href*="/p/"], a[href*="/reel/"], a[href*="/tv/"], a[href*="/videos/"], a[href*="/watch"]';
+    let found = null;
+    let node = videoEl;
+    for (let i = 0; i < 8 && node; i++) {
+      if (node.matches && node.matches(linkSelector)) { found = node.href; break; }
+      const link = node.querySelector ? node.querySelector(linkSelector) : null;
+      if (link && link.href) { found = link.href; break; }
+      node = node.parentElement;
+    }
+    permalinkCache.set(videoEl, found);
+    return found;
+  }
+
+  function dedupeKeyFor(videoEl, permalink) {
+    return permalink || videoEl.currentSrc || videoEl.src || null;
+  }
+
+  /**
+   * Scans the WHOLE page (not just what's in the viewport) for every video,
+   * resolving each to a real downloadable URL. A video with no discoverable
+   * permalink is only usable if the current page URL IS itself a dedicated
+   * video page (e.g. a reel opened full-page, not a feed) - otherwise we
+   * can't build a correct command for it, so it's skipped rather than
+   * offering a download that would silently grab the wrong thing.
+   */
+  function scanAllVideos() {
+    const results = [];
+    const videos = Array.from(document.querySelectorAll('video'));
+    const onDedicatedVideoPage = SITE.isVideoPage(window.location.href);
+    videos.forEach((el, idx) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width < 80 || rect.height < 80) return; // skip tiny/hidden decorative videos
+      const permalink = findPostPermalink(el);
+      const url = permalink || (onDedicatedVideoPage ? window.location.href : null);
+      if (!url) return;
+      const key = dedupeKeyFor(el, permalink) || `idx:${idx}`;
+      results.push({ el, url, key, label: `Post ${results.length + 1}` });
+    });
+    return results;
+  }
+
+  function getFeedWidget() {
+    let widget = document.getElementById('yt-dlp-feed-widget');
+    if (widget) return widget;
+
+    widget = document.createElement('div');
+    widget.id = 'yt-dlp-feed-widget';
+    widget.innerHTML = `
+      <button class="yt-dlp-feed-toggle" aria-label="Detected videos">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        <span class="yt-dlp-feed-badge">0</span>
+      </button>
+      <div class="yt-dlp-feed-panel">
+        <div class="yt-dlp-feed-header">Videos found on this page</div>
+        <div class="yt-dlp-feed-list"></div>
+      </div>
+    `;
+    document.body.appendChild(widget);
+
+    const toggle = widget.querySelector('.yt-dlp-feed-toggle');
+    const panel = widget.querySelector('.yt-dlp-feed-panel');
+    toggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      panel.classList.toggle('show');
+    });
+    document.addEventListener('click', () => panel.classList.remove('show'));
+    panel.addEventListener('click', (e) => e.stopPropagation());
+
+    return widget;
+  }
+
+  function updateFeedWidget() {
+    const found = scanAllVideos();
+    const widget = found.length > 0 ? getFeedWidget() : document.getElementById('yt-dlp-feed-widget');
+    if (!widget) return; // nothing found yet, nothing to tear down either
+
+    if (found.length === 0) {
+      widget.remove();
+      feedSeen.clear();
+      return;
+    }
+
+    const list = widget.querySelector('.yt-dlp-feed-list');
+    const badge = widget.querySelector('.yt-dlp-feed-badge');
+    const currentKeys = new Set(found.map(f => f.key));
+
+    // Drop rows for videos no longer on the page (scrolled out and unmounted, etc.)
+    for (const [key, entry] of feedSeen) {
+      if (!currentKeys.has(key)) {
+        entry.row.remove();
+        feedSeen.delete(key);
+      }
+    }
+
+    found.forEach(item => {
+      if (feedSeen.has(item.key)) return; // already listed
+      const row = document.createElement('div');
+      row.className = 'yt-dlp-feed-row';
+
+      const label = document.createElement('span');
+      label.className = 'yt-dlp-feed-row-label';
+      label.textContent = item.label;
+
+      const btn = document.createElement('button');
+      btn.className = 'yt-dlp-feed-row-download';
+      btn.textContent = 'Download';
+      btn.addEventListener('click', () => handleFeedItemDownload(item.url, btn));
+
+      row.appendChild(label);
+      row.appendChild(btn);
+      list.appendChild(row);
+      feedSeen.set(item.key, { el: item.el, url: item.url, label: item.label, row });
+    });
+
+    badge.textContent = String(feedSeen.size);
+  }
+
+  async function handleFeedItemDownload(url, btn) {
+    const original = btn.textContent;
+    btn.textContent = '...';
+    btn.disabled = true;
+    try {
+      const prefs = await chrome.storage.sync.get(['resolution']);
+      await launchDownload(prefs.resolution || '1080', false, false, false, '', false, '', '', url);
+      btn.textContent = 'Started';
+      setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 2000);
+      showToast('Download started! Check the application.');
+    } catch (error) {
+      btn.textContent = original;
+      btn.disabled = false;
+      showToast(`Error: ${error.message}`, 'error');
+    }
+  }
+
   function walkUpForContainer(el, preferAncestorTag) {
     if (preferAncestorTag) {
       const landmark = el.closest(preferAncestorTag);
@@ -240,25 +397,30 @@
 
   function enforceButtonPresence() {
     const url = window.location.href;
-    const existingButton = document.getElementById(CONFIG.CONTAINER_ID);
-    const existingChannelButton = document.getElementById(CONFIG.CHANNEL_CONTAINER_ID);
 
-    const isVideo = SITE.isVideoPage(url) || isVideoContentVisible();
-    const isChannel = !isVideo && SITE.features.channel && SITE.isChannelPage(url);
-
-    // --- Per-video download button ---
-    if (!isVideo) {
-      if (existingButton) { geometryTracked.delete(existingButton); existingButton.remove(); }
+    // feedStyle sites (Instagram, Facebook, TikTok) use the persistent
+    // widget instead - see the FEED WIDGET section above for why.
+    if (SITE.feedStyle) {
+      updateFeedWidget();
     } else {
-      const { anchor, tier } = resolveAnchor(SITE.videoAnchorSelectors, SITE.preferAncestor);
-      if (existingButton && !isStillCorrectlyPlaced(existingButton, anchor, tier)) {
-        geometryTracked.delete(existingButton);
-        existingButton.remove();
+      const existingButton = document.getElementById(CONFIG.CONTAINER_ID);
+      const isVideo = SITE.isVideoPage(url) || isVideoContentVisible();
+
+      if (!isVideo) {
+        if (existingButton) { geometryTracked.delete(existingButton); existingButton.remove(); }
+      } else {
+        const { anchor, tier } = resolveAnchor(SITE.videoAnchorSelectors, SITE.preferAncestor);
+        if (existingButton && !isStillCorrectlyPlaced(existingButton, anchor, tier)) {
+          geometryTracked.delete(existingButton);
+          existingButton.remove();
+        }
+        if (!document.getElementById(CONFIG.CONTAINER_ID)) injectDownloadButton(anchor, tier);
       }
-      if (!document.getElementById(CONFIG.CONTAINER_ID)) injectDownloadButton(anchor, tier);
     }
 
-    // --- Channel/profile "download everything" button ---
+    // --- Channel/profile "download everything" button (unaffected by feedStyle - separate page/URL entirely) ---
+    const existingChannelButton = document.getElementById(CONFIG.CHANNEL_CONTAINER_ID);
+    const isChannel = SITE.features.channel && SITE.isChannelPage(url) && !SITE.isVideoPage(url);
     if (!isChannel) {
       if (existingChannelButton) { geometryTracked.delete(existingChannelButton); existingChannelButton.remove(); }
     } else {
@@ -560,8 +722,8 @@
     }
   }
 
-  async function launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, playlistItems, isCropped, sTime, eTime) {
-    const videoUrl = window.location.href.split('&')[0];
+  async function launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, playlistItems, isCropped, sTime, eTime, urlOverride) {
+    const videoUrl = (urlOverride || window.location.href).split('&')[0];
     const prefs = await chrome.storage.sync.get(['savePath', 'concurrentDownloads', 'customCommand', 'audioFormat', 'flagMetadata', 'flagThumbnail', 'flagSponsor', 'compatMode']);
 
     if (resolution === 'custom') {

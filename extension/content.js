@@ -19,15 +19,26 @@
   const SITE = (typeof getSiteForUrl === 'function') ? getSiteForUrl(window.location.href) : null;
   if (!SITE) return;
 
+  // 'always' | 'fade' | 'hidden' - how the on-page button/widget behaves.
+  // 'fade' (the default) dims it after a couple seconds of inactivity and
+  // brings it back to full opacity on hover/scroll/click, the same pattern
+  // YouTube's own player controls use - so watching a reel or a video
+  // doesn't mean staring at a button the whole time. 'hidden' skips on-page
+  // UI entirely; the toolbar badge (set from background.js) still reports
+  // how many videos were found either way.
+  let VISIBILITY_MODE = 'fade';
+
   // Every configured site is active automatically, same as YouTube always
   // was - this only stops it if the user explicitly turned this one site
   // off in the popup's Settings panel.
-  chrome.storage.sync.get('disabledSites', (res) => {
+  chrome.storage.sync.get(['disabledSites', 'buttonVisibility'], (res) => {
     if ((res.disabledSites || []).includes(SITE.id)) return;
+    if (res.buttonVisibility) VISIBILITY_MODE = res.buttonVisibility;
     initialize();
   });
 
   function initialize() {
+    if (VISIBILITY_MODE === 'fade') setupIdleFade();
     enforceButtonPresence();
 
     // FIX: replaced a setInterval(..., 1000) poll with a MutationObserver.
@@ -76,6 +87,30 @@
       clearTimeout(scrollHandle);
       scrollHandle = setTimeout(enforceButtonPresence, 200);
     }, { passive: true, capture: true });
+  }
+
+  const FADE_TARGET_CLASS = 'yt-dlp-fade-target';
+  const IDLE_DELAY_MS = 2500;
+  let idleTimerHandle = null;
+
+  function markFadeTargetsActive() {
+    document.querySelectorAll(`.${FADE_TARGET_CLASS}`).forEach(el => el.classList.remove('yt-dlp-idle'));
+    clearTimeout(idleTimerHandle);
+    idleTimerHandle = setTimeout(() => {
+      document.querySelectorAll(`.${FADE_TARGET_CLASS}`).forEach(el => el.classList.add('yt-dlp-idle'));
+    }, IDLE_DELAY_MS);
+  }
+
+  function setupIdleFade() {
+    ['mousemove', 'scroll', 'keydown', 'click', 'touchstart'].forEach(evt =>
+      window.addEventListener(evt, markFadeTargetsActive, { passive: true })
+    );
+    markFadeTargetsActive(); // start the first idle timer
+  }
+
+  /** Reports how many videos are on this tab right now, for the toolbar badge (background.js). Works regardless of VISIBILITY_MODE - the badge is the always-available fallback. */
+  function reportVideoCount(count) {
+    try { chrome.runtime.sendMessage({ action: 'report_video_count', count }); } catch { /* service worker asleep/unreachable, non-fatal */ }
   }
 
   function findFirstMatch(selectors) {
@@ -217,6 +252,7 @@
 
     widget = document.createElement('div');
     widget.id = 'yt-dlp-feed-widget';
+    widget.classList.add(FADE_TARGET_CLASS);
     widget.innerHTML = `
       <button class="yt-dlp-feed-toggle" aria-label="Detected videos">
         <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
@@ -244,12 +280,12 @@
   function updateFeedWidget() {
     const found = scanAllVideos();
     const widget = found.length > 0 ? getFeedWidget() : document.getElementById('yt-dlp-feed-widget');
-    if (!widget) return; // nothing found yet, nothing to tear down either
+    if (!widget) return 0; // nothing found yet, nothing to tear down either
 
     if (found.length === 0) {
       widget.remove();
       feedSeen.clear();
-      return;
+      return 0;
     }
 
     const list = widget.querySelector('.yt-dlp-feed-list');
@@ -285,6 +321,7 @@
     });
 
     badge.textContent = String(feedSeen.size);
+    return feedSeen.size;
   }
 
   async function handleFeedItemDownload(url, btn) {
@@ -397,16 +434,24 @@
 
   function enforceButtonPresence() {
     const url = window.location.href;
+    const hidden = VISIBILITY_MODE === 'hidden';
 
     // feedStyle sites (Instagram, Facebook, TikTok) use the persistent
     // widget instead - see the FEED WIDGET section above for why.
     if (SITE.feedStyle) {
-      updateFeedWidget();
+      if (hidden) {
+        reportVideoCount(scanAllVideos().length);
+        const existingWidget = document.getElementById('yt-dlp-feed-widget');
+        if (existingWidget) { existingWidget.remove(); feedSeen.clear(); }
+      } else {
+        reportVideoCount(updateFeedWidget());
+      }
     } else {
       const existingButton = document.getElementById(CONFIG.CONTAINER_ID);
       const isVideo = SITE.isVideoPage(url) || isVideoContentVisible();
+      reportVideoCount(isVideo ? 1 : 0);
 
-      if (!isVideo) {
+      if (!isVideo || hidden) {
         if (existingButton) { geometryTracked.delete(existingButton); existingButton.remove(); }
       } else {
         const { anchor, tier } = resolveAnchor(SITE.videoAnchorSelectors, SITE.preferAncestor);
@@ -421,7 +466,7 @@
     // --- Channel/profile "download everything" button (unaffected by feedStyle - separate page/URL entirely) ---
     const existingChannelButton = document.getElementById(CONFIG.CHANNEL_CONTAINER_ID);
     const isChannel = SITE.features.channel && SITE.isChannelPage(url) && !SITE.isVideoPage(url);
-    if (!isChannel) {
+    if (!isChannel || hidden) {
       if (existingChannelButton) { geometryTracked.delete(existingChannelButton); existingChannelButton.remove(); }
     } else {
       const { anchor, tier } = resolveAnchor(SITE.channelAnchorSelectors, SITE.preferAncestor);
@@ -436,6 +481,7 @@
   function injectDownloadButton(anchor, tier) {
     const container = document.createElement('div');
     container.id = CONFIG.CONTAINER_ID;
+    container.classList.add(FADE_TARGET_CLASS);
     container._ytdlpAnchor = anchor; // see isStillCorrectlyPlaced()
 
     // Blind fixed-corner placement only when there's truly no real anchor
@@ -464,6 +510,7 @@
   function injectChannelButton(anchor, tier) {
     const container = document.createElement('div');
     container.id = CONFIG.CHANNEL_CONTAINER_ID; // FIX: this id was accidentally dropped in an earlier edit, causing duplicate channel buttons on every recheck
+    container.classList.add(FADE_TARGET_CLASS);
     container._ytdlpAnchor = anchor; // see isStillCorrectlyPlaced()
     if (tier === 'body') container.classList.add('channel-fallback');
 

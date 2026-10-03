@@ -35,6 +35,7 @@
     compatMode: document.getElementById('compatMode'),
     customCommand: document.getElementById('customCommand'),
     concurrentDownloads: document.getElementById('concurrentDownloads'),
+    buttonVisibility: document.getElementById('buttonVisibility'),
     siteManagerList: document.getElementById('siteManagerList'),
 
     status: document.getElementById('status')
@@ -83,7 +84,7 @@
     try {
       const prefs = await chrome.storage.sync.get([
         'savePath', 'resolution', 'audioFormat', 'embedSubs', 'downloadPlaylist',
-        'playlistItems', 'useCookies', 'concurrentDownloads',
+        'playlistItems', 'useCookies', 'concurrentDownloads', 'buttonVisibility',
         'flagMetadata', 'flagThumbnail', 'flagSponsor', 'compatMode'
       ]);
 
@@ -101,6 +102,7 @@
       elements.compatMode.checked = prefs.compatMode === true;
 
       elements.concurrentDownloads.value = prefs.concurrentDownloads || "4";
+      elements.buttonVisibility.value = prefs.buttonVisibility || "fade";
 
       if (prefs.embedSubs) elements.subsToggle.checked = prefs.embedSubs;
       if (prefs.downloadPlaylist) {
@@ -123,6 +125,7 @@
         playlistItems: elements.playlistItems.value.trim(),
         useCookies: elements.cookiesToggle.checked,
         concurrentDownloads: elements.concurrentDownloads.value,
+        buttonVisibility: elements.buttonVisibility.value,
         flagMetadata: elements.flagMetadata.checked,
         flagThumbnail: elements.flagThumbnail.checked,
         flagSponsor: elements.flagSponsor.checked,
@@ -156,7 +159,7 @@
       savePreferences();
     });
 
-    [elements.savePath, elements.audioFormat, elements.subsToggle, elements.playlistItems, elements.cookiesToggle, elements.concurrentDownloads, elements.flagMetadata, elements.flagThumbnail, elements.flagSponsor, elements.compatMode]
+    [elements.savePath, elements.audioFormat, elements.subsToggle, elements.playlistItems, elements.cookiesToggle, elements.concurrentDownloads, elements.buttonVisibility, elements.flagMetadata, elements.flagThumbnail, elements.flagSponsor, elements.compatMode]
       .forEach(el => el.addEventListener('change', savePreferences));
   }
 

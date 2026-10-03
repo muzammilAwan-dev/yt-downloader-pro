@@ -59,10 +59,32 @@ async function setSiteEnabled(siteId, enabled) {
   return { ok: true };
 }
 
+/**
+ * Toolbar badge: the zero-page-footprint fallback. Works the same whether
+ * the on-page button/widget is set to always/fade/hidden, since content.js
+ * reports its count regardless of that preference.
+ */
+function setBadgeForTab(tabId, count) {
+  if (tabId == null) return;
+  chrome.action.setBadgeText({ tabId, text: count > 0 ? String(count) : '' });
+  if (count > 0) chrome.action.setBadgeBackgroundColor({ tabId, color: '#3EA6FF' });
+}
+
+// Clear the badge on navigation so a stale count doesn't linger from the
+// previous page until content.js reports in again.
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.status === 'loading') chrome.action.setBadgeText({ tabId, text: '' });
+});
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "get_cookies") {
     getCookiesForSite(request.site, sendResponse);
     return true;
+  }
+
+  if (request.action === "report_video_count") {
+    setBadgeForTab(sender.tab?.id, request.count || 0);
+    return; // no response needed
   }
 
   if (request.action === "list_sites") {

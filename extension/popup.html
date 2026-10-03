@@ -143,9 +143,19 @@
     </div>
 
     <div class="form-group" style="margin-top: 20px; margin-bottom: 0;">
+      <label class="form-label" for="buttonVisibility" style="color: var(--accent-primary);">👁️ On-Page Button</label>
+      <select id="buttonVisibility" class="form-control" style="background-color: var(--bg-tertiary);">
+        <option value="fade" selected>Fade when idle (recommended)</option>
+        <option value="always">Always visible</option>
+        <option value="hidden">Hidden - use toolbar icon only</option>
+      </select>
+      <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px;">The toolbar icon badge always shows how many videos were found on the page, regardless of this setting.</div>
+    </div>
+
+    <div class="form-group" style="margin-top: 20px; margin-bottom: 0;">
       <label class="form-label" style="color: var(--accent-primary);">🌐 Supported Sites</label>
       <div id="siteManagerList"></div>
-      <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px;">Enabling a site asks Chrome to grant it access - nothing is enabled without your confirmation.</div>
+      <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px;">Turning a site off here stops the extension from acting on it - no browser permission prompt either way.</div>
     </div>
   </div>
 

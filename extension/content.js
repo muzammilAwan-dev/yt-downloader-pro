@@ -2,7 +2,7 @@
  * @fileoverview DOM Injection Controller
  * Site-agnostic: reads everything about "where am I / what can I do here"
  * from sites.js's SITE config, so adding a new site never touches this file.
- * @version 6.2.0
+ * @version 6.3.1
  */
 
 (function() {
@@ -191,175 +191,104 @@
   }
 
   // ===========================================================================
-  // FEED WIDGET (instagram / facebook / tiktok - any site marked feedStyle)
+  // FEED-STYLE SITES (instagram / facebook / tiktok)
   //
-  // Per-video inline buttons fundamentally don't work on these: content is
-  // virtualized/prefetched off-screen, swiping to the next item often swaps
-  // the video in place with no DOM mutation, and reel modals can render
-  // before they're sized. Chasing each of those individually is a losing
-  // game - IDM and similar tools don't try to anchor a button to any
-  // specific video's spot in the page; they scan for every video that
-  // exists and list them in their OWN fixed UI, decoupled from the host
-  // page's layout entirely. Doing the same thing here.
+  // These sites keep several <video> elements alive at once (prefetch) and
+  // swap content in place, so a button baked into each post's DOM doesn't
+  // survive. Instead ONE normal download button (same dropdown as every other
+  // site) floats over whichever video is actually in view and follows it as
+  // you scroll/swipe. Its target URL is resolved from that exact video at the
+  // moment you click - so "which one is it" is never a question: it's the one
+  // the button is sitting on.
   // ===========================================================================
 
-  const feedSeen = new Map(); // dedupe key -> { el, url, label, row }
-  const permalinkCache = new WeakMap(); // video element -> resolved permalink (or null), computed once per element
+  /** The video the user is actually watching: most on-screen, near the centre, preferring one that is playing. */
+  function findActiveVideo() {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    let best = null, bestScore = 0;
+    document.querySelectorAll('video').forEach((v) => {
+      const r = v.getBoundingClientRect();
+      if (r.width < 120 || r.height < 120) return;
+      const visW = Math.max(0, Math.min(r.right, vw) - Math.max(r.left, 0));
+      const visH = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0));
+      const visArea = visW * visH;
+      if (visArea < Math.min(r.width * r.height, vw * vh) * 0.4) return; // not substantially on screen
+      const dist = Math.hypot((r.left + r.right) / 2 - vw / 2, (r.top + r.bottom) / 2 - vh / 2) / Math.hypot(vw / 2, vh / 2);
+      let score = visArea * (1 - 0.5 * Math.min(dist, 1));
+      if (!v.paused && !v.ended) score *= 2;
+      if (score > bestScore) { bestScore = score; best = v; }
+    });
+    return best;
+  }
 
-  /**
-   * The current page URL is just the feed - not any specific post. Find
-   * that post's own permalink by looking for a nearby <a> whose href looks
-   * like a post/reel/video URL, since that's the actual yt-dlp target.
-   */
-  function findPostPermalink(videoEl) {
-    if (permalinkCache.has(videoEl)) return permalinkCache.get(videoEl);
-    const linkSelector = 'a[href*="/p/"], a[href*="/reel/"], a[href*="/tv/"], a[href*="/videos/"], a[href*="/watch"]';
-    let found = null;
-    let node = videoEl;
-    for (let i = 0; i < 8 && node; i++) {
-      if (node.matches && node.matches(linkSelector)) { found = node.href; break; }
-      const link = node.querySelector ? node.querySelector(linkSelector) : null;
-      if (link && link.href) { found = link.href; break; }
+  /** Strip tracking junk (?__cft__=..., ?igsh=..., ?img_index=...) down to the canonical post URL. */
+  function normalizePostUrl(href) {
+    try {
+      const u = new URL(href, window.location.href);
+      const v = u.searchParams.get('v');
+      if (SITE.id === 'facebook' && /^\/watch\/?$/.test(u.pathname) && v) return `${u.origin}/watch/?v=${v}`;
+      return u.origin + u.pathname;
+    } catch { return null; }
+  }
+
+  /** The post/article wrapping this video, so we only look at THIS post's links. */
+  function containerFor(videoEl) {
+    const post = videoEl.closest('article, [role="article"]');
+    if (post) return post;
+    // No semantic wrapper (reel viewers): climb until a second video shows up, i.e. we've left this video's own subtree.
+    let node = videoEl, best = videoEl.parentElement || videoEl;
+    for (let i = 0; i < 30 && node.parentElement; i++) {
       node = node.parentElement;
+      if (node.querySelectorAll('video').length > 1) break;
+      best = node;
     }
-    permalinkCache.set(videoEl, found);
-    return found;
+    return best;
   }
 
-  function dedupeKeyFor(videoEl, permalink) {
-    return permalink || videoEl.currentSrc || videoEl.src || null;
-  }
-
-  /**
-   * Scans the WHOLE page (not just what's in the viewport) for every video,
-   * resolving each to a real downloadable URL. A video with no discoverable
-   * permalink is only usable if the current page URL IS itself a dedicated
-   * video page (e.g. a reel opened full-page, not a feed) - otherwise we
-   * can't build a correct command for it, so it's skipped rather than
-   * offering a download that would silently grab the wrong thing.
-   */
-  let lastScanSummary = '';
-
-  function scanAllVideos() {
-    const results = [];
-    const videos = Array.from(document.querySelectorAll('video'));
-    const onDedicatedVideoPage = SITE.isVideoPage(window.location.href);
-    let tooSmall = 0, noUrl = 0, withPermalink = 0, usedCurrentUrl = 0;
-
-    videos.forEach((el, idx) => {
-      const rect = el.getBoundingClientRect();
-      if (rect.width < 80 || rect.height < 80) { tooSmall++; return; } // skip tiny/hidden decorative videos
-      const permalink = findPostPermalink(el);
-      const url = permalink || (onDedicatedVideoPage ? window.location.href : null);
-      if (!url) { noUrl++; return; }
-      if (permalink) withPermalink++; else usedCurrentUrl++;
-      const key = dedupeKeyFor(el, permalink) || `idx:${idx}`;
-      results.push({ el, url, key, label: `Post ${results.length + 1}` });
-    });
-
-    const summary = `tags:${videos.length} tooSmall:${tooSmall} noUrl:${noUrl} withPermalink:${withPermalink} usedCurrentUrl:${usedCurrentUrl} usable:${results.length}`;
-    if (summary !== lastScanSummary) {
-      lastScanSummary = summary;
-      ytdlpLog('info', 'content', 'Video scan', { site: SITE.id, ...Object.fromEntries(summary.split(' ').map(p => p.split(':'))) });
+  /** { url, via } for a given video. url is null when no trustworthy link can be found (better no button than a wrong download). */
+  function resolveVideoUrl(videoEl) {
+    if (SITE.isVideoPage(window.location.href)) {
+      return { url: normalizePostUrl(window.location.href), via: 'page-url' }; // reel/video opened full-page or as a modal: URL tracks the current item
     }
-    return results;
-  }
-
-  function getFeedWidget() {
-    let widget = document.getElementById('yt-dlp-feed-widget');
-    if (widget) return widget;
-
-    widget = document.createElement('div');
-    widget.id = 'yt-dlp-feed-widget';
-    widget.classList.add(FADE_TARGET_CLASS);
-    widget.innerHTML = `
-      <button class="yt-dlp-feed-toggle" aria-label="Detected videos">
-        <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-        <span class="yt-dlp-feed-badge">0</span>
-      </button>
-      <div class="yt-dlp-feed-panel">
-        <div class="yt-dlp-feed-header">Videos found on this page</div>
-        <div class="yt-dlp-feed-list"></div>
-      </div>
-    `;
-    document.body.appendChild(widget);
-    ytdlpLog('info', 'content', 'Feed widget created', { site: SITE.id });
-
-    const toggle = widget.querySelector('.yt-dlp-feed-toggle');
-    const panel = widget.querySelector('.yt-dlp-feed-panel');
-    toggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      panel.classList.toggle('show');
-    });
-    document.addEventListener('click', () => panel.classList.remove('show'));
-    panel.addEventListener('click', (e) => e.stopPropagation());
-
-    return widget;
-  }
-
-  function updateFeedWidget() {
-    const found = scanAllVideos();
-    const widget = found.length > 0 ? getFeedWidget() : document.getElementById('yt-dlp-feed-widget');
-    if (!widget) return 0; // nothing found yet, nothing to tear down either
-
-    if (found.length === 0) {
-      widget.remove();
-      feedSeen.clear();
-      return 0;
-    }
-
-    const list = widget.querySelector('.yt-dlp-feed-list');
-    const badge = widget.querySelector('.yt-dlp-feed-badge');
-    const currentKeys = new Set(found.map(f => f.key));
-
-    // Drop rows for videos no longer on the page (scrolled out and unmounted, etc.)
-    for (const [key, entry] of feedSeen) {
-      if (!currentKeys.has(key)) {
-        entry.row.remove();
-        feedSeen.delete(key);
+    const re = SITE.postLinkRegex;
+    const root = containerFor(videoEl);
+    if (re && root) {
+      for (const a of root.querySelectorAll('a[href]')) {
+        if (re.test(a.href)) { const url = normalizePostUrl(a.href); if (url) return { url, via: 'permalink' }; }
       }
     }
-
-    found.forEach(item => {
-      if (feedSeen.has(item.key)) return; // already listed
-      const row = document.createElement('div');
-      row.className = 'yt-dlp-feed-row';
-
-      const label = document.createElement('span');
-      label.className = 'yt-dlp-feed-row-label';
-      label.textContent = item.label;
-
-      const btn = document.createElement('button');
-      btn.className = 'yt-dlp-feed-row-download';
-      btn.textContent = 'Download';
-      btn.addEventListener('click', () => handleFeedItemDownload(item.url, btn));
-
-      row.appendChild(label);
-      row.appendChild(btn);
-      list.appendChild(row);
-      feedSeen.set(item.key, { el: item.el, url: item.url, label: item.label, row });
-      ytdlpLog('info', 'content', 'Feed row added', { site: SITE.id, label: item.label, url: item.url });
-    });
-
-    badge.textContent = String(feedSeen.size);
-    return feedSeen.size;
+    const all = root ? Array.from(root.querySelectorAll('a[href]')) : [];
+    return { url: null, via: 'none', diag: { root: root && root.tagName, anchors: all.length, sample: all.slice(0, 6).map(a => (a.getAttribute('href') || '').slice(0, 80)) } };
   }
 
-  async function handleFeedItemDownload(url, btn) {
-    const original = btn.textContent;
-    btn.textContent = '...';
-    btn.disabled = true;
-    try {
-      const prefs = await chrome.storage.sync.get(['resolution']);
-      await launchDownload(prefs.resolution || '1080', false, false, false, '', false, '', '', url);
-      btn.textContent = 'Started';
-      setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 2000);
-      showToast('Download started! Check the application.');
-    } catch (error) {
-      btn.textContent = original;
-      btn.disabled = false;
-      showToast(`Error: ${error.message}`, 'error');
+  let pendingFeedUrl = null; // URL captured when the button is clicked, so scrolling while the dropdown is open can't change the target
+  let lastFeedKey = '';
+
+  function syncFeedButton(hidden) {
+    const existing = document.getElementById(CONFIG.CONTAINER_ID);
+    const video = findActiveVideo();
+    const target = video ? resolveVideoUrl(video) : null;
+    const ok = !!(target && target.url);
+    reportVideoCount(ok ? 1 : 0);
+
+    const key = video ? `${target.via}|${target.url}` : 'no-active-video';
+    if (key !== lastFeedKey) {
+      lastFeedKey = key;
+      ytdlpLog(ok ? 'info' : 'warn', 'content', 'Active video', { site: SITE.id, via: target && target.via, url: target && target.url, diag: target && target.diag });
     }
+
+    if (!ok || hidden) {
+      if (existing) { geometryTracked.delete(existing); existing.remove(); }
+      return `feed:${ok ? 'hidden' : 'none'}`;
+    }
+    if (!existing) {
+      injectDownloadButton(video, 'geometry');
+    } else {
+      existing._ytdlpAnchor = video;
+      geometryTracked.set(existing, video);
+      repositionGeometryTracked();
+    }
+    return `feed:${target.via}`;
   }
 
   function walkUpForContainer(el, preferAncestorTag) {
@@ -471,20 +400,9 @@
     const hidden = VISIBILITY_MODE === 'hidden';
     let videoState = 'n/a';
 
-    // feedStyle sites (Instagram, Facebook, TikTok) use the persistent
-    // widget instead - see the FEED WIDGET section above for why.
+    // feedStyle sites (Instagram, Facebook, TikTok): one floating button that follows the video in view.
     if (SITE.feedStyle) {
-      if (hidden) {
-        const count = scanAllVideos().length;
-        reportVideoCount(count);
-        videoState = `feed:hidden:${count}`;
-        const existingWidget = document.getElementById('yt-dlp-feed-widget');
-        if (existingWidget) { existingWidget.remove(); feedSeen.clear(); }
-      } else {
-        const count = updateFeedWidget();
-        reportVideoCount(count);
-        videoState = `feed:${count}`;
-      }
+      videoState = syncFeedButton(hidden);
     } else {
       const existingButton = document.getElementById(CONFIG.CONTAINER_ID);
       const isVideo = SITE.isVideoPage(url) || isVideoContentVisible();
@@ -546,6 +464,10 @@
 
     button.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (SITE.feedStyle) {
+        const v = container._ytdlpAnchor;
+        pendingFeedUrl = (v && resolveVideoUrl(v).url) || null;
+      }
       const isExpanded = dropdown.classList.contains('show');
       document.querySelectorAll('.yt-dlp-dropdown').forEach(d => d.classList.remove('show'));
       if (!isExpanded) dropdown.classList.add('show');
@@ -780,7 +702,8 @@
     const eTime = document.getElementById('float-end-time')?.value.trim() || '';
 
     try {
-      await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems, isCropped, sTime, eTime);
+      if (SITE.feedStyle && !pendingFeedUrl) throw new Error("Couldn't find this video's link. Try opening it on its own page.");
+      await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems, isCropped, sTime, eTime, SITE.feedStyle ? pendingFeedUrl : undefined);
 
       // AUTO-UNCHECK FIX: Visually clear situational checkboxes
       const cookiesToggle = document.getElementById('float-cookies');

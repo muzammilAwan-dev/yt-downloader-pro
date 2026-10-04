@@ -75,7 +75,10 @@ const YTDLP_SITES = {
       thumbnail: true, metadata: true, sponsorBlock: false, compatMode: true,
       crop: true, playlist: false, channel: false
     },
-    isVideoPage: (url) => /\/(reel|p|tv)\/[\w-]+/.test(url),
+    isVideoPage: (url) => /\/(reels?|p|tv)\/[\w-]{5,}/.test(url), // 'reels?' - the full-page reel viewer is /reels/<id>/ (plural), which the old pattern missed
+    // Used by feed-style sites to find the permalink of the video in view. Must only match a REAL post link
+    // (a nav link like /reels/ or a hashtag link must not match).
+    postLinkRegex: /\/(?:p|reels?|tv)\/[\w-]{5,}/,
     isChannelPage: () => false, // profile grids mix posts/reels/tagged - not a clean bulk-download unit yet
     videoAnchorSelectors: ['main video', 'article video', 'video'],
     preferAncestor: 'main', // VERIFIED via dom-probe: only stable landmark found; everything else is hashed atomic-CSS classes
@@ -96,6 +99,7 @@ const YTDLP_SITES = {
       crop: true, playlist: false, channel: true
     },
     isVideoPage: (url) => /\/@[\w.-]+\/video\/\d+/.test(url),
+    postLinkRegex: /\/@[\w.-]+\/video\/\d+/,
     isChannelPage: (url) => /\/@[\w.-]+\/?(\?.*)?$/.test(url),
     videoAnchorSelectors: ['[data-e2e="feed-video"]', 'section[data-e2e="feed-video"]', 'video'],
     feedStyle: true, // VERIFIED via dom-probe: home feed prefetches multiple <video> elements simultaneously, same issue as Instagram Reels
@@ -115,7 +119,9 @@ const YTDLP_SITES = {
       thumbnail: true, metadata: true, sponsorBlock: false, compatMode: true,
       crop: true, playlist: false, channel: false
     },
-    isVideoPage: (url) => /\/(watch\/?\?v=|videos\/|reel\/)/.test(url) || /fb\.watch\//.test(url),
+    isVideoPage: (url) => /\/(?:watch\/?\?(?:.*&)?v=\d+|videos\/(?:[^/?#]+\/)?\d+|reel\/\d+)/.test(url) || /fb\.watch\//.test(url),
+    // reel/<digits> on purpose: /reel/hashtag/?q=... is a hashtag page, not a video
+    postLinkRegex: /\/(?:reel\/\d+|videos\/(?:[^/?#]+\/)?\d+|watch\/?\?(?:[^#]*&)?v=\d+)|fb\.watch\/\w+/,
     isChannelPage: () => false,
     videoAnchorSelectors: ['[data-pagelet="WatchPermalinkVideo"] video', 'video'],
     feedStyle: true, // VERIFIED via dom-probe: Reels pages also prefetch multiple <video> elements at once

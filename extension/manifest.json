@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YT Downloader Pro",
-  "version": "6.2.1",
+  "version": "6.3.0",
   "description": "Premium multi-site downloader with native yt-dlp integration. Works automatically on YouTube, Twitter/X, Instagram, TikTok, Facebook, Reddit, Twitch, Vimeo, and SoundCloud - toggle any site off in Settings if you don't want it there.",
   "author": "muzammilAwan-dev",
   "homepage_url": "https://github.com/muzammilAwan-dev/yt-downloader-pro",
@@ -28,7 +28,8 @@
     "activeTab",
     "storage",
     "notifications",
-    "cookies"
+    "cookies",
+    "downloads"
   ],
 
   "host_permissions": [
@@ -58,6 +59,13 @@
     "service_worker": "background.js"
   },
 
+  "commands": {
+    "export-debug-logs": {
+      "suggested_key": { "default": "Ctrl+Shift+Y", "mac": "Command+Shift+Y" },
+      "description": "Download YT Downloader Pro debug logs"
+    }
+  },
+
   "content_scripts": [
     {
       "matches": [
@@ -71,7 +79,7 @@
         "*://vimeo.com/*", "*://player.vimeo.com/*",
         "*://soundcloud.com/*"
       ],
-      "js": ["sites.js", "content.js"],
+      "js": ["sites.js", "logger.js", "content.js"],
       "css": ["content.css"],
       "run_at": "document_end"
     }

@@ -37,6 +37,8 @@
     concurrentDownloads: document.getElementById('concurrentDownloads'),
     buttonVisibility: document.getElementById('buttonVisibility'),
     siteManagerList: document.getElementById('siteManagerList'),
+    exportLogsBtn: document.getElementById('exportLogsBtn'),
+    clearLogsBtn: document.getElementById('clearLogsBtn'),
 
     status: document.getElementById('status')
   };
@@ -161,6 +163,24 @@
 
     [elements.savePath, elements.audioFormat, elements.subsToggle, elements.playlistItems, elements.cookiesToggle, elements.concurrentDownloads, elements.buttonVisibility, elements.flagMetadata, elements.flagThumbnail, elements.flagSponsor, elements.compatMode]
       .forEach(el => el.addEventListener('change', savePreferences));
+
+    elements.exportLogsBtn.addEventListener('click', async () => {
+      const original = elements.exportLogsBtn.textContent;
+      elements.exportLogsBtn.textContent = 'Saving...';
+      try {
+        const result = await chrome.runtime.sendMessage({ action: 'export_logs' });
+        showStatus(`Downloaded ${result?.count ?? 0} log entries.`, 'success');
+      } catch {
+        showStatus('Could not export logs.', 'error');
+      } finally {
+        elements.exportLogsBtn.textContent = original;
+      }
+    });
+
+    elements.clearLogsBtn.addEventListener('click', async () => {
+      await chrome.runtime.sendMessage({ action: 'clear_logs' });
+      showStatus('Debug logs cleared.', 'success');
+    });
   }
 
   // --- Site detection + feature gating (replaces the old YouTube-only isValidYouTubeUrl gate) ---

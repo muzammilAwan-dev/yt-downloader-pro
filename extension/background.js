@@ -60,6 +60,65 @@ async function setSiteEnabled(siteId, enabled) {
 }
 
 /**
+ * Debug log store. background.js is the single writer (content.js and
+ * popup.js only ever send 'log' messages here, never touch storage
+ * directly) specifically to avoid read-modify-write races that would lose
+ * entries if two tabs logged at nearly the same moment. logWriteQueue
+ * chains each write onto the previous one so they're always serialized,
+ * even though each individual write is itself async.
+ */
+const LOG_KEY = 'ytdlp_debug_logs';
+const LOG_MAX_ENTRIES = 800;
+let logWriteQueue = Promise.resolve();
+
+function appendLog(entry) {
+  logWriteQueue = logWriteQueue.then(async () => {
+    const stored = await chrome.storage.local.get(LOG_KEY);
+    const logs = stored[LOG_KEY] || [];
+    logs.push(entry);
+    const trimmed = logs.length > LOG_MAX_ENTRIES ? logs.slice(logs.length - LOG_MAX_ENTRIES) : logs;
+    await chrome.storage.local.set({ [LOG_KEY]: trimmed });
+  }).catch(() => {}); // a failed write should never break the chain for the next one
+  return logWriteQueue;
+}
+
+function formatLogEntry(e) {
+  const time = new Date(e.t).toISOString();
+  const where = e.site ? `${e.component}:${e.site}` : e.component;
+  const dataStr = e.data ? ` | ${e.data}` : '';
+  return `[${time}] [${String(e.level || 'info').toUpperCase()}] [${where}] ${e.message}${dataStr}${e.url ? `  (${e.url})` : ''}`;
+}
+
+/**
+ * Downloads the accumulated logs as a real file via chrome.downloads -
+ * extensions can't write to an arbitrary filesystem path (no "temp folder"
+ * access), so handing off to the browser's own download mechanism is the
+ * actual native equivalent. Triggered by the popup button or the
+ * Ctrl+Shift+Y shortcut below - same function either way.
+ */
+async function exportLogs() {
+  const stored = await chrome.storage.local.get(LOG_KEY);
+  const logs = stored[LOG_KEY] || [];
+  const text = logs.length > 0
+    ? logs.map(formatLogEntry).join('\n')
+    : 'No debug logs recorded yet.';
+
+  const dataUrl = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
+  const filename = `ytdlp-debug-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+  await chrome.downloads.download({ url: dataUrl, filename, saveAs: false });
+  return { ok: true, count: logs.length };
+}
+
+async function clearLogs() {
+  await chrome.storage.local.remove(LOG_KEY);
+  return { ok: true };
+}
+
+chrome.commands.onCommand.addListener((command) => {
+  if (command === 'export-debug-logs') exportLogs();
+});
+
+/**
  * Toolbar badge: the zero-page-footprint fallback. Works the same whether
  * the on-page button/widget is set to always/fade/hidden, since content.js
  * reports its count regardless of that preference.
@@ -85,6 +144,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "report_video_count") {
     setBadgeForTab(sender.tab?.id, request.count || 0);
     return; // no response needed
+  }
+
+  if (request.action === "log") {
+    appendLog({ ...request.entry, tabId: sender.tab?.id });
+    return; // fire-and-forget, no response needed
+  }
+
+  if (request.action === "export_logs") {
+    exportLogs().then(sendResponse);
+    return true;
+  }
+
+  if (request.action === "clear_logs") {
+    clearLogs().then(sendResponse);
+    return true;
   }
 
   if (request.action === "list_sites") {

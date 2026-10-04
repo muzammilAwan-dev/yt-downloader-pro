@@ -17,7 +17,11 @@
   // Every site here is declared statically in the manifest (like YouTube
   // always was) so this always has a match on a supported site's pages.
   const SITE = (typeof getSiteForUrl === 'function') ? getSiteForUrl(window.location.href) : null;
-  if (!SITE) return;
+  if (!SITE) {
+    if (typeof ytdlpLog === 'function') ytdlpLog('warn', 'content', 'No site matched this URL - content script loaded but is doing nothing here');
+    return;
+  }
+  if (typeof ytdlpLog === 'function') ytdlpLog('info', 'content', 'Site matched, content script active', { site: SITE.id, feedStyle: !!SITE.feedStyle });
 
   // 'always' | 'fade' | 'hidden' - how the on-page button/widget behaves.
   // 'fade' (the default) dims it after a couple seconds of inactivity and
@@ -32,8 +36,12 @@
   // was - this only stops it if the user explicitly turned this one site
   // off in the popup's Settings panel.
   chrome.storage.sync.get(['disabledSites', 'buttonVisibility'], (res) => {
-    if ((res.disabledSites || []).includes(SITE.id)) return;
+    if ((res.disabledSites || []).includes(SITE.id)) {
+      ytdlpLog('info', 'content', 'Site is disabled in Settings, not initializing', { site: SITE.id });
+      return;
+    }
     if (res.buttonVisibility) VISIBILITY_MODE = res.buttonVisibility;
+    ytdlpLog('info', 'content', 'Initializing', { site: SITE.id, visibilityMode: VISIBILITY_MODE });
     initialize();
   });
 
@@ -230,19 +238,30 @@
    * can't build a correct command for it, so it's skipped rather than
    * offering a download that would silently grab the wrong thing.
    */
+  let lastScanSummary = '';
+
   function scanAllVideos() {
     const results = [];
     const videos = Array.from(document.querySelectorAll('video'));
     const onDedicatedVideoPage = SITE.isVideoPage(window.location.href);
+    let tooSmall = 0, noUrl = 0, withPermalink = 0, usedCurrentUrl = 0;
+
     videos.forEach((el, idx) => {
       const rect = el.getBoundingClientRect();
-      if (rect.width < 80 || rect.height < 80) return; // skip tiny/hidden decorative videos
+      if (rect.width < 80 || rect.height < 80) { tooSmall++; return; } // skip tiny/hidden decorative videos
       const permalink = findPostPermalink(el);
       const url = permalink || (onDedicatedVideoPage ? window.location.href : null);
-      if (!url) return;
+      if (!url) { noUrl++; return; }
+      if (permalink) withPermalink++; else usedCurrentUrl++;
       const key = dedupeKeyFor(el, permalink) || `idx:${idx}`;
       results.push({ el, url, key, label: `Post ${results.length + 1}` });
     });
+
+    const summary = `tags:${videos.length} tooSmall:${tooSmall} noUrl:${noUrl} withPermalink:${withPermalink} usedCurrentUrl:${usedCurrentUrl} usable:${results.length}`;
+    if (summary !== lastScanSummary) {
+      lastScanSummary = summary;
+      ytdlpLog('info', 'content', 'Video scan', { site: SITE.id, ...Object.fromEntries(summary.split(' ').map(p => p.split(':'))) });
+    }
     return results;
   }
 
@@ -264,6 +283,7 @@
       </div>
     `;
     document.body.appendChild(widget);
+    ytdlpLog('info', 'content', 'Feed widget created', { site: SITE.id });
 
     const toggle = widget.querySelector('.yt-dlp-feed-toggle');
     const panel = widget.querySelector('.yt-dlp-feed-panel');
@@ -318,6 +338,7 @@
       row.appendChild(btn);
       list.appendChild(row);
       feedSeen.set(item.key, { el: item.el, url: item.url, label: item.label, row });
+      ytdlpLog('info', 'content', 'Feed row added', { site: SITE.id, label: item.label, url: item.url });
     });
 
     badge.textContent = String(feedSeen.size);
@@ -432,29 +453,49 @@
     return existingEl.previousElementSibling === anchor || existingEl.parentElement === anchor;
   }
 
+  let lastLoggedState = '';
+
   function enforceButtonPresence() {
+    try {
+      enforceButtonPresenceCore();
+    } catch (err) {
+      // FIX: previously an exception anywhere in here just silently aborted
+      // the whole recheck with zero visible signal - the button would stop
+      // updating and nothing would ever explain why. Now it's captured.
+      ytdlpLog('error', 'content', 'enforceButtonPresence threw', { site: SITE.id, error: String(err && err.message || err), stack: err && err.stack });
+    }
+  }
+
+  function enforceButtonPresenceCore() {
     const url = window.location.href;
     const hidden = VISIBILITY_MODE === 'hidden';
+    let videoState = 'n/a';
 
     // feedStyle sites (Instagram, Facebook, TikTok) use the persistent
     // widget instead - see the FEED WIDGET section above for why.
     if (SITE.feedStyle) {
       if (hidden) {
-        reportVideoCount(scanAllVideos().length);
+        const count = scanAllVideos().length;
+        reportVideoCount(count);
+        videoState = `feed:hidden:${count}`;
         const existingWidget = document.getElementById('yt-dlp-feed-widget');
         if (existingWidget) { existingWidget.remove(); feedSeen.clear(); }
       } else {
-        reportVideoCount(updateFeedWidget());
+        const count = updateFeedWidget();
+        reportVideoCount(count);
+        videoState = `feed:${count}`;
       }
     } else {
       const existingButton = document.getElementById(CONFIG.CONTAINER_ID);
       const isVideo = SITE.isVideoPage(url) || isVideoContentVisible();
       reportVideoCount(isVideo ? 1 : 0);
+      videoState = `inline:${isVideo}`;
 
       if (!isVideo || hidden) {
         if (existingButton) { geometryTracked.delete(existingButton); existingButton.remove(); }
       } else {
         const { anchor, tier } = resolveAnchor(SITE.videoAnchorSelectors, SITE.preferAncestor);
+        videoState += `:${tier}`;
         if (existingButton && !isStillCorrectlyPlaced(existingButton, anchor, tier)) {
           geometryTracked.delete(existingButton);
           existingButton.remove();
@@ -475,6 +516,14 @@
         existingChannelButton.remove();
       }
       if (!document.getElementById(CONFIG.CHANNEL_CONTAINER_ID)) injectChannelButton(anchor, tier);
+    }
+
+    // Only log on an actual state change, not every debounced tick - keeps
+    // the ring buffer meaningful instead of getting flooded during scrolling.
+    const stateKey = `${videoState}|channel:${isChannel}`;
+    if (stateKey !== lastLoggedState) {
+      lastLoggedState = stateKey;
+      ytdlpLog('info', 'content', 'State changed', { site: SITE.id, videoState, isChannel, url });
     }
   }
 

@@ -139,11 +139,12 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="20,14">
+        <Border Grid.Row="0" Background="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,0" Padding="20,14,16,10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -162,32 +163,6 @@
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="Max Tasks:" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
-                    
-                    <ComboBox Text="{Binding Settings.MaxConcurrentDownloads}" IsEditable="True" Width="45" Margin="0,0,16,0" Background="White" Foreground="Black">
-                        <ComboBoxItem Content="1"/>
-                        <ComboBoxItem Content="3"/>
-                        <ComboBoxItem Content="5"/>
-                        <ComboBoxItem Content="10"/>
-                    </ComboBox>
-
-                    <TextBlock Text="Speed Limit:" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
-                    
-                    <ComboBox Text="{Binding Settings.SpeedLimit}" IsEditable="True" Width="90" Margin="0,0,12,0" Background="White" Foreground="Black" ToolTip="Use 0 for Unlimited, or formats like 500K, 2.5M, 10M">
-                        <ComboBoxItem Content="0"/>
-                        <ComboBoxItem Content="500K"/>
-                        <ComboBoxItem Content="1M"/>
-                        <ComboBoxItem Content="2.5M"/>
-                        <ComboBoxItem Content="5M"/>
-                        <ComboBoxItem Content="10M"/>
-                    </ComboBox>
-
-                    <Button Style="{StaticResource ActionButtonStyle}" Content="Apply" Command="{Binding SaveSettingsCommand}" Padding="12,4" Margin="0,0,16,0"/>
-
-                    <Button Style="{StaticResource ActionButtonStyle}" Content="Clear Completed" Command="{Binding ClearCompletedCommand}" Visibility="{Binding HasCompletedDownloads, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                </StackPanel>
-
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Style="{StaticResource IconButtonStyle}" Click="OnMinimizeToTrayClick" ToolTip="Minimize to Tray" x:Name="MinimizeTrayButton">
                         <Path Data="M19,13H5V11H19V13Z" Fill="{StaticResource TextSecondaryBrush}" Width="16" Height="16" Stretch="Uniform"/>
@@ -199,12 +174,46 @@
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1">
+        <Border Grid.Row="1" Background="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="20,0,20,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Max tasks" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
+                    <ComboBox Style="{StaticResource DarkComboBox}" Text="{Binding Settings.MaxConcurrentDownloads}" IsEditable="True" Width="68" Margin="0,0,20,0" ToolTip="How many downloads run at the same time (1-15)">
+                        <ComboBoxItem Content="1"/>
+                        <ComboBoxItem Content="3"/>
+                        <ComboBoxItem Content="5"/>
+                        <ComboBoxItem Content="10"/>
+                    </ComboBox>
+
+                    <TextBlock Text="Speed limit" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
+                    <ComboBox Style="{StaticResource DarkComboBox}" Text="{Binding Settings.SpeedLimit}" IsEditable="True" Width="92" Margin="0,0,8,0" ToolTip="Use 0 for unlimited, or formats like 500K, 2.5M, 10M">
+                        <ComboBoxItem Content="0"/>
+                        <ComboBoxItem Content="500K"/>
+                        <ComboBoxItem Content="1M"/>
+                        <ComboBoxItem Content="2.5M"/>
+                        <ComboBoxItem Content="5M"/>
+                        <ComboBoxItem Content="10M"/>
+                    </ComboBox>
+                    <TextBlock Text="0 = unlimited" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,16,0" FontSize="11"/>
+
+                    <Button Style="{StaticResource AccentButtonStyle}" Content="Apply" Command="{Binding SaveSettingsCommand}" Height="28" Padding="16,0" ToolTip="Save these limits"/>
+                </StackPanel>
+
+                <Button Grid.Column="1" Style="{StaticResource ActionButtonStyle}" Content="Clear completed" Command="{Binding ClearCompletedCommand}" Height="28" Padding="12,0" VerticalAlignment="Center" Visibility="{Binding HasCompletedDownloads, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2">
             <Grid Visibility="{Binding HasDownloads, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=invert}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel HorizontalAlignment="Center">
                     <Path Data="M180,124 L180,319 L353,222 Z M147,349 L365,349 L365,388 L147,388 Z" Fill="{StaticResource SurfaceHoverBrush}" Width="64" Height="64" Stretch="Uniform" HorizontalAlignment="Center"/>
                     <TextBlock Text="No active downloads" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,20,0,8"/>
-                    <TextBlock Text="Click the Download button in YouTube to add videos" FontSize="13" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Use the Download button on YouTube, Instagram, Facebook and other supported sites to add videos" FontSize="13" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center"/>
                 </StackPanel>
             </Grid>
 
@@ -213,7 +222,7 @@
             </ScrollViewer>
         </Grid>
 
-        <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="20,8">
+        <Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="20,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

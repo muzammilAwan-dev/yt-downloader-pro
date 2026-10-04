@@ -36,7 +36,13 @@ namespace YTDLPHost.Services
                 Visible = true
             };
 
-            var contextMenu = new ContextMenuStrip();
+            var contextMenu = new ContextMenuStrip
+            {
+                Renderer = new ToolStripProfessionalRenderer(new DarkMenuColors()),
+                BackColor = System.Drawing.Color.FromArgb(0x1A, 0x1A, 0x1A),
+                ForeColor = System.Drawing.Color.White,
+                ShowImageMargin = false
+            };
             
             var showItem = new ToolStripMenuItem("Show Window");
             showItem.Click += (s, e) => ShowWindowRequested?.Invoke(this, EventArgs.Empty);
@@ -44,6 +50,8 @@ namespace YTDLPHost.Services
             var exitItem = new ToolStripMenuItem("Exit");
             exitItem.Click += (s, e) => ExitRequested?.Invoke(this, EventArgs.Empty);
 
+            showItem.ForeColor = System.Drawing.Color.White;
+            exitItem.ForeColor = System.Drawing.Color.White;
             contextMenu.Items.Add(showItem);
             contextMenu.Items.Add(new ToolStripSeparator());
             contextMenu.Items.Add(exitItem);
@@ -195,5 +203,25 @@ namespace YTDLPHost.Services
             _notifyIcon?.Dispose();
             _notifyIcon = null;
         }
+    }
+
+    /// <summary>Dark colours for the tray ContextMenuStrip so it matches the app.</summary>
+    internal sealed class DarkMenuColors : ProfessionalColorTable
+    {
+        private static readonly System.Drawing.Color Surface = System.Drawing.Color.FromArgb(0x1A, 0x1A, 0x1A);
+        private static readonly System.Drawing.Color Hover = System.Drawing.Color.FromArgb(0x2E, 0x2E, 0x2E);
+        private static readonly System.Drawing.Color Border = System.Drawing.Color.FromArgb(0x33, 0x33, 0x33);
+
+        public override System.Drawing.Color ToolStripDropDownBackground => Surface;
+        public override System.Drawing.Color ImageMarginGradientBegin => Surface;
+        public override System.Drawing.Color ImageMarginGradientMiddle => Surface;
+        public override System.Drawing.Color ImageMarginGradientEnd => Surface;
+        public override System.Drawing.Color MenuBorder => Border;
+        public override System.Drawing.Color MenuItemBorder => Hover;
+        public override System.Drawing.Color MenuItemSelected => Hover;
+        public override System.Drawing.Color MenuItemSelectedGradientBegin => Hover;
+        public override System.Drawing.Color MenuItemSelectedGradientEnd => Hover;
+        public override System.Drawing.Color SeparatorDark => Border;
+        public override System.Drawing.Color SeparatorLight => Border;
     }
 }

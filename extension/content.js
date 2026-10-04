@@ -2,7 +2,7 @@
  * @fileoverview DOM Injection Controller
  * Site-agnostic: reads everything about "where am I / what can I do here"
  * from sites.js's SITE config, so adding a new site never touches this file.
- * @version 6.3.1
+ * @version 6.3.2
  */
 
 (function() {
@@ -202,22 +202,41 @@
   // the button is sitting on.
   // ===========================================================================
 
-  /** The video the user is actually watching: most on-screen, near the centre, preferring one that is playing. */
-  function findActiveVideo() {
+  /** 0 when the rect isn't substantially on screen, else a score favouring big, centred, (playing) media. */
+  function visibleScore(r, playing) {
     const vw = window.innerWidth, vh = window.innerHeight;
+    const visW = Math.max(0, Math.min(r.right, vw) - Math.max(r.left, 0));
+    const visH = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0));
+    const visArea = visW * visH;
+    if (visArea < Math.min(r.width * r.height, vw * vh) * 0.4) return 0;
+    const dist = Math.hypot((r.left + r.right) / 2 - vw / 2, (r.top + r.bottom) / 2 - vh / 2) / Math.hypot(vw / 2, vh / 2);
+    const score = visArea * (1 - 0.5 * Math.min(dist, 1));
+    return playing ? score * 2 : score;
+  }
+
+  /** What the user is looking at right now: { el, kind: 'video' | 'image' } or null. */
+  function findActiveMedia() {
     let best = null, bestScore = 0;
+    const videoRects = [];
     document.querySelectorAll('video').forEach((v) => {
       const r = v.getBoundingClientRect();
       if (r.width < 120 || r.height < 120) return;
-      const visW = Math.max(0, Math.min(r.right, vw) - Math.max(r.left, 0));
-      const visH = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0));
-      const visArea = visW * visH;
-      if (visArea < Math.min(r.width * r.height, vw * vh) * 0.4) return; // not substantially on screen
-      const dist = Math.hypot((r.left + r.right) / 2 - vw / 2, (r.top + r.bottom) / 2 - vh / 2) / Math.hypot(vw / 2, vh / 2);
-      let score = visArea * (1 - 0.5 * Math.min(dist, 1));
-      if (!v.paused && !v.ended) score *= 2;
-      if (score > bestScore) { bestScore = score; best = v; }
+      videoRects.push(r);
+      const sc = visibleScore(r, !v.paused && !v.ended);
+      if (sc > bestScore) { bestScore = sc; best = { el: v, kind: 'video' }; }
     });
+    if (SITE.imagePosts) {
+      document.querySelectorAll('img').forEach((img) => {
+        const r = img.getBoundingClientRect();
+        if (r.width < 240 || r.height < 240) return; // avatars, icons, emoji, story-tray thumbs
+        const src = img.currentSrc || img.src;
+        if (!src || src.startsWith('blob:')) return;
+        const cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;
+        if (videoRects.some(vr => cx > vr.left && cx < vr.right && cy > vr.top && cy < vr.bottom)) return; // a video's poster frame, not a photo post
+        const sc = visibleScore(r, false);
+        if (sc > bestScore) { bestScore = sc; best = { el: img, kind: 'image' }; }
+      });
+    }
     return best;
   }
 
@@ -225,8 +244,12 @@
   function normalizePostUrl(href) {
     try {
       const u = new URL(href, window.location.href);
-      const v = u.searchParams.get('v');
-      if (SITE.id === 'facebook' && /^\/watch\/?$/.test(u.pathname) && v) return `${u.origin}/watch/?v=${v}`;
+      if (SITE.id === 'facebook') {
+        const v = u.searchParams.get('v');
+        if (/^\/watch\/?$/.test(u.pathname) && v) return `${u.origin}/watch/?v=${v}`;
+        const sid = u.searchParams.get('story_fbid');
+        if (/story\.php$/.test(u.pathname) && sid) return `${u.origin}${u.pathname}?story_fbid=${sid}&id=${u.searchParams.get('id') || ''}`;
+      }
       return u.origin + u.pathname;
     } catch { return null; }
   }
@@ -245,7 +268,7 @@
     return best;
   }
 
-  /** { url, via } for a given video. url is null when no trustworthy link can be found (better no button than a wrong download). */
+  /** { url, via } for a given video. url is null when no trustworthy link can be found. */
   function resolveVideoUrl(videoEl) {
     if (SITE.isVideoPage(window.location.href)) {
       return { url: normalizePostUrl(window.location.href), via: 'page-url' }; // reel/video opened full-page or as a modal: URL tracks the current item
@@ -258,37 +281,84 @@
       }
     }
     const all = root ? Array.from(root.querySelectorAll('a[href]')) : [];
-    return { url: null, via: 'none', diag: { root: root && root.tagName, anchors: all.length, sample: all.slice(0, 6).map(a => (a.getAttribute('href') || '').slice(0, 80)) } };
+    return { url: null, via: 'none', diag: { root: root && root.tagName, anchors: all.length, sample: all.slice(0, 12).map(a => (a.getAttribute('href') || '').slice(0, 70)) } };
   }
 
-  let pendingFeedUrl = null; // URL captured when the button is clicked, so scrolling while the dropdown is open can't change the target
+  /**
+   * Facebook leaves a post's timestamp link as a placeholder ("#" or "?__cft__=...")
+   * until the pointer hovers it, then swaps in the real permalink. Fire the same
+   * hover/focus events on those placeholders so the real href gets filled in.
+   */
+  function primeLinks(root) {
+    if (!root) return 0;
+    let n = 0;
+    root.querySelectorAll('a[href]').forEach((a) => {
+      if (n >= 12) return;
+      const h = a.getAttribute('href') || '';
+      if (h === '#' || h === '' || h.startsWith('?')) {
+        a.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, cancelable: true, view: window }));
+        a.dispatchEvent(new MouseEvent('mouseenter', { bubbles: false, view: window }));
+        a.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+        n++;
+      }
+    });
+    return n;
+  }
+
+  async function resolveVideoUrlWithPrime(videoEl) {
+    let r = resolveVideoUrl(videoEl);
+    if (!r.url && primeLinks(containerFor(videoEl)) > 0) {
+      await new Promise(res => setTimeout(res, 200));
+      r = resolveVideoUrl(videoEl);
+      r.primed = true;
+    }
+    ytdlpLog(r.url ? 'info' : 'warn', 'content', 'Resolved on click', { site: SITE.id, via: r.via, url: r.url, primed: !!r.primed, diag: r.diag });
+    return r;
+  }
+
+  async function downloadImage(imgEl) {
+    const src = imgEl && (imgEl.currentSrc || imgEl.src);
+    if (!src) { showToast("Couldn't read this image's address.", 'error'); return; }
+    try {
+      const res = await chrome.runtime.sendMessage({ action: 'download_image', url: src, site: SITE.id });
+      if (!res || !res.ok) throw new Error((res && res.error) || 'Download failed');
+      showToast('Image saved to Downloads/YT Downloader Pro');
+    } catch (err) {
+      showToast(`Error: ${err.message}`, 'error');
+    }
+  }
+
+  let pendingFeedPromise = Promise.resolve(null); // URL being resolved for the click that opened the dropdown (scrolling afterwards can't change the target)
   let lastFeedKey = '';
 
   function syncFeedButton(hidden) {
-    const existing = document.getElementById(CONFIG.CONTAINER_ID);
-    const video = findActiveVideo();
-    const target = video ? resolveVideoUrl(video) : null;
-    const ok = !!(target && target.url);
-    reportVideoCount(ok ? 1 : 0);
+    let existing = document.getElementById(CONFIG.CONTAINER_ID);
+    const media = findActiveMedia();
+    reportVideoCount(media ? 1 : 0);
 
-    const key = video ? `${target.via}|${target.url}` : 'no-active-video';
+    const info = media && media.kind === 'video' ? resolveVideoUrl(media.el) : null;
+    const key = media ? `${media.kind}|${info ? `${info.via}|${info.url}` : (media.el.currentSrc || media.el.src || '').slice(-40)}` : 'no-active-media';
     if (key !== lastFeedKey) {
       lastFeedKey = key;
-      ytdlpLog(ok ? 'info' : 'warn', 'content', 'Active video', { site: SITE.id, via: target && target.via, url: target && target.url, diag: target && target.diag });
+      ytdlpLog(info && !info.url ? 'warn' : 'info', 'content', 'Active media', { site: SITE.id, kind: media && media.kind, via: info && info.via, url: info && info.url, diag: info && info.diag });
     }
 
-    if (!ok || hidden) {
+    if (!media || hidden) {
       if (existing) { geometryTracked.delete(existing); existing.remove(); }
-      return `feed:${ok ? 'hidden' : 'none'}`;
+      return `feed:${media ? 'hidden' : 'none'}`;
+    }
+    // The button is shown for ANY video/image in view; the video's link is resolved when you click (see resolveVideoUrlWithPrime).
+    if (existing && existing.dataset.mode !== media.kind) {
+      geometryTracked.delete(existing); existing.remove(); existing = null;
     }
     if (!existing) {
-      injectDownloadButton(video, 'geometry');
+      injectDownloadButton(media.el, 'geometry', media.kind);
     } else {
-      existing._ytdlpAnchor = video;
-      geometryTracked.set(existing, video);
+      existing._ytdlpAnchor = media.el;
+      geometryTracked.set(existing, media.el);
       repositionGeometryTracked();
     }
-    return `feed:${target.via}`;
+    return `feed:${media.kind}${info ? ':' + info.via : ''}`;
   }
 
   function walkUpForContainer(el, preferAncestorTag) {
@@ -339,8 +409,15 @@
       }
       const r = anchorEl.getBoundingClientRect();
       container.style.position = 'fixed';
-      container.style.top = Math.max(8, r.top + 8) + 'px';
-      container.style.left = Math.max(8, Math.min(window.innerWidth - 170, r.right - 150)) + 'px';
+      if (container.classList.contains('yt-dlp-compact')) {
+        // Small round button tucked into the media's top-right corner, 48px down so it clears the site's own top-row controls.
+        const w = container.offsetWidth || 32;
+        container.style.top = Math.min(Math.max(8, r.top + 48), window.innerHeight - 48) + 'px';
+        container.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.right - w - 10)) + 'px';
+      } else {
+        container.style.top = Math.max(8, r.top + 8) + 'px';
+        container.style.left = Math.max(8, Math.min(window.innerWidth - 170, r.right - 150)) + 'px';
+      }
       container.style.right = 'auto';
       container.style.bottom = 'auto';
     });
@@ -412,7 +489,10 @@
       if (!isVideo || hidden) {
         if (existingButton) { geometryTracked.delete(existingButton); existingButton.remove(); }
       } else {
-        const { anchor, tier } = resolveAnchor(SITE.videoAnchorSelectors, SITE.preferAncestor);
+        // Shorts keep several #movie_player nodes (prev/active/next) and re-render them as the video loads, so a button
+        // appended inside one vanishes. Track the visible <video>'s geometry instead, like the feed sites do.
+        const isShorts = SITE.id === 'youtube' && /\/shorts\//.test(url);
+        const { anchor, tier } = resolveAnchor(isShorts ? [] : SITE.videoAnchorSelectors, SITE.preferAncestor);
         videoState += `:${tier}`;
         if (existingButton && !isStillCorrectlyPlaced(existingButton, anchor, tier)) {
           geometryTracked.delete(existingButton);
@@ -445,36 +525,46 @@
     }
   }
 
-  function injectDownloadButton(anchor, tier) {
+  function injectDownloadButton(anchor, tier, mode) {
+    const imageMode = mode === 'image';
     const container = document.createElement('div');
     container.id = CONFIG.CONTAINER_ID;
+    container.dataset.mode = imageMode ? 'image' : 'video';
     container.classList.add(FADE_TARGET_CLASS);
     container._ytdlpAnchor = anchor; // see isStillCorrectlyPlaced()
 
-    // Blind fixed-corner placement only when there's truly no real anchor
-    // (tier 'body'); the 'geometry' tier gets precisely positioned near the
-    // actual video instead, via placeContainer()/repositionGeometryTracked().
+    // 'body' = no real anchor, blind fixed corner. 'geometry' = floating over a specific video/image: small round button.
     if (tier === 'body') container.classList.add('shorts-mode');
+    if (tier === 'geometry') container.classList.add('yt-dlp-compact');
 
     const button = document.createElement('button');
     button.className = 'yt-dlp-btn';
-    button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;fill:currentColor;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><span>Download</span>`;
-
-    const dropdown = createDropdown();
-
-    button.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (SITE.feedStyle) {
-        const v = container._ytdlpAnchor;
-        pendingFeedUrl = (v && resolveVideoUrl(v).url) || null;
-      }
-      const isExpanded = dropdown.classList.contains('show');
-      document.querySelectorAll('.yt-dlp-dropdown').forEach(d => d.classList.remove('show'));
-      if (!isExpanded) dropdown.classList.add('show');
-    });
-
+    button.title = imageMode ? 'Download this image' : 'Download this video';
+    button.setAttribute('aria-label', button.title);
+    button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;fill:currentColor;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg><span>${imageMode ? 'Image' : 'Download'}</span>`;
     container.appendChild(button);
-    container.appendChild(dropdown);
+
+    if (imageMode) {
+      // Photos need no quality menu - one click saves the image currently in view.
+      button.addEventListener('click', (e) => {
+        e.stopPropagation();
+        downloadImage(container._ytdlpAnchor);
+      });
+    } else {
+      const dropdown = createDropdown();
+      button.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (SITE.feedStyle) {
+          const v = container._ytdlpAnchor;
+          pendingFeedPromise = v ? resolveVideoUrlWithPrime(v).then(r => r.url) : Promise.resolve(null);
+        }
+        const isExpanded = dropdown.classList.contains('show');
+        document.querySelectorAll('.yt-dlp-dropdown').forEach(d => d.classList.remove('show'));
+        if (!isExpanded) dropdown.classList.add('show');
+      });
+      container.appendChild(dropdown);
+    }
+
     placeContainer(container, anchor, tier, SITE.anchorMode || 'after');
   }
 
@@ -702,8 +792,12 @@
     const eTime = document.getElementById('float-end-time')?.value.trim() || '';
 
     try {
-      if (SITE.feedStyle && !pendingFeedUrl) throw new Error("Couldn't find this video's link. Try opening it on its own page.");
-      await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems, isCropped, sTime, eTime, SITE.feedStyle ? pendingFeedUrl : undefined);
+      let feedUrl;
+      if (SITE.feedStyle) {
+        feedUrl = await pendingFeedPromise;
+        if (!feedUrl) throw new Error("Couldn't find this video's link. Click the video to open it on its own page, then try again.");
+      }
+      await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems, isCropped, sTime, eTime, feedUrl);
 
       // AUTO-UNCHECK FIX: Visually clear situational checkboxes
       const cookiesToggle = document.getElementById('float-cookies');

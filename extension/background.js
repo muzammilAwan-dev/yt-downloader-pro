@@ -109,6 +109,27 @@ async function exportLogs() {
   return { ok: true, count: logs.length };
 }
 
+/**
+ * Image posts (Instagram/Facebook photos): yt-dlp has no image support there, so
+ * hand the image URL straight to the browser's own download manager.
+ * Lands in <Downloads>/YT Downloader Pro/ - extensions can't pick another folder.
+ */
+async function saveImage(url, site) {
+  try {
+    if (!/^(https?:|data:)/i.test(url || '')) throw new Error('Unsupported image address');
+    let ext = 'jpg';
+    try {
+      const m = new URL(url).pathname.match(/\.(jpe?g|png|webp|gif|avif)$/i);
+      if (m) ext = m[1].toLowerCase();
+    } catch { /* data: URL etc - keep jpg */ }
+    const filename = `YT Downloader Pro/${site || 'image'}_${Date.now()}.${ext}`;
+    await chrome.downloads.download({ url, filename, conflictAction: 'uniquify', saveAs: false });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String((e && e.message) || e) };
+  }
+}
+
 async function clearLogs() {
   await chrome.storage.local.remove(LOG_KEY);
   return { ok: true };
@@ -138,6 +159,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "get_cookies") {
     getCookiesForSite(request.site, sendResponse);
+    return true;
+  }
+
+  if (request.action === "download_image") {
+    saveImage(request.url, request.site).then(sendResponse);
     return true;
   }
 

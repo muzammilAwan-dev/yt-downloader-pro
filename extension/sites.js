@@ -79,6 +79,7 @@ const YTDLP_SITES = {
     // Used by feed-style sites to find the permalink of the video in view. Must only match a REAL post link
     // (a nav link like /reels/ or a hashtag link must not match).
     postLinkRegex: /\/(?:p|reels?|tv)\/[\w-]{5,}/,
+    imagePosts: true, // photo posts: the floating button saves the image in view directly (no yt-dlp involved)
     isChannelPage: () => false, // profile grids mix posts/reels/tagged - not a clean bulk-download unit yet
     videoAnchorSelectors: ['main video', 'article video', 'video'],
     preferAncestor: 'main', // VERIFIED via dom-probe: only stable landmark found; everything else is hashed atomic-CSS classes
@@ -119,9 +120,10 @@ const YTDLP_SITES = {
       thumbnail: true, metadata: true, sponsorBlock: false, compatMode: true,
       crop: true, playlist: false, channel: false
     },
-    isVideoPage: (url) => /\/(?:watch\/?\?(?:.*&)?v=\d+|videos\/(?:[^/?#]+\/)?\d+|reel\/\d+)/.test(url) || /fb\.watch\//.test(url),
-    // reel/<digits> on purpose: /reel/hashtag/?q=... is a hashtag page, not a video
-    postLinkRegex: /\/(?:reel\/\d+|videos\/(?:[^/?#]+\/)?\d+|watch\/?\?(?:[^#]*&)?v=\d+)|fb\.watch\/\w+/,
+    isVideoPage: (url) => /\/(?:watch\/?\?(?:.*&)?v=\d+|reel\/\d+|videos\/(?:[^/?#]+\/)?\d+|share\/[vr]\/[\w-]+|[^/?#]+\/posts\/[\w-]+|groups\/[^/?#]+\/(?:permalink|posts)\/\d+)/.test(url) || /fb\.watch\//.test(url),
+    // reel/<digits> on purpose: /reel/hashtag/?q=... is a hashtag page, not a video. Posts are best-effort (yt-dlp may reject pfbid permalinks).
+    postLinkRegex: /\/(?:reel\/\d+|videos\/(?:[^/?#]+\/)?\d+|share\/[vr]\/[\w-]+|[^/?#]+\/posts\/[\w-]+|groups\/[^/?#]+\/(?:permalink|posts)\/\d+|watch\/?\?(?:[^#]*&)?v=\d+|story\.php\?(?:[^#]*&)?story_fbid=\d+)|fb\.watch\/\w+/,
+    imagePosts: true, // photo posts: the floating button saves the image in view directly (no yt-dlp involved)
     isChannelPage: () => false,
     videoAnchorSelectors: ['[data-pagelet="WatchPermalinkVideo"] video', 'video'],
     feedStyle: true, // VERIFIED via dom-probe: Reels pages also prefetch multiple <video> elements at once

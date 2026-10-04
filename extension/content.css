@@ -117,6 +117,25 @@
   left: 0;
 }
 
+/* --- COMPACT: small round button floating over a specific video/image (feeds, reels, Shorts) --- */
+#yt-dlp-container.yt-dlp-compact {
+  position: fixed;
+  top: 0; left: 0; right: auto;
+  align-items: flex-end;
+}
+#yt-dlp-container.yt-dlp-compact .yt-dlp-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  gap: 0;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+#yt-dlp-container.yt-dlp-compact .yt-dlp-btn svg { width: 16px !important; height: 16px !important; }
+#yt-dlp-container.yt-dlp-compact .yt-dlp-btn span { display: none; }
+#yt-dlp-container.yt-dlp-compact .yt-dlp-dropdown { right: 0; left: auto; }
+
 /* --- CHANNEL / PROFILE BULK DOWNLOAD --- */
 #yt-dlp-channel-container {
   position: relative;

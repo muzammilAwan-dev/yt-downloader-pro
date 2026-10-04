@@ -90,11 +90,14 @@
     #siteBanner .enable-btn { background: var(--accent-primary); color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
     #siteBanner .enable-btn:hover { background: var(--accent-hover); }
 
-    .site-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
+    .site-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
     .site-row:last-child { border-bottom: none; }
-    .site-row .site-label { font-size: 13px; }
-    .site-row .site-note { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
-    .site-row .site-builtin-badge { font-size: 10px; color: var(--text-muted); }
+    .site-row > div:first-child { flex: 1 1 auto; min-width: 0; }
+    .site-row .site-label { font-size: 13px; font-weight: 500; }
+    .site-row .site-note { font-size: 11px; line-height: 1.35; color: var(--text-muted); margin-top: 2px; }
+    .site-row .site-builtin-badge { flex: 0 0 auto; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+    /* Keep the toggle a fixed size: without this a long note squeezes the track and the knob looks detached. */
+    .site-row .switch { flex: 0 0 44px; width: 44px; height: 24px; }
   </style>
 </head>
 <body>

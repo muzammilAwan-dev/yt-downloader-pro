@@ -45,7 +45,7 @@ async function listSites() {
   return self.getAllSites().map(site => ({
     id: site.id,
     label: site.label,
-    note: site.note || '',
+    note: site.userNote || '',
     enabled: !disabledSites.includes(site.id),
   }));
 }

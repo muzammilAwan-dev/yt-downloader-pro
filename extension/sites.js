@@ -47,6 +47,7 @@ const YTDLP_SITES = {
 
   twitter: {
     id: 'twitter',
+    userNote: "Page layout changes often, so this may need occasional updates.", // shown in the popup's Supported Sites list (plain language; `note` below is developer-facing)
     label: 'Twitter / X',
     matches: ['*://twitter.com/*', '*://x.com/*'],
     cookieDomain: '.x.com',
@@ -66,6 +67,7 @@ const YTDLP_SITES = {
 
   instagram: {
     id: 'instagram',
+    userNote: "Works best when you're logged in.", // shown in the popup's Supported Sites list (plain language; `note` below is developer-facing)
     label: 'Instagram',
     matches: ['*://www.instagram.com/*', '*://instagram.com/*'],
     cookieDomain: '.instagram.com',
@@ -90,6 +92,7 @@ const YTDLP_SITES = {
 
   tiktok: {
     id: 'tiktok',
+    userNote: "Page layout changes often, so this may occasionally break.", // shown in the popup's Supported Sites list (plain language; `note` below is developer-facing)
     label: 'TikTok',
     matches: ['*://www.tiktok.com/*', '*://tiktok.com/*'],
     cookieDomain: '.tiktok.com',
@@ -111,6 +114,7 @@ const YTDLP_SITES = {
 
   facebook: {
     id: 'facebook',
+    userNote: "Works best when you're logged in. Facebook can be unreliable.", // shown in the popup's Supported Sites list (plain language; `note` below is developer-facing)
     label: 'Facebook',
     matches: ['*://www.facebook.com/*', '*://facebook.com/*', '*://fb.watch/*'],
     cookieDomain: '.facebook.com',
@@ -133,6 +137,7 @@ const YTDLP_SITES = {
 
   reddit: {
     id: 'reddit',
+    userNote: "Most videos are public, so no login is needed.", // shown in the popup's Supported Sites list (plain language; `note` below is developer-facing)
     label: 'Reddit',
     matches: ['*://www.reddit.com/*', '*://reddit.com/*', '*://old.reddit.com/*'],
     cookieDomain: '.reddit.com',
@@ -151,6 +156,7 @@ const YTDLP_SITES = {
 
   twitch: {
     id: 'twitch',
+    userNote: "VODs and clips.", // shown in the popup's Supported Sites list (plain language; `note` below is developer-facing)
     label: 'Twitch',
     matches: ['*://www.twitch.tv/*', '*://twitch.tv/*', '*://clips.twitch.tv/*'],
     cookieDomain: '.twitch.tv',
@@ -188,6 +194,7 @@ const YTDLP_SITES = {
 
   soundcloud: {
     id: 'soundcloud',
+    userNote: "Audio only.", // shown in the popup's Supported Sites list (plain language; `note` below is developer-facing)
     label: 'SoundCloud',
     matches: ['*://soundcloud.com/*'],
     cookieDomain: '.soundcloud.com',

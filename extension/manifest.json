@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YT Downloader Pro",
-  "version": "6.3.2",
+  "version": "6.4.0",
   "description": "Premium multi-site downloader with native yt-dlp integration. Works automatically on YouTube, Twitter/X, Instagram, TikTok, Facebook, Reddit, Twitch, Vimeo, and SoundCloud - toggle any site off in Settings if you don't want it there.",
   "author": "muzammilAwan-dev",
   "homepage_url": "https://github.com/muzammilAwan-dev/yt-downloader-pro",

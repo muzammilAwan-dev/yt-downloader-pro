@@ -119,7 +119,8 @@ async function saveImage(url, site) {
     if (!/^(https?:|data:)/i.test(url || '')) throw new Error('Unsupported image address');
     let ext = 'jpg';
     try {
-      const m = new URL(url).pathname.match(/\.(jpe?g|png|webp|gif|avif)$/i);
+      const u = new URL(url);
+      const m = u.pathname.match(/\.(jpe?g|png|webp|gif|avif)$/i) || ('.' + (u.searchParams.get('format') || '')).match(/\.(jpe?g|png|webp|gif|avif)$/i);
       if (m) ext = m[1].toLowerCase();
     } catch { /* data: URL etc - keep jpg */ }
     const filename = `YT Downloader Pro/${site || 'image'}_${Date.now()}.${ext}`;

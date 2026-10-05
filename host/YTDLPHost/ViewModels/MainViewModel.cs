@@ -532,24 +532,15 @@ namespace YTDLPHost.ViewModels
             }
         }
 
+        private string _lastBlockReason = string.Empty;
+
+        /// <summary>Allowlist check (see CommandValidator). The payload comes from a ytdlp:// link, i.e. untrusted input.</summary>
         private bool IsCommandSafe(string command)
         {
-            string[] forbiddenFlags = { "--exec", "--exec-before-download", "--postprocessor-args", "--setup-hook" };
-            foreach (var flag in forbiddenFlags)
-            {
-                if (command.Contains(flag, StringComparison.OrdinalIgnoreCase)) return false;
-            }
-
-            var match = CommandPathRegex.Match(command);
-            if (match.Success)
-            {
-                string path = match.Groups[1].Value;
-                if (path.Contains("..\\") || path.Contains("../") || 
-                    path.StartsWith(@"C:\Windows", StringComparison.OrdinalIgnoreCase) ||
-                    path.Contains(@"\Start Menu\Programs\Startup", StringComparison.OrdinalIgnoreCase)) return false;
-            }
-
-            return true;
+            if (CommandValidator.TryValidate(command, out var reason)) return true;
+            _lastBlockReason = reason;
+            AppLogger.Log($"[SECURITY] Blocked command payload: {reason}");
+            return false;
         }
 
         public void ProcessUrl(string? rawUrl)
@@ -581,7 +572,7 @@ namespace YTDLPHost.ViewModels
                 if (!IsCommandSafe(command))
                 {
                     StatusText = "Security Error: Blocked potentially malicious payload.";
-                    System.Windows.MessageBox.Show("A potentially unsafe download command was blocked for your security.", "YT Downloader Pro - Security Alert", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    System.Windows.MessageBox.Show($"A download command was blocked for your security.\n\nReason: {_lastBlockReason}", "YT Downloader Pro - Security Alert", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 

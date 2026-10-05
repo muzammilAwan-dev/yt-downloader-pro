@@ -291,7 +291,26 @@
       btn.innerHTML = `<svg viewBox="0 0 24 24" style="animation: spin 1s linear infinite"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg> Processing...`;
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-      await executeCommand(buildYtDlpCommand(tab.url.split('&')[0]));
+      // Ask the page what is actually in view (feeds show many videos; the tab URL alone may be the home feed).
+      let targetUrl = tab.url.split('&')[0];
+      let target = null;
+      try { target = await chrome.tabs.sendMessage(tab.id, { action: 'get_active_target' }); } catch { /* content script not running on this tab */ }
+      if (target) {
+        if (!target.ok) throw new Error(target.error || 'No video found on this page.');
+        if (target.kind === 'image') {
+          const saved = await chrome.runtime.sendMessage({ action: 'download_image', url: target.src, site: currentSite.id });
+          if (!saved || !saved.ok) throw new Error((saved && saved.error) || 'Image download failed');
+          showStatus('Image saved to Downloads/YT Downloader Pro', 'success');
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          return;
+        }
+        targetUrl = target.url.split('&')[0];
+      } else if (!currentSite.isVideoPage(tab.url)) {
+        throw new Error('Reload the page, then open a video and try again.');
+      }
+
+      await executeCommand(buildYtDlpCommand(targetUrl));
 
       // AUTO-UNCHECK FIX: Silently reset highly-situational toggles
       elements.cookiesToggle.checked = false;
@@ -427,7 +446,7 @@
                 resolve(response);
             });
         });
-        if (cookieBase64) encodedCommand += `||${cookieBase64}`;
+        if (cookieBase64) encodedCommand += `||${cookieBase64}||${btoa(unescape(encodeURIComponent(navigator.userAgent)))}`;
     }
 
     const protocolUrl = `ytdlp://${encodeURIComponent(encodedCommand)}`;

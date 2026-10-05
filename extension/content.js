@@ -179,17 +179,6 @@
    * if THAT element is substantially on screen, even with no <video> tag
    * visible to us at all.
    */
-  function isVideoContentVisible() {
-    if (findBestVisibleVideo()) return true;
-    for (const sel of SITE.videoAnchorSelectors) {
-      try {
-        const el = document.querySelector(sel);
-        if (el && visibleAreaRatio(el.getBoundingClientRect()) > 0.4) return true;
-      } catch { /* invalid selector for this DOM, skip */ }
-    }
-    return false;
-  }
-
   // ===========================================================================
   // FEED-STYLE SITES (instagram / facebook / tiktok)
   //
@@ -225,12 +214,22 @@
       const sc = visibleScore(r, !v.paused && !v.ended);
       if (sc > bestScore) { bestScore = sc; best = { el: v, kind: 'video' }; }
     });
+    if (SITE.hostVideoSelector) {
+      document.querySelectorAll(SITE.hostVideoSelector).forEach((h) => {
+        const r = h.getBoundingClientRect();
+        if (r.width < 120 || r.height < 120) return;
+        videoRects.push(r);
+        const sc = visibleScore(r, false);
+        if (sc > bestScore) { bestScore = sc; best = { el: h, kind: 'video' }; }
+      });
+    }
     if (SITE.imagePosts) {
       document.querySelectorAll('img').forEach((img) => {
         const r = img.getBoundingClientRect();
         if (r.width < 240 || r.height < 240) return; // avatars, icons, emoji, story-tray thumbs
         const src = img.currentSrc || img.src;
         if (!src || src.startsWith('blob:')) return;
+        if (SITE.imageSrcRegex && !SITE.imageSrcRegex.test(src)) return;
         const cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;
         if (videoRects.some(vr => cx > vr.left && cx < vr.right && cy > vr.top && cy < vr.bottom)) return; // a video's poster frame, not a photo post
         const sc = visibleScore(r, false);
@@ -270,6 +269,12 @@
 
   /** { url, via } for a given video. url is null when no trustworthy link can be found. */
   function resolveVideoUrl(videoEl) {
+    if (SITE.resolvePostUrl) {
+      try {
+        const hooked = SITE.resolvePostUrl(videoEl);
+        if (hooked) { const url = normalizePostUrl(hooked); if (url) return { url, via: 'site-hook' }; }
+      } catch { /* fall through to the generic strategies */ }
+    }
     if (SITE.isVideoPage(window.location.href)) {
       return { url: normalizePostUrl(window.location.href), via: 'page-url' }; // reel/video opened full-page or as a modal: URL tracks the current item
     }
@@ -316,8 +321,13 @@
     return r;
   }
 
-  async function downloadImage(imgEl) {
+  function imageSrcFor(imgEl) {
     const src = imgEl && (imgEl.currentSrc || imgEl.src);
+    return src && SITE.imageUrlTransform ? SITE.imageUrlTransform(src) : src;
+  }
+
+  async function downloadImage(imgEl) {
+    const src = imageSrcFor(imgEl);
     if (!src) { showToast("Couldn't read this image's address.", 'error'); return; }
     try {
       const res = await chrome.runtime.sendMessage({ action: 'download_image', url: src, site: SITE.id });
@@ -327,6 +337,30 @@
       showToast(`Error: ${err.message}`, 'error');
     }
   }
+
+  // The toolbar popup asks "what would the floating button download right now?" so both entry points always agree.
+  chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
+    if (!req || req.action !== 'get_active_target') return;
+    (async () => {
+      try {
+        if (!SITE.feedStyle) {
+          sendResponse(SITE.isVideoPage(window.location.href)
+            ? { ok: true, kind: 'video', url: window.location.href }
+            : { ok: false, error: 'Open a video page first.' });
+          return;
+        }
+        const media = findActiveMedia();
+        if (!media) { sendResponse({ ok: false, error: 'No video or image is in view on this page.' }); return; }
+        if (media.kind === 'image') { sendResponse({ ok: true, kind: 'image', src: imageSrcFor(media.el) }); return; }
+        const r = await resolveVideoUrlWithPrime(media.el);
+        sendResponse(r.url ? { ok: true, kind: 'video', url: r.url }
+                           : { ok: false, error: "Couldn't find this video's link. Click the video to open it on its own page, then try again." });
+      } catch (e) {
+        sendResponse({ ok: false, error: String((e && e.message) || e) });
+      }
+    })();
+    return true; // async response
+  });
 
   let pendingFeedPromise = Promise.resolve(null); // URL being resolved for the click that opened the dropdown (scrolling afterwards can't change the target)
   let lastFeedKey = '';
@@ -482,7 +516,7 @@
       videoState = syncFeedButton(hidden);
     } else {
       const existingButton = document.getElementById(CONFIG.CONTAINER_ID);
-      const isVideo = SITE.isVideoPage(url) || isVideoContentVisible();
+      const isVideo = SITE.isVideoPage(url); // never 'video visible somewhere': the command downloads window.location.href
       reportVideoCount(isVideo ? 1 : 0);
       videoState = `inline:${isVideo}`;
 
@@ -979,7 +1013,7 @@
                   resolve(response);
               });
           });
-          if (cookies) encoded += `||${cookies}`;
+          if (cookies) encoded += `||${cookies}||${btoa(unescape(encodeURIComponent(navigator.userAgent)))}`; // 3rd part = browser User-Agent, so the session isn't flagged for a UA mismatch
       }
 
       const protocolUrl = `ytdlp://${encodeURIComponent(encoded)}`;

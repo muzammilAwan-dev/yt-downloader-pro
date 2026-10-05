@@ -30,7 +30,7 @@ const YTDLP_SITES = {
       thumbnail: true, metadata: true, sponsorBlock: true, compatMode: true,
       crop: true, playlist: true, channel: true
     },
-    isVideoPage: (url) => /\/(watch\?v=|shorts\/)/.test(url),
+    isVideoPage: (url) => /\/(watch\?v=|shorts\/|live\/)/.test(url),
     isChannelPage: (url) => {
       if (/\/(watch\?v=|shorts\/)/.test(url)) return false;
       return /\/(channel\/UC[\w-]{10,}|c\/[^/?#]+|@[\w.-]+|user\/[^/?#]+)(\/(videos|streams|shorts))?\/?(\?.*)?$/.test(url);
@@ -48,6 +48,14 @@ const YTDLP_SITES = {
   twitter: {
     id: 'twitter',
     userNote: "Page layout changes often, so this may need occasional updates.", // shown in the popup's Supported Sites list (plain language; `note` below is developer-facing)
+    // Timelines show many videos/photos per page and the page URL only names the *opened* tweet, so use the
+    // same "button follows the media in view" logic as Instagram/Facebook, resolving each tweet's own link.
+    feedStyle: true,
+    imagePosts: true,
+    imageSrcRegex: /pbs\.twimg\.com\/media\//,
+    imageUrlTransform: (src) => { try { const u = new URL(src); if (u.searchParams.has('name')) u.searchParams.set('name', 'orig'); return u.href; } catch { return src; } },
+    postLinkRegex: /\/status\/\d+/,
+    resolvePostUrl: (el) => { const t = el.closest('article')?.querySelector('a[href*="/status/"] time'); const a = t && t.closest('a'); return a ? a.href : null; },
     label: 'Twitter / X',
     matches: ['*://twitter.com/*', '*://x.com/*'],
     cookieDomain: '.x.com',
@@ -82,6 +90,7 @@ const YTDLP_SITES = {
     // (a nav link like /reels/ or a hashtag link must not match).
     postLinkRegex: /\/(?:p|reels?|tv)\/[\w-]{5,}/,
     imagePosts: true, // photo posts: the floating button saves the image in view directly (no yt-dlp involved)
+    imageSrcRegex: /cdninstagram\.com|fbcdn\.net/,
     isChannelPage: () => false, // profile grids mix posts/reels/tagged - not a clean bulk-download unit yet
     videoAnchorSelectors: ['main video', 'article video', 'video'],
     preferAncestor: 'main', // VERIFIED via dom-probe: only stable landmark found; everything else is hashed atomic-CSS classes
@@ -126,8 +135,9 @@ const YTDLP_SITES = {
     },
     isVideoPage: (url) => /\/(?:watch\/?\?(?:.*&)?v=\d+|reel\/\d+|videos\/(?:[^/?#]+\/)?\d+|share\/[vr]\/[\w-]+|[^/?#]+\/posts\/[\w-]+|groups\/[^/?#]+\/(?:permalink|posts)\/\d+)/.test(url) || /fb\.watch\//.test(url),
     // reel/<digits> on purpose: /reel/hashtag/?q=... is a hashtag page, not a video. Posts are best-effort (yt-dlp may reject pfbid permalinks).
-    postLinkRegex: /\/(?:reel\/\d+|videos\/(?:[^/?#]+\/)?\d+|share\/[vr]\/[\w-]+|[^/?#]+\/posts\/[\w-]+|groups\/[^/?#]+\/(?:permalink|posts)\/\d+|watch\/?\?(?:[^#]*&)?v=\d+|story\.php\?(?:[^#]*&)?story_fbid=\d+)|fb\.watch\/\w+/,
+    postLinkRegex: /\/(?:reel\/\d+|videos\/(?:[^/?#]+\/)?\d+|share\/[vr]\/[\w-]+|[^/?#]+\/posts\/[\w-]+|groups\/[^/?#]+\/(?:permalink|posts)\/\d+|watch\/?\?(?:[^#]*&)?v=\d+)|fb\.watch\/\w+/,
     imagePosts: true, // photo posts: the floating button saves the image in view directly (no yt-dlp involved)
+    imageSrcRegex: /fbcdn\.net|fbsbx\.com/,
     isChannelPage: () => false,
     videoAnchorSelectors: ['[data-pagelet="WatchPermalinkVideo"] video', 'video'],
     feedStyle: true, // VERIFIED via dom-probe: Reels pages also prefetch multiple <video> elements at once
@@ -138,6 +148,10 @@ const YTDLP_SITES = {
   reddit: {
     id: 'reddit',
     userNote: "Most videos are public, so no login is needed.", // shown in the popup's Supported Sites list (plain language; `note` below is developer-facing)
+    // Reddit's player is a custom element with its <video> inside a shadow root, which document.querySelectorAll('video') can't see.
+    feedStyle: true,
+    hostVideoSelector: 'shreddit-player-2, shreddit-player',
+    resolvePostUrl: (el) => { const p = el.closest('shreddit-post'); const l = p && (p.getAttribute('permalink') || p.getAttribute('content-href')); return l ? new URL(l, location.origin).href : null; },
     label: 'Reddit',
     matches: ['*://www.reddit.com/*', '*://reddit.com/*', '*://old.reddit.com/*'],
     cookieDomain: '.reddit.com',
@@ -185,7 +199,7 @@ const YTDLP_SITES = {
       thumbnail: true, metadata: true, sponsorBlock: false, compatMode: true,
       crop: true, playlist: false, channel: true
     },
-    isVideoPage: (url) => /^\/\d+(\?.*)?$/.test(new URL(url).pathname),
+    isVideoPage: (url) => /^\/(?:video\/)?\d+/.test(new URL(url).pathname),
     isChannelPage: (url) => /^\/[\w-]+\/videos\/?$/.test(new URL(url).pathname),
     videoAnchorSelectors: ['[data-testid="vh-player-container"]', '.vp-video-wrapper video', 'video'],
     channelAnchorSelectors: [],

@@ -55,13 +55,19 @@ They're released and versioned together from this single repo.
 2. Run it. This installs the WPF host to `C:\Program Files\YT Downloader Pro` and registers the `ytdlp://` protocol.
 3. On first launch, the host silently fetches `yt-dlp`, `ffmpeg`, and `deno` into `%LOCALAPPDATA%\YTDownloaderProEngine`.
 
-### 2. Install the Chrome extension
+### 2. Install the browser extension
 
 Because this extension talks to the native host and reads session cookies, it must be loaded unpacked:
 
-1. Open `chrome://extensions/` and enable **Developer mode**.
-2. Click **Load unpacked**.
-3. Select the [`extension/`](extension) folder from this repo.
+1. Download the `extension.zip` file and extract it to a folder on your computer.
+2. Open your Chromium-based browser (such as **Google Chrome**, **Microsoft Edge**, **Brave**, or **Opera**):
+   - **Chrome / Brave:** Navigate to `chrome://extensions/`
+   - **Edge:** Navigate to `edge://extensions/`
+   - **Opera:** Navigate to `opera://extensions`
+3. Enable **Developer mode** using the toggle switch (usually found in the top-right corner of the extensions page).
+4. Click **Load unpacked** (or **Load unpacked extension**).
+5. Select the **main root extension folder** (the specific folder containing the `manifest.json` file). 
+   - *Important:* Make sure you select the folder containing the manifest directly, rather than any parent or outer folder, otherwise the extension will fail to load or throw an error.
 
 ## 📖 Usage
 

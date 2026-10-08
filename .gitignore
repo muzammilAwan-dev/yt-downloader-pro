@@ -8,6 +8,7 @@ installer/Output/
 *.exe
 *.bat
 *.pem
+*.py
 
 # Visual Studio / Rider
 .vs/

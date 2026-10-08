@@ -21,14 +21,14 @@ They're released and versioned together from this single repo.
 
 <table>
   <tr>
-    <td colspan="2" align="center" valign="top"><a href="extension/docs/2.webp"><img src="extension/docs/thumbs/2.webp" width="320" alt="One-click button"></a><br><sub><b>One-click button</b><br>Sits on the video, never in the way</sub></td>
-    <td colspan="2" align="center" valign="top"><a href="extension/docs/3.webp"><img src="extension/docs/thumbs/3.webp" width="320" alt="Quality &amp; format menu"></a><br><sub><b>Quality &amp; format menu</b><br>4K down to audio-only</sub></td>
-    <td colspan="2" align="center" valign="top"><a href="extension/docs/1.webp"><img src="extension/docs/thumbs/1.webp" width="320" alt="Toolbar popup"></a><br><sub><b>Toolbar popup</b><br>Trim, subtitles, playlists, save folder</sub></td>
+    <td colspan="2" align="center" valign="top"><a href="extension/docs/2.webp"><img src="extension/docs/2.webp" width="320" alt="One-click button"></a><br><sub><b>One-click button</b><br>Sits on the video, never in the way</sub></td>
+    <td colspan="2" align="center" valign="top"><a href="extension/docs/3.webp"><img src="extension/docs/3.webp" width="320" alt="Quality &amp; format menu"></a><br><sub><b>Quality &amp; format menu</b><br>4K down to audio-only</sub></td>
+    <td colspan="2" align="center" valign="top"><a href="extension/docs/1.webp"><img src="extension/docs/1.webp" width="320" alt="Toolbar popup"></a><br><sub><b>Toolbar popup</b><br>Trim, subtitles, playlists, save folder</sub></td>
   </tr>
   <tr>
     <td colspan="1"></td>
-    <td colspan="2" align="center" valign="top"><a href="extension/docs/4.webp"><img src="extension/docs/thumbs/4.webp" width="320" alt="Advanced options"></a><br><sub><b>Advanced options</b><br>Speed, metadata, custom command</sub></td>
-    <td colspan="2" align="center" valign="top"><a href="extension/docs/5.webp"><img src="extension/docs/thumbs/5.webp" width="320" alt="Desktop host"></a><br><sub><b>Desktop host</b><br>Queue, speed limit, live progress</sub></td>
+    <td colspan="2" align="center" valign="top"><a href="extension/docs/4.webp"><img src="extension/docs/4.webp" width="320" alt="Advanced options"></a><br><sub><b>Advanced options</b><br>Speed, metadata, custom command</sub></td>
+    <td colspan="2" align="center" valign="top"><a href="extension/docs/5.webp"><img src="extension/docs/5.webp" width="320" alt="Desktop host"></a><br><sub><b>Desktop host</b><br>Queue, speed limit, live progress</sub></td>
     <td colspan="1"></td>
   </tr>
 </table>

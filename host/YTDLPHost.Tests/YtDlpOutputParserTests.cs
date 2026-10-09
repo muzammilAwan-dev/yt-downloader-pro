@@ -148,8 +148,8 @@ public class YtDlpOutputParserTests
         Assert.Null(Record.Exception(() => Run(line)));
     }
 
-    [Fact(Skip = "Known bug, fixed in Phase 1: double.TryParse uses the current culture, so '42.5' is mis-parsed under comma-decimal locales (e.g. de-DE on Linux/macOS/Windows). Un-skip once the parser uses CultureInfo.InvariantCulture.")]
-    public void KnownBug_Progress_parsing_is_culture_invariant()
+    [Fact]
+    public void Progress_parsing_is_culture_invariant()
     {
         var saved = CultureInfo.CurrentCulture;
         try
@@ -157,6 +157,23 @@ public class YtDlpOutputParserTests
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
             var t = Run("[download]  42.5% of ~  10.00MiB at    2.00MiB/s ETA 00:04");
             Assert.Equal(42.5, t.Progress);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = saved;
+        }
+    }
+
+    [Fact]
+    public void Extension_matching_is_culture_invariant()
+    {
+        // Under tr-TR "TIFF".ToLower() is "t\u0131ff" (dotless i), which used to miss the image list.
+        var saved = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("tr-TR");
+            var t = Run($"[download] Destination: {Path.Combine(Dir, "clip.TIFF")}");
+            Assert.Equal("Downloading Thumbnail...", t.CurrentPhase);
         }
         finally
         {

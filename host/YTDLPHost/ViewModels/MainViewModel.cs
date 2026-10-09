@@ -119,7 +119,7 @@ namespace YTDLPHost.ViewModels
                     return; 
                 }
                 
-                Settings.SpeedLimit = speed.Replace(" ", "").ToUpper();
+                Settings.SpeedLimit = speed.Replace(" ", "").ToUpperInvariant();
 
                 var oldSettings = AppSettings.Load(); 
                 bool speedChanged = oldSettings.SpeedLimit != Settings.SpeedLimit;
@@ -860,11 +860,11 @@ namespace YTDLPHost.ViewModels
                 if (Directory.Exists(dir) && !string.IsNullOrEmpty(title))
                 {
                     var files = Directory.GetFiles(dir, $"{title}*");
-                    string outExt = Path.GetExtension(task.OutputPath).ToLower();
+                    string outExt = Path.GetExtension(task.OutputPath).ToLowerInvariant();
                     
                     foreach (var file in files)
                     {
-                        string ext = Path.GetExtension(file).ToLower();
+                        string ext = Path.GetExtension(file).ToLowerInvariant();
                         if ((ext == ".webp" || ext == ".jpg" || ext == ".jpeg" || ext == ".png") && ext != outExt)
                         {
                             try { File.Delete(file); } catch { }

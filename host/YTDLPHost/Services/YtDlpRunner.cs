@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -275,7 +276,7 @@ namespace YTDLPHost.Services
                         task.OutputPath = path;
                         
                         string cleanTitle = Path.GetFileNameWithoutExtension(path) ?? "Unknown";
-                        string ext = Path.GetExtension(path)?.ToLower() ?? "";
+                        string ext = Path.GetExtension(path)?.ToLowerInvariant() ?? "";
                         
                         cleanTitle = Regex.Replace(cleanTitle, @"\.(f\w+|en-orig|en|vtt|webp|jpg)$", "", RegexOptions.IgnoreCase);
 
@@ -417,7 +418,7 @@ namespace YTDLPHost.Services
                 var percentMatch = PercentRegex.Match(data);
                 if (percentMatch.Success)
                 {
-                    if (double.TryParse(percentMatch.Groups[1].Value, out var percent))
+                    if (double.TryParse(percentMatch.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var percent))
                     {
                         task.Progress = Math.Min(percent, 100.0);
                     }

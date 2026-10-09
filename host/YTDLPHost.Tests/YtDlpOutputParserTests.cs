@@ -49,13 +49,17 @@ public class YtDlpOutputParserTests
         var video = Path.Combine(Dir, "My_Video_1080p.f137.mp4");
         var audio = Path.Combine(Dir, "My_Video_1080p.f251.webm");
 
-        var t = Run($"[download] Destination: {video}");
+        // One runner for both lines: video-vs-audio is decided from state the runner keeps per download.
+        var runner = new YtDlpRunner();
+        var t = new DownloadTask { CurrentPhase = "Starting..." };
+
+        runner.HandleOutputCore($"[download] Destination: {video}", t);
         Assert.Equal(video, t.OutputPath);
         Assert.Contains(video, t.TrackedFiles);
         Assert.Equal("My_Video_1080p", t.Title);
         Assert.Equal("Downloading Video...", t.CurrentPhase);
 
-        Run(t, $"[download] Destination: {audio}");
+        runner.HandleOutputCore($"[download] Destination: {audio}", t);
         Assert.Contains(audio, t.TrackedFiles);
         Assert.Equal("Downloading Audio...", t.CurrentPhase);
         Assert.Equal("My_Video_1080p", t.Title); // title is only taken from the first file

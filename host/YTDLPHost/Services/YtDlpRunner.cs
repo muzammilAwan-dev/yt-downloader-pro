@@ -224,7 +224,7 @@ namespace YTDLPHost.Services
             }
         }
 
-        private void HandleOutputCore(string data, DownloadTask task)
+        internal void HandleOutputCore(string data, DownloadTask task)
         {
             task.AppendLog(data);
             bool needsUiUpdate = false;

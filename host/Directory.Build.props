@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <!-- Keep in sync with extension/manifest.json and host/installer/setup.iss.
+         tools/check_versions.py enforces this in CI. -->
+    <Version>6.4.0</Version>
+  </PropertyGroup>
+</Project>

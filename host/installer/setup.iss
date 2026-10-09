@@ -1,7 +1,9 @@
+#define MyAppVersion "6.4.0"
+
 [Setup]
 AppId={{95CAE36F-FAB4-4DDB-BBE1-7F9C354125A2}
 AppName=YT Downloader Pro
-AppVersion=6.0.0
+AppVersion={#MyAppVersion}
 AppPublisher=muzammilAwan-dev
 AppCopyright=Copyright (C) 2026 muzammilAwan-dev
 
@@ -14,7 +16,7 @@ PrivilegesRequired=admin
 
 ; --- OUTPUT SETTINGS ---
 OutputDir=Output
-OutputBaseFilename=YTDownloaderPro_Setup_v6.0.0
+OutputBaseFilename=YTDownloaderPro_Setup_v{#MyAppVersion}
 SetupIconFile=Assets\icon.ico
 UninstallDisplayIcon={app}\YTDLPHost.exe
 Compression=lzma2/ultra64

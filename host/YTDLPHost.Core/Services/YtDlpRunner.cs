@@ -75,7 +75,7 @@ namespace YTDLPHost.Services
             {
                 var saveDirectory = ExtractSaveDirectory(command);
 
-                string engineDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "YTDownloaderProEngine");
+                string engineDir = AppPaths.Current.EngineDir;
                 string ytdlpPath = Path.Combine(engineDir, "yt-dlp.exe");
                 string ffmpegPath = Path.Combine(engineDir, "ffmpeg.exe");
                 string denoPath = Path.Combine(engineDir, "deno.exe");
@@ -100,7 +100,7 @@ namespace YTDLPHost.Services
                 {
                     if (string.IsNullOrWhiteSpace(task.CookieFilePath) || !File.Exists(task.CookieFilePath))
                     {
-                        task.CookieFilePath = Path.Combine(Path.GetTempPath(), $"ytdlp_cookies_{Guid.NewGuid()}.txt");
+                        task.CookieFilePath = Path.Combine(AppPaths.Current.TempDir, $"ytdlp_cookies_{Guid.NewGuid()}.txt");
                         File.WriteAllText(task.CookieFilePath, task.CookiePayload, new UTF8Encoding(false));
                     }
                 }
@@ -483,10 +483,10 @@ namespace YTDLPHost.Services
                 if (Directory.Exists(dir)) return dir;
             }
 
-            string downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            string downloadsPath = AppPaths.Current.DownloadsDir;
             if (Directory.Exists(downloadsPath)) return downloadsPath;
             
-            return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return AppPaths.Current.HomeDir;
         }
 
         private void SaveLogsToDisk(DownloadTask task)
@@ -500,7 +500,7 @@ namespace YTDLPHost.Services
 
             if (string.IsNullOrEmpty(saveDir))
             {
-                saveDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+                saveDir = AppPaths.Current.DownloadsDir;
             }
 
             string logDir = Path.Combine(saveDir, "YTDLP-Video-logs");

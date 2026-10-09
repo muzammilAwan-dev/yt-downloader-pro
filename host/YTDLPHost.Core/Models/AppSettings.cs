@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using YTDLPHost.Services;
 
 namespace YTDLPHost.Models
 {
@@ -11,7 +12,7 @@ namespace YTDLPHost.Models
         // "0" = Unlimited. yt-dlp accepts formats like "5M" (5 MB/s), "500K" (500 KB/s)
         public string SpeedLimit { get; set; } = "0"; 
 
-        private static readonly string SettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "YTDownloaderProEngine", "settings.json");
+        private static string SettingsPath => Path.Combine(AppPaths.Current.DataDir, "settings.json");
 
         public static AppSettings Load()
         {

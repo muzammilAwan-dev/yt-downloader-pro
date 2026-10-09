@@ -8,7 +8,7 @@ namespace YTDLPHost.Services
 {
     public static class HistoryManager
     {
-        private static readonly string HistoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "YTDownloaderProEngine", "history.json");
+        private static string HistoryPath => Path.Combine(AppPaths.Current.DataDir, "history.json");
         private static readonly object _fileLock = new();
 
         public static void SaveHistory(IEnumerable<DownloadTask> tasks)

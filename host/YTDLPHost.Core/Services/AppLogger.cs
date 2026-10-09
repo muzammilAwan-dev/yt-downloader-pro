@@ -9,7 +9,7 @@ namespace YTDLPHost.Services
 {
     public static class AppLogger
     {
-        private static readonly string LogDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "YTDownloaderProEngine");
+        private static readonly string LogDir = AppPaths.Current.LogsDir;
         private static readonly string LogFile = Path.Combine(LogDir, "host_debug.log");
         
         // OPTIMIZATION 1: High-Performance Asynchronous Logging Queue decouples disk I/O from the app UI

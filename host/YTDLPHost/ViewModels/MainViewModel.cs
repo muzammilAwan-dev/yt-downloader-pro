@@ -179,7 +179,7 @@ namespace YTDLPHost.ViewModels
 
         private void InitializeCrashReporting()
         {
-            string logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "YTDownloaderProEngine");
+            string logDir = AppPaths.Current.LogsDir;
             if (!Directory.Exists(logDir)) try { Directory.CreateDirectory(logDir); } catch { }
 
             string crashLogPath = Path.Combine(logDir, "crash_log.txt");
@@ -311,7 +311,7 @@ namespace YTDLPHost.ViewModels
             
             try
             {
-                string engineDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "YTDownloaderProEngine");
+                string engineDir = AppPaths.Current.EngineDir;
                 
                 if (!Directory.Exists(engineDir)) 
                 {
@@ -371,8 +371,8 @@ namespace YTDLPHost.ViewModels
                         if (setupVm != null) { setupVm.Task.CurrentPhase = "Downloading FFmpeg media codecs..."; setupVm.Refresh(); }
                     });
 
-                    string zipPath = Path.Combine(Path.GetTempPath(), "ffmpeg.zip");
-                    string extractPath = Path.Combine(Path.GetTempPath(), "ffmpeg_ext");
+                    string zipPath = Path.Combine(AppPaths.Current.TempDir, "ffmpeg.zip");
+                    string extractPath = Path.Combine(AppPaths.Current.TempDir, "ffmpeg_ext");
                     
                     var ffmpegBytes = await DownloadFileWithRetryAsync(_httpClient, "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip");
                     await File.WriteAllBytesAsync(zipPath, ffmpegBytes);
@@ -410,8 +410,8 @@ namespace YTDLPHost.ViewModels
                         if (setupVm != null) { setupVm.Task.CurrentPhase = "Downloading JS engine..."; setupVm.Refresh(); }
                     });
 
-                    string denoZipPath = Path.Combine(Path.GetTempPath(), "deno.zip");
-                    string denoExtractPath = Path.Combine(Path.GetTempPath(), "deno_ext");
+                    string denoZipPath = Path.Combine(AppPaths.Current.TempDir, "deno.zip");
+                    string denoExtractPath = Path.Combine(AppPaths.Current.TempDir, "deno_ext");
                     
                     var denoBytes = await DownloadFileWithRetryAsync(_httpClient, "https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip");
                     await File.WriteAllBytesAsync(denoZipPath, denoBytes);
@@ -604,7 +604,7 @@ namespace YTDLPHost.ViewModels
                             {
                                 cookieContent = cookieContent.TrimStart('\uFEFF');
 
-                                var cookieFile = Path.Combine(Path.GetTempPath(), $"ytdlp_cookies_{Guid.NewGuid()}.txt");
+                                var cookieFile = Path.Combine(AppPaths.Current.TempDir, $"ytdlp_cookies_{Guid.NewGuid()}.txt");
                                 File.WriteAllText(cookieFile, cookieContent, new UTF8Encoding(false));
                                 cookieFilePath = cookieFile;
                                 AppLogger.Log("[COOKIES] Session cookies provisioned to local temporary storage.");
@@ -1087,12 +1087,12 @@ namespace YTDLPHost.ViewModels
                 {
                     dir = dir.Replace("/", "\\");
                     dir = Environment.ExpandEnvironmentVariables(dir);
-                    if (dir.StartsWith("~\\") || dir.StartsWith("~")) dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), dir.Substring(1).TrimStart('\\'));
+                    if (dir.StartsWith("~\\") || dir.StartsWith("~")) dir = Path.Combine(AppPaths.Current.HomeDir, dir.Substring(1).TrimStart('\\'));
                     if (!Directory.Exists(dir)) try { Directory.CreateDirectory(dir); } catch { }
                     if (Directory.Exists(dir)) return dir;
                 }
             }
-            return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return AppPaths.Current.HomeDir;
         }
 
         private void ExitApplication()

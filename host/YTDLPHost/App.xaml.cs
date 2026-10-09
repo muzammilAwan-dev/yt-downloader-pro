@@ -54,7 +54,7 @@ namespace YTDLPHost
                 ProtocolHandler.Register();
             }
 
-            string payloadsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "YT Downloader Pro", "Payloads");
+            string payloadsDir = AppPaths.Current.PayloadsDir;
             if (!Directory.Exists(payloadsDir)) Directory.CreateDirectory(payloadsDir);
 
             _singleInstanceManager = new SingleInstanceManager();

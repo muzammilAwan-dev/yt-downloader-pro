@@ -10,9 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using YTDLPHost.Models;
@@ -75,8 +73,16 @@ namespace YTDLPHost.ViewModels
             return client;
         }
 
-        public MainViewModel()
+        private readonly IUiDispatcher _ui;
+        private readonly IDialogService _dialogs;
+        private readonly IAppLifetime _lifetime;
+
+        public MainViewModel(IUiDispatcher ui, IDialogService dialogs, IAppLifetime lifetime)
         {
+            _ui = ui;
+            _dialogs = dialogs;
+            _lifetime = lifetime;
+
             InitializeCrashReporting();
             AppLogger.Log("[VM] Initializing MainViewModel...");
             
@@ -107,11 +113,7 @@ namespace YTDLPHost.ViewModels
                 string speed = Settings.SpeedLimit?.Trim() ?? "0";
                 if (speed != "0" && !Regex.IsMatch(speed, @"^\d+(\.\d+)?[KMG]$", RegexOptions.IgnoreCase))
                 {
-                    System.Windows.MessageBox.Show(
-                        "Invalid speed limit format.\n\nPlease use '0' for unlimited, or a number followed by K, M, or G (e.g., 500K, 2.5M, 10M).", 
-                        "YT Downloader Pro - Settings Error", 
-                        MessageBoxButton.OK, 
-                        MessageBoxImage.Warning);
+                    _dialogs.Show("YT Downloader Pro - Settings Error", "Invalid speed limit format.\n\nPlease use '0' for unlimited, or a number followed by K, M, or G (e.g., 500K, 2.5M, 10M).", DialogKind.Warning);
                     
                     var safeSettings = AppSettings.Load();
                     Settings.SpeedLimit = safeSettings.SpeedLimit;
@@ -157,11 +159,7 @@ namespace YTDLPHost.ViewModels
             MinimizeToTrayCommand = new RelayCommand(() => 
             {
                 IsWindowVisible = false;
-                var app = System.Windows.Application.Current;
-                if (app != null && app.MainWindow != null)
-                {
-                    app.MainWindow.WindowState = WindowState.Minimized;
-                }
+                _lifetime.MinimizeMainWindow();
             });
 
             _downloads.CollectionChanged += (s, e) =>
@@ -184,14 +182,8 @@ namespace YTDLPHost.ViewModels
 
             string crashLogPath = Path.Combine(logDir, "crash_log.txt");
 
-            if (System.Windows.Application.Current != null)
-            {
-                System.Windows.Application.Current.DispatcherUnhandledException += (s, e) =>
-                {
-                    File.WriteAllText(crashLogPath, $"[FATAL UI CRASH] {DateTime.Now}\n{e.Exception}");
-                    e.Handled = false; 
-                };
-            }
+            _lifetime.UiUnhandledException += ex =>
+                File.WriteAllText(crashLogPath, $"[FATAL UI CRASH] {DateTime.Now}\n{ex}");
 
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
             {
@@ -213,7 +205,7 @@ namespace YTDLPHost.ViewModels
         {
             AppLogger.Log($"[QUEUE] Hot-swapping task ID: {vm.Id} to apply dynamic settings.");
             
-            System.Windows.Application.Current?.Dispatcher.Invoke(() => 
+            _ui.Invoke(() => 
             {
                 vm.Task.CurrentPhase = "Applying Settings...";
                 vm.Refresh();
@@ -224,7 +216,7 @@ namespace YTDLPHost.ViewModels
                 await Task.Run(() => runner.Cancel()); 
             }
             
-            System.Windows.Application.Current?.Dispatcher.Invoke(() => 
+            _ui.Invoke(() => 
             {
                 if (vm.Task.Status != DownloadStatus.Cancelled && vm.Task.Status != DownloadStatus.Error && vm.Task.Status != DownloadStatus.Completed)
                 {
@@ -258,7 +250,7 @@ namespace YTDLPHost.ViewModels
             var token = _saveHistoryCts.Token;
 
             List<DownloadTask> snapshot = new();
-            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+            _ui.Invoke(() =>
             {
                 snapshot = _downloads.Select(d => d.Task).ToList();
             });
@@ -343,7 +335,7 @@ namespace YTDLPHost.ViewModels
                 };
                 setupVm = new DownloadItemViewModel(setupTask);
 
-                System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                _ui.Invoke(() =>
                 {
                     _downloads.Insert(0, setupVm);
                     StatusText = "Downloading required engine updates... Please wait.";
@@ -352,7 +344,7 @@ namespace YTDLPHost.ViewModels
                 if (!File.Exists(ytdlpPath))
                 {
                     AppLogger.Log("[DEPENDENCIES] Downloading yt-dlp binary.");
-                    System.Windows.Application.Current?.Dispatcher.Invoke(() => 
+                    _ui.Invoke(() => 
                     { 
                         if (setupVm != null) { setupVm.Task.CurrentPhase = "Downloading yt-dlp engine..."; setupVm.Refresh(); }
                     });
@@ -366,7 +358,7 @@ namespace YTDLPHost.ViewModels
                 if (!File.Exists(ffmpegPath))
                 {
                     AppLogger.Log("[DEPENDENCIES] Downloading FFmpeg build archive.");
-                    System.Windows.Application.Current?.Dispatcher.Invoke(() => 
+                    _ui.Invoke(() => 
                     { 
                         if (setupVm != null) { setupVm.Task.CurrentPhase = "Downloading FFmpeg media codecs..."; setupVm.Refresh(); }
                     });
@@ -378,7 +370,7 @@ namespace YTDLPHost.ViewModels
                     await File.WriteAllBytesAsync(zipPath, ffmpegBytes);
                     
                     AppLogger.Log("[DEPENDENCIES] Extracting FFmpeg archive contents.");
-                    System.Windows.Application.Current?.Dispatcher.Invoke(() => 
+                    _ui.Invoke(() => 
                     { 
                         if (setupVm != null) { setupVm.Task.CurrentPhase = "Extracting codecs..."; setupVm.Refresh(); }
                     });
@@ -405,7 +397,7 @@ namespace YTDLPHost.ViewModels
                 if (!File.Exists(denoPath))
                 {
                     AppLogger.Log("[DEPENDENCIES] Downloading Deno JS engine for EJS puzzle bypass.");
-                    System.Windows.Application.Current?.Dispatcher.Invoke(() => 
+                    _ui.Invoke(() => 
                     { 
                         if (setupVm != null) { setupVm.Task.CurrentPhase = "Downloading JS engine..."; setupVm.Refresh(); }
                     });
@@ -417,7 +409,7 @@ namespace YTDLPHost.ViewModels
                     await File.WriteAllBytesAsync(denoZipPath, denoBytes);
                     
                     AppLogger.Log("[DEPENDENCIES] Extracting Deno archive contents.");
-                    System.Windows.Application.Current?.Dispatcher.Invoke(() => 
+                    _ui.Invoke(() => 
                     { 
                         if (setupVm != null) { setupVm.Task.CurrentPhase = "Extracting JS engine..."; setupVm.Refresh(); }
                     });
@@ -436,7 +428,7 @@ namespace YTDLPHost.ViewModels
                     Directory.Delete(denoExtractPath, true);
                 }
 
-                System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                _ui.Invoke(() =>
                 {
                     if (setupVm != null)
                     {
@@ -450,7 +442,7 @@ namespace YTDLPHost.ViewModels
                 });
 
                 await Task.Delay(2000);
-                System.Windows.Application.Current?.Dispatcher.Invoke(() => 
+                _ui.Invoke(() => 
                 {
                     if (setupVm != null) _downloads.Remove(setupVm);
                 });
@@ -464,7 +456,7 @@ namespace YTDLPHost.ViewModels
                 AppLogger.Log($"[DEPENDENCIES ERROR] Failed to provision dependencies: {ex.Message}");
                 _hasDependencyError = true;
                 
-                System.Windows.Application.Current?.Dispatcher.Invoke(() => 
+                _ui.Invoke(() => 
                 {
                     StatusText = "Network Error. Please check your internet connection.";
                     if (setupVm != null)
@@ -549,7 +541,7 @@ namespace YTDLPHost.ViewModels
 
             if (_hasDependencyError)
             {
-                System.Windows.MessageBox.Show("YT Downloader Pro cannot process links because the initial core setup failed.\n\nPlease ensure you have an active internet connection and restart the application.", "Setup Required", MessageBoxButton.OK, MessageBoxImage.Error);
+                _dialogs.Show("Setup Required", "YT Downloader Pro cannot process links because the initial core setup failed.\n\nPlease ensure you have an active internet connection and restart the application.", DialogKind.Error);
                 return;
             }
 
@@ -572,14 +564,14 @@ namespace YTDLPHost.ViewModels
                 if (!IsCommandSafe(command))
                 {
                     StatusText = "Security Error: Blocked potentially malicious payload.";
-                    System.Windows.MessageBox.Show($"A download command was blocked for your security.\n\nReason: {_lastBlockReason}", "YT Downloader Pro - Security Alert", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    _dialogs.Show("YT Downloader Pro - Security Alert", $"A download command was blocked for your security.\n\nReason: {_lastBlockReason}", DialogKind.Warning);
                     return;
                 }
 
                 lock (_duplicateLock)
                 {
                     bool isDuplicate = false;
-                    System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                    _ui.Invoke(() =>
                     {
                         isDuplicate = _downloads.Any(d => 
                             d.Task.Command == command && 
@@ -647,7 +639,7 @@ namespace YTDLPHost.ViewModels
                     var vm = new DownloadItemViewModel(task);
                     AttachTaskObserver(vm); 
                     
-                    System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                    _ui.Invoke(() =>
                     {
                         _downloads.Add(vm);
                         HasDownloads = true;
@@ -716,7 +708,7 @@ namespace YTDLPHost.ViewModels
                     {
                         DownloadItemViewModel? nextItem = null;
 
-                        System.Windows.Application.Current?.Dispatcher.Invoke(() => 
+                        _ui.Invoke(() => 
                         {
                             var activeVideoIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                             foreach (var d in _downloads)
@@ -781,7 +773,7 @@ namespace YTDLPHost.ViewModels
                     }
                 }
 
-                System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                _ui.Invoke(() =>
                 {
                     if (_activeRunners.IsEmpty && !_downloads.Any(d => d.Task.Status == DownloadStatus.Queued)) 
                     {
@@ -824,7 +816,7 @@ namespace YTDLPHost.ViewModels
             var vm = _downloads.FirstOrDefault(d => d.Id == e.TaskId);
             if (vm != null) 
             {
-                _ = System.Windows.Application.Current?.Dispatcher.BeginInvoke(DispatcherPriority.Background, () => { vm.Refresh(); UpdateActiveCount(); });
+                _ui.Post(UiPriority.Background, () => { vm.Refresh(); UpdateActiveCount(); });
             }
         }
 
@@ -833,7 +825,7 @@ namespace YTDLPHost.ViewModels
             var vm = _downloads.FirstOrDefault(d => d.Id == e.TaskId);
             if (vm != null)
             {
-                _ = System.Windows.Application.Current?.Dispatcher.BeginInvoke(DispatcherPriority.Background, () =>
+                _ui.Post(UiPriority.Background, () =>
                 {
                     vm.Refresh();
                     HasCompletedDownloads = true;
@@ -880,7 +872,7 @@ namespace YTDLPHost.ViewModels
             var vm = _downloads.FirstOrDefault(d => d.Id == e.TaskId);
             if (vm != null) 
             {
-                _ = System.Windows.Application.Current?.Dispatcher.BeginInvoke(DispatcherPriority.Background, () => { vm.Refresh(); UpdateActiveCount(); });
+                _ui.Post(UiPriority.Background, () => { vm.Refresh(); UpdateActiveCount(); });
             }
         }
 
@@ -889,7 +881,7 @@ namespace YTDLPHost.ViewModels
             var vm = _downloads.FirstOrDefault(d => d.Id == e.TaskId);
             if (vm != null) 
             {
-                _ = System.Windows.Application.Current?.Dispatcher.BeginInvoke(DispatcherPriority.Background, () => vm.Refresh());
+                _ui.Post(UiPriority.Background, () => vm.Refresh());
             }
         }
 
@@ -1041,7 +1033,7 @@ namespace YTDLPHost.ViewModels
 
         private void UpdateActiveCount()
         {
-            _ = System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
+            _ui.Post(() =>
             {
                 ActiveDownloadCount = _downloads.Count(d => d.Task.Status == DownloadStatus.Queued || d.Task.Status == DownloadStatus.Downloading);
                 _trayService.UpdateTooltip(ActiveDownloadCount == 0 ? "YT Downloader Pro - Idle" : $"YT Downloader Pro - {ActiveDownloadCount} active");
@@ -1101,7 +1093,7 @@ namespace YTDLPHost.ViewModels
             AppLogger.Shutdown();
             foreach (var vm in _downloads) CleanupCookieFile(vm.Task);
             foreach (var runner in _activeRunners.Values) runner.Cancel();
-            System.Windows.Application.Current?.Shutdown();
+            _lifetime.Shutdown();
         }
 
         public void Dispose()

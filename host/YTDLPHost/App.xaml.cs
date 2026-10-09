@@ -7,6 +7,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 using YTDLPHost.Services;
+using YTDLPHost.Wpf;
 using YTDLPHost.ViewModels;
 
 namespace YTDLPHost
@@ -87,7 +88,7 @@ namespace YTDLPHost
 
             AppLogger.Log("[BOOT] Primary instance established. Initializing UI components.");
             _singleInstanceManager.UrlReceived += OnUrlReceived;
-            _mainViewModel = new MainViewModel();
+            _mainViewModel = new MainViewModel(new WpfUiDispatcher(), new WpfDialogService(), new WpfAppLifetime());
             
             _mainViewModel.RequestShowWindow += OnRequestShowWindow;
 

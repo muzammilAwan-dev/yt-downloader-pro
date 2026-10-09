@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Portable core: download model, queue-facing runner, command validation, settings, history, logging.
+    Rules: no WPF/WinForms/Win32 references here, ever. Anything platform- or UI-specific is
+    reached through an interface that the host app implements (introduced in PRs 1.3 and 1.4).
+    Namespaces are unchanged (YTDLPHost.Models / YTDLPHost.Services), so the host needs no code edits.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>YTDLPHost</RootNamespace>
+    <AssemblyName>YTDLPHost.Core</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- lets tests reach YtDlpRunner.HandleOutputCore (internal) -->
+    <InternalsVisibleTo Include="YTDLPHost.Tests" />
+  </ItemGroup>
+
+</Project>

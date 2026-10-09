@@ -1,10 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Plain net8.0 (not net8.0-windows) on purpose: the code under test is linked in as
-    source, so these tests run on Windows, Linux and macOS without WPF. This also
-    proves the linked files have no hidden Windows dependency - the Phase 1 "Core"
-    extraction starts from exactly this set of files.
+    Plain net8.0 (not net8.0-windows): tests the portable YTDLPHost.Core library directly,
+    so they run on Windows, Linux and macOS without WPF.
   -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -18,15 +16,10 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\YTDLPHost\Services\CommandValidator.cs" Link="Linked\CommandValidator.cs" />
-    <Compile Include="..\YTDLPHost\Services\YtDlpRunner.cs" Link="Linked\YtDlpRunner.cs" />
-    <Compile Include="..\YTDLPHost\Services\AppLogger.cs" Link="Linked\AppLogger.cs" />
-    <Compile Include="..\YTDLPHost\Models\DownloadTask.cs" Link="Linked\DownloadTask.cs" />
-    <Compile Include="..\YTDLPHost\Models\AppSettings.cs" Link="Linked\AppSettings.cs" />
+    <ProjectReference Include="..\YTDLPHost.Core\YTDLPHost.Core.csproj" />
   </ItemGroup>
 
 </Project>

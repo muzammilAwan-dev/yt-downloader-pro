@@ -1,19 +1,46 @@
-name: Build YTDLPHost
+name: CI
 
 on:
   push:
     branches: [main, master]
-    # Only re-run this workflow when the host app changes
     paths:
       - 'host/**'
-  workflow_dispatch:  # Allows manual trigger
+      - 'extension/**'
+      - 'tools/**'
+      - '.github/workflows/**'
+  pull_request:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  build:
-    runs-on: windows-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  version-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extension, host and installer versions must match
+        run: python3 tools/check_versions.py
 
+  test:
+    # The tests link the portable host sources into a plain net8.0 project, so they
+    # run on every target OS. Windows + Linux now; add macos-14 once Phase 3 lands.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Test
+        run: dotnet test host/YTDLPHost.Tests/YTDLPHost.Tests.csproj --configuration Release
+
+  build:
+    needs: [version-check, test]
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -28,14 +55,16 @@ jobs:
       - name: Build
         run: dotnet build host/YTDLPHost/YTDLPHost.csproj --configuration Release --no-restore
 
+      # Self-contained, matching host/Publish.bat: users no longer need the .NET 8 runtime installed.
       - name: Publish Single File
         run: |
           dotnet publish host/YTDLPHost/YTDLPHost.csproj `
             --configuration Release `
             --runtime win-x64 `
-            --self-contained false `
+            --self-contained true `
             /p:PublishSingleFile=true `
             /p:IncludeNativeLibrariesForSelfExtract=true `
+            /p:EnableCompressionInSingleFile=true `
             --output ./publish
 
       - name: Upload Artifact

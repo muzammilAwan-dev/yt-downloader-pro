@@ -29,6 +29,7 @@ public class CommandValidatorTests
     [InlineData("yt-dlp -S 'vcodec:h264,res,acodec:m4a' 'https://youtu.be/abc'")]
     [InlineData("yt-dlp --download-archive '~/Downloads/archive.txt' 'https://youtu.be/abc'")]
     [InlineData("yt-dlp --limit-rate 5M -R 3 --retries 10 'https://youtu.be/a' 'https://youtu.be/b'")]
+    [InlineData("yt-dlp 'https://youtu.be/abc' --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'")]
     public void Accepts_commands_the_extension_emits(string command)
     {
         Assert.True(Ok(command, out var reason), $"unexpectedly rejected: {reason}");
@@ -97,6 +98,13 @@ public class CommandValidatorTests
     {
         Assert.False(Ok("yt-dlp --download-archive '~/a.mp4' 'https://a.com'", out var reason));
         Assert.Contains("archive path not allowed", reason);
+    }
+
+    [Fact]
+    public void A_user_agent_value_cannot_carry_a_second_flag()
+    {
+        Assert.False(Ok("yt-dlp 'https://a.com' --user-agent 'x' --exec 'calc'", out var reason));
+        Assert.Contains("option not allowed", reason);
     }
 
     // ---------- documents a known gap that Phase 3 must close ----------

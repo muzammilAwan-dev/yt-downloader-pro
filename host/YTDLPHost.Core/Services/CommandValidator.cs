@@ -24,7 +24,7 @@ namespace YTDLPHost.Services
             "--merge-output-format", "--audio-format", "--audio-quality", "--download-sections",
             "--sub-langs", "--sleep-subtitles", "--sleep-requests", "--sleep-interval", "--max-sleep-interval",
             "--playlist-items", "--sponsorblock-remove", "--download-archive", "--limit-rate",
-            "-R", "--retries", "--fragment-retries", "--socket-timeout"
+            "-R", "--retries", "--fragment-retries", "--socket-timeout", "--user-agent"
         };
 
         // Flags without a value.

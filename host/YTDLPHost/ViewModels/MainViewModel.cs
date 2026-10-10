@@ -20,9 +20,6 @@ namespace YTDLPHost.ViewModels
     public partial class MainViewModel : ObservableObject, IDisposable
     {
         private static readonly Regex CommandPathRegex = new(@"-(?:o|P)\s+""([^""]+)""", RegexOptions.Compiled);
-        private static readonly Regex OutputTemplateRegex = new(@"-o\s+""([^""]+)""", RegexOptions.Compiled);
-        private static readonly Regex ResHeightRegex = new(@"height<=?(\d+)", RegexOptions.Compiled);
-        private static readonly Regex ResRegex = new(@"(\d+)p", RegexOptions.Compiled);
 
         private static readonly HttpClient _httpClient = CreateConfiguredHttpClient();
 
@@ -76,6 +73,7 @@ namespace YTDLPHost.ViewModels
         private readonly IDialogService _dialogs;
         private readonly IAppLifetime _lifetime;
         private readonly EngineProvisioner _engine;
+        private readonly CommandIngest _ingest;
 
         public MainViewModel(IUiDispatcher ui, IDialogService dialogs, IAppLifetime lifetime)
         {
@@ -83,6 +81,7 @@ namespace YTDLPHost.ViewModels
             _dialogs = dialogs;
             _lifetime = lifetime;
             _engine = new EngineProvisioner(AppPaths.Current, _httpClient);
+            _ingest = new CommandIngest(AppPaths.Current);
 
             InitializeCrashReporting();
             AppLogger.Log("[VM] Initializing MainViewModel...");
@@ -372,17 +371,6 @@ namespace YTDLPHost.ViewModels
             }
         }
 
-        private string _lastBlockReason = string.Empty;
-
-        /// <summary>Allowlist check (see CommandValidator). The payload comes from a ytdlp:// link, i.e. untrusted input.</summary>
-        private bool IsCommandSafe(string command)
-        {
-            if (CommandValidator.TryValidate(command, out var reason)) return true;
-            _lastBlockReason = reason;
-            AppLogger.Log($"[SECURITY] Blocked command payload: {reason}");
-            return false;
-        }
-
         public void ProcessUrl(string? rawUrl)
         {
             if (string.IsNullOrWhiteSpace(rawUrl)) return;
@@ -395,34 +383,28 @@ namespace YTDLPHost.ViewModels
 
             try
             {
-                string url = Uri.UnescapeDataString(rawUrl);
+                // Decoding and validation live in CommandIngest (the payload is untrusted input).
+                var parsed = _ingest.Parse(rawUrl);
 
-                if (!url.StartsWith("ytdlp://", StringComparison.OrdinalIgnoreCase)) return;
+                if (parsed.Status == IngestStatus.Ignored) return;
 
-                var payload = url.Substring(8).TrimEnd('/');
-                var parts = payload.Split(new[] { "||" }, StringSplitOptions.None);
-
-                if (parts.Length == 0 || string.IsNullOrWhiteSpace(parts[0])) return;
-
-                var command = DecodeBase64(parts[0]);
-                AppLogger.Log("[QUEUE] New command payload successfully parsed.");
-                
-                if (string.IsNullOrWhiteSpace(command)) return;
-
-                if (!IsCommandSafe(command))
+                if (parsed.Status == IngestStatus.Blocked)
                 {
                     StatusText = "Security Error: Blocked potentially malicious payload.";
-                    _dialogs.Show("YT Downloader Pro - Security Alert", $"A download command was blocked for your security.\n\nReason: {_lastBlockReason}", DialogKind.Warning);
+                    _dialogs.Show("YT Downloader Pro - Security Alert", $"A download command was blocked for your security.\n\nReason: {parsed.BlockReason}", DialogKind.Warning);
                     return;
                 }
+
+                var payload = parsed.Payload!;
+                string command = payload.Command;
 
                 lock (_duplicateLock)
                 {
                     bool isDuplicate = false;
                     _ui.Invoke(() =>
                     {
-                        isDuplicate = _downloads.Any(d => 
-                            d.Task.Command == command && 
+                        isDuplicate = _downloads.Any(d =>
+                            d.Task.Command == command &&
                             (d.Task.Status == DownloadStatus.Queued || d.Task.Status == DownloadStatus.Downloading));
                     });
 
@@ -432,61 +414,22 @@ namespace YTDLPHost.ViewModels
                         return;
                     }
 
-                    string? cookieContent = null;
-                    string? cookieFilePath = null;
-
-                    if (parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]))
-                    {
-                        try
-                        {
-                            cookieContent = DecodeBase64(parts[1]);
-                            if (!string.IsNullOrWhiteSpace(cookieContent))
-                            {
-                                cookieContent = cookieContent.TrimStart('\uFEFF');
-
-                                var cookieFile = Path.Combine(AppPaths.Current.TempDir, $"ytdlp_cookies_{Guid.NewGuid()}.txt");
-                                File.WriteAllText(cookieFile, cookieContent, new UTF8Encoding(false));
-                                cookieFilePath = cookieFile;
-                                AppLogger.Log("[COOKIES] Session cookies provisioned to local temporary storage.");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            AppLogger.Log($"[COOKIES ERROR] Cookie deserialization failure: {ex.Message}");
-                        }
-                    }
-
-                    if (parts.Length > 2 && !string.IsNullOrWhiteSpace(parts[2]))
-                    {
-                        try
-                        {
-                            string exactUserAgent = DecodeBase64(parts[2]);
-                            if (!string.IsNullOrWhiteSpace(exactUserAgent) && !command.Contains("--user-agent"))
-                            {
-                                command += $" --user-agent \"{exactUserAgent}\"";
-                                AppLogger.Log("[COOKIES] Injected native browser User-Agent to match cookies.");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            AppLogger.Log($"[COOKIES ERROR] User-Agent deserialization failure: {ex.Message}");
-                        }
-                    }
+                    var prepared = _ingest.Prepare(payload);
 
                     var task = new DownloadTask
                     {
-                        UrlPayload = url,
-                        Command = command,
-                        CookiePayload = cookieContent,
-                        CookieFilePath = cookieFilePath ?? string.Empty,
-                        Resolution = ExtractResolution(command),
-                        Title = ExtractTitleHint(command),
+                        UrlPayload = payload.UrlPayload,
+                        Command = prepared.Command,
+                        CookiePayload = prepared.CookieContent,
+                        CookieFilePath = prepared.CookieFilePath,
+                        Resolution = CommandInfo.ExtractResolution(prepared.Command),
+                        Title = CommandInfo.ExtractTitleHint(prepared.Command),
                         Status = DownloadStatus.Queued
                     };
 
                     var vm = new DownloadItemViewModel(task);
-                    AttachTaskObserver(vm); 
-                    
+                    AttachTaskObserver(vm);
+
                     _ui.Invoke(() =>
                     {
                         _downloads.Add(vm);
@@ -494,44 +437,16 @@ namespace YTDLPHost.ViewModels
                         StatusText = $"Added: {vm.DisplayTitle}";
                     });
                 }
-                
+
                 UpdateActiveCount();
                 AppLogger.Log($"[QUEUE] Download task assigned to queue.");
-                
+
                 TriggerQueueProcessing();
             }
             catch (Exception ex)
             {
                 AppLogger.Log($"[QUEUE ERROR] Payload execution fault: {ex.Message}");
             }
-        }
-
-        private static string ExtractVideoId(string command)
-        {
-            // YouTube: prefer the canonical 11-char video ID so different URL
-            // forms of the same video (watch/shorts/embed/youtu.be) still
-            // count as the same content for the "don't run two downloads of
-            // this at once" mutex below.
-            var ytMatch = Regex.Match(command, @"(?:v=|youtu\.be/|shorts/|embed/)([\w-]{11})");
-            if (ytMatch.Success) return "yt:" + ytMatch.Groups[1].Value;
-
-            // FIX: this used to fall back to Guid.NewGuid() here - a fresh,
-            // different random value on every single call, even for the
-            // exact same command string. Since this method gets called
-            // multiple times per queue tick (building the active-set, then
-            // checking each queued item), two calls for the *same* task
-            // would almost never produce matching IDs, silently disabling
-            // the mutex entirely for anything that isn't a bare YouTube
-            // video URL - which already included channel/playlist jobs
-            // today, and will include every command from every non-YouTube
-            // site once the extension supports them. Use the actual target
-            // URL (the last quoted argument in the command) instead: it's
-            // stable across calls and still distinguishes different
-            // videos/channels from each other correctly.
-            var urlMatches = Regex.Matches(command, "\"([^\"]+)\"");
-            if (urlMatches.Count > 0) return urlMatches[urlMatches.Count - 1].Groups[1].Value;
-
-            return command; // last resort: still a stable key, just a coarse one
         }
 
         private async Task ProcessQueueAsync()
@@ -563,7 +478,7 @@ namespace YTDLPHost.ViewModels
                             {
                                 if (d.Task.Status == DownloadStatus.Downloading)
                                 {
-                                    activeVideoIds.Add(ExtractVideoId(d.Task.Command));
+                                    activeVideoIds.Add(CommandInfo.ExtractVideoId(d.Task.Command));
                                 }
                             }
 
@@ -571,7 +486,7 @@ namespace YTDLPHost.ViewModels
                             {
                                 if (d.Task.Status == DownloadStatus.Queued)
                                 {
-                                    string vidId = ExtractVideoId(d.Task.Command);
+                                    string vidId = CommandInfo.ExtractVideoId(d.Task.Command);
                                     if (activeVideoIds.Contains(vidId))
                                     {
                                         if (d.Task.CurrentPhase != "Waiting (Similar video active)...")
@@ -590,7 +505,7 @@ namespace YTDLPHost.ViewModels
 
                             nextItem = _downloads.FirstOrDefault(d => 
                                 d.Task.Status == DownloadStatus.Queued && 
-                                !activeVideoIds.Contains(ExtractVideoId(d.Task.Command)));
+                                !activeVideoIds.Contains(CommandInfo.ExtractVideoId(d.Task.Command)));
 
                             if (nextItem != null)
                             {
@@ -888,37 +803,9 @@ namespace YTDLPHost.ViewModels
             });
         }
 
-        private static string DecodeBase64(string input)
-        {
-            string padded = input.Replace('-', '+').Replace('_', '/');
-            padded = padded.PadRight(padded.Length + (4 - padded.Length % 4) % 4, '=');
-            return Encoding.UTF8.GetString(Convert.FromBase64String(padded));
-        }
-
-        private static string ExtractResolution(string command)
-        {
-            if (command.Contains("ba") && (command.Contains("extract-audio") || command.Contains("audio"))) return "Audio";
-            var match = ResHeightRegex.Match(command);
-            if (match.Success) return match.Groups[1].Value + "p";
-            match = ResRegex.Match(command);
-            if (match.Success) return match.Groups[1].Value + "p";
-            return "";
-        }
-
-        private static string ExtractTitleHint(string command)
-        {
-            var match = OutputTemplateRegex.Match(command);
-            if (match.Success)
-            {
-                string fileName = Path.GetFileNameWithoutExtension(match.Groups[1].Value) ?? "Fetching Title...";
-                return fileName.Replace("%(title)s", "Fetching Title...").Replace("%(uploader)s", "Channel");
-            }
-            return "Fetching Title...";
-        }
-
         private static string ExtractSaveDirectory(string command)
         {
-            var match = OutputTemplateRegex.Match(command);
+            var match = CommandInfo.OutputTemplateRegex.Match(command);
             if (match.Success)
             {
                 var template = match.Groups[1].Value;

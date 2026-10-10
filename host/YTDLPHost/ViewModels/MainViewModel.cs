@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -76,12 +75,14 @@ namespace YTDLPHost.ViewModels
         private readonly IUiDispatcher _ui;
         private readonly IDialogService _dialogs;
         private readonly IAppLifetime _lifetime;
+        private readonly EngineProvisioner _engine;
 
         public MainViewModel(IUiDispatcher ui, IDialogService dialogs, IAppLifetime lifetime)
         {
             _ui = ui;
             _dialogs = dialogs;
             _lifetime = lifetime;
+            _engine = new EngineProvisioner(AppPaths.Current, _httpClient);
 
             InitializeCrashReporting();
             AppLogger.Log("[VM] Initializing MainViewModel...");
@@ -280,51 +281,33 @@ namespace YTDLPHost.ViewModels
             };
         }
 
-        private async Task<byte[]> DownloadFileWithRetryAsync(HttpClient client, string url, int maxRetries = 3)
+        private static string StageText(EngineStage stage) => stage switch
         {
-            for (int i = 0; i < maxRetries; i++)
-            {
-                try
-                {
-                    return await client.GetByteArrayAsync(url);
-                }
-                catch (Exception ex) when (i < maxRetries - 1)
-                {
-                    AppLogger.Log($"[DEPENDENCIES] Network drop detected on dependency download. Retrying ({i + 1}/{maxRetries})...");
-                    await Task.Delay(3000); 
-                }
-            }
-            return await client.GetByteArrayAsync(url); 
-        }
+            EngineStage.DownloadingYtDlp => "Downloading yt-dlp engine...",
+            EngineStage.DownloadingFfmpeg => "Downloading FFmpeg media codecs...",
+            EngineStage.ExtractingFfmpeg => "Extracting codecs...",
+            EngineStage.DownloadingDeno => "Downloading JS engine...",
+            EngineStage.ExtractingDeno => "Extracting JS engine...",
+            _ => "Setting up..."
+        };
 
         private async Task CheckAndDownloadDependenciesAsync()
         {
             DownloadItemViewModel? setupVm = null;
-            
+
             try
             {
-                string engineDir = AppPaths.Current.EngineDir;
-                
-                if (!Directory.Exists(engineDir)) 
-                {
-                    Directory.CreateDirectory(engineDir);
-                }
-
-                string ytdlpPath = Path.Combine(engineDir, "yt-dlp.exe");
-                string ffmpegPath = Path.Combine(engineDir, "ffmpeg.exe");
-                string denoPath = Path.Combine(engineDir, "deno.exe");
-
-                if (File.Exists(ytdlpPath) && File.Exists(ffmpegPath) && File.Exists(denoPath))
+                if (_engine.AllPresent())
                 {
                     AppLogger.Log("[DEPENDENCIES] Core dependencies located securely.");
                     _isDependenciesReady = true;
-                    _ = Task.Run(() => UpdateYtDlp(ytdlpPath, engineDir));
-                    TriggerQueueProcessing(); 
+                    _engine.StartBackgroundUpdate();
+                    TriggerQueueProcessing();
                     return;
                 }
 
                 AppLogger.Log("[DEPENDENCIES] Dependencies missing. Creating UX Setup Card.");
-                
+
                 var setupTask = new DownloadTask
                 {
                     Id = Guid.NewGuid(),
@@ -340,93 +323,11 @@ namespace YTDLPHost.ViewModels
                     _downloads.Insert(0, setupVm);
                     StatusText = "Downloading required engine updates... Please wait.";
                 });
-                
-                if (!File.Exists(ytdlpPath))
+
+                await _engine.InstallMissingAsync(stage => _ui.Invoke(() =>
                 {
-                    AppLogger.Log("[DEPENDENCIES] Downloading yt-dlp binary.");
-                    _ui.Invoke(() => 
-                    { 
-                        if (setupVm != null) { setupVm.Task.CurrentPhase = "Downloading yt-dlp engine..."; setupVm.Refresh(); }
-                    });
-                    
-                    var ytdlpBytes = await DownloadFileWithRetryAsync(_httpClient, "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe");
-                    await File.WriteAllBytesAsync(ytdlpPath, ytdlpBytes);
-
-                    try { File.Delete(ytdlpPath + ":Zone.Identifier"); } catch { }
-                }
-
-                if (!File.Exists(ffmpegPath))
-                {
-                    AppLogger.Log("[DEPENDENCIES] Downloading FFmpeg build archive.");
-                    _ui.Invoke(() => 
-                    { 
-                        if (setupVm != null) { setupVm.Task.CurrentPhase = "Downloading FFmpeg media codecs..."; setupVm.Refresh(); }
-                    });
-
-                    string zipPath = Path.Combine(AppPaths.Current.TempDir, "ffmpeg.zip");
-                    string extractPath = Path.Combine(AppPaths.Current.TempDir, "ffmpeg_ext");
-                    
-                    var ffmpegBytes = await DownloadFileWithRetryAsync(_httpClient, "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip");
-                    await File.WriteAllBytesAsync(zipPath, ffmpegBytes);
-                    
-                    AppLogger.Log("[DEPENDENCIES] Extracting FFmpeg archive contents.");
-                    _ui.Invoke(() => 
-                    { 
-                        if (setupVm != null) { setupVm.Task.CurrentPhase = "Extracting codecs..."; setupVm.Refresh(); }
-                    });
-
-                    if (Directory.Exists(extractPath)) Directory.Delete(extractPath, true);
-                    ZipFile.ExtractToDirectory(zipPath, extractPath);
-                    
-                    var extFiles = Directory.GetFiles(extractPath, "*.exe", SearchOption.AllDirectories);
-                    foreach (var file in extFiles)
-                    {
-                        string fileName = Path.GetFileName(file);
-                        if (fileName.Equals("ffmpeg.exe", StringComparison.OrdinalIgnoreCase) || fileName.Equals("ffprobe.exe", StringComparison.OrdinalIgnoreCase))
-                        {
-                            string destPath = Path.Combine(engineDir, fileName);
-                            File.Copy(file, destPath, true);
-                            try { File.Delete(destPath + ":Zone.Identifier"); } catch { }
-                        }
-                    }
-                    
-                    File.Delete(zipPath);
-                    Directory.Delete(extractPath, true);
-                }
-
-                if (!File.Exists(denoPath))
-                {
-                    AppLogger.Log("[DEPENDENCIES] Downloading Deno JS engine for EJS puzzle bypass.");
-                    _ui.Invoke(() => 
-                    { 
-                        if (setupVm != null) { setupVm.Task.CurrentPhase = "Downloading JS engine..."; setupVm.Refresh(); }
-                    });
-
-                    string denoZipPath = Path.Combine(AppPaths.Current.TempDir, "deno.zip");
-                    string denoExtractPath = Path.Combine(AppPaths.Current.TempDir, "deno_ext");
-                    
-                    var denoBytes = await DownloadFileWithRetryAsync(_httpClient, "https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip");
-                    await File.WriteAllBytesAsync(denoZipPath, denoBytes);
-                    
-                    AppLogger.Log("[DEPENDENCIES] Extracting Deno archive contents.");
-                    _ui.Invoke(() => 
-                    { 
-                        if (setupVm != null) { setupVm.Task.CurrentPhase = "Extracting JS engine..."; setupVm.Refresh(); }
-                    });
-
-                    if (Directory.Exists(denoExtractPath)) Directory.Delete(denoExtractPath, true);
-                    ZipFile.ExtractToDirectory(denoZipPath, denoExtractPath);
-                    
-                    string extractedDeno = Path.Combine(denoExtractPath, "deno.exe");
-                    if (File.Exists(extractedDeno))
-                    {
-                        File.Copy(extractedDeno, denoPath, true);
-                        try { File.Delete(denoPath + ":Zone.Identifier"); } catch { }
-                    }
-                    
-                    File.Delete(denoZipPath);
-                    Directory.Delete(denoExtractPath, true);
-                }
+                    if (setupVm != null) { setupVm.Task.CurrentPhase = StageText(stage); setupVm.Refresh(); }
+                }));
 
                 _ui.Invoke(() =>
                 {
@@ -442,21 +343,21 @@ namespace YTDLPHost.ViewModels
                 });
 
                 await Task.Delay(2000);
-                _ui.Invoke(() => 
+                _ui.Invoke(() =>
                 {
                     if (setupVm != null) _downloads.Remove(setupVm);
                 });
 
                 _isDependenciesReady = true;
-                _ = Task.Run(() => UpdateYtDlp(ytdlpPath, engineDir));
+                _engine.StartBackgroundUpdate();
                 TriggerQueueProcessing();
             }
             catch (Exception ex)
             {
                 AppLogger.Log($"[DEPENDENCIES ERROR] Failed to provision dependencies: {ex.Message}");
                 _hasDependencyError = true;
-                
-                _ui.Invoke(() => 
+
+                _ui.Invoke(() =>
                 {
                     StatusText = "Network Error. Please check your internet connection.";
                     if (setupVm != null)
@@ -468,59 +369,6 @@ namespace YTDLPHost.ViewModels
                         setupVm.Refresh();
                     }
                 });
-            }
-        }
-
-        private void UpdateYtDlp(string ytdlpPath, string engineDir)
-        {
-            try
-            {
-                var psi = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = ytdlpPath,
-                    Arguments = "-U",
-                    CreateNoWindow = true,
-                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    WorkingDirectory = engineDir
-                };
-
-                psi.Environment.Remove("WT_SESSION");
-                psi.Environment.Remove("WT_PROFILE_ID");
-
-                using var proc = System.Diagnostics.Process.Start(psi);
-                if (proc != null)
-                {
-                    // FIX: RedirectStandardInput is never set to true above, so calling
-                    // proc.StandardInput used to throw InvalidOperationException here on
-                    // every run, get swallowed by the catch block below, and silently
-                    // skip the yt-dlp self-update check every single time.
-                    var outputTask = proc.StandardOutput.ReadToEndAsync();
-                    
-                    if (proc.WaitForExit(30000))
-                    {
-                        string output = outputTask.Result;
-                        if (output.Contains("up to date", StringComparison.OrdinalIgnoreCase))
-                        {
-                            AppLogger.Log("[DEPENDENCIES] yt-dlp is synchronized with the latest release.");
-                        }
-                        else if (output.Contains("Updated yt-dlp", StringComparison.OrdinalIgnoreCase))
-                        {
-                            AppLogger.Log("[DEPENDENCIES] yt-dlp successfully patched to the latest version.");
-                        }
-                    }
-                    else
-                    {
-                        proc.Kill(); 
-                        AppLogger.Log("[DEPENDENCIES ERROR] Background update process hung and was terminated.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Log($"[DEPENDENCIES ERROR] Execution of the update sub-process failed: {ex.Message}");
             }
         }
 

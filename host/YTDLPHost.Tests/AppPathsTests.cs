@@ -9,12 +9,21 @@ public class AppPathsTests
     private sealed class TempPaths : IAppPaths
     {
         private readonly string _root;
-        public TempPaths(string root) => _root = root;
+        private readonly string _logsDir;
+
+        // Logs stay in the shared test sandbox: AppLogger binds to its folder once, on first use,
+        // and keeps the file open, so it must never point inside a folder this test deletes.
+        public TempPaths(string root, string logsDir)
+        {
+            _root = root;
+            _logsDir = logsDir;
+        }
+
         public string HomeDir => Path.Combine(_root, "home");
         public string DownloadsDir => Path.Combine(HomeDir, "Downloads");
         public string EngineDir => Path.Combine(_root, "engine");
         public string DataDir => Path.Combine(_root, "data");
-        public string LogsDir => Path.Combine(_root, "logs");
+        public string LogsDir => _logsDir;
         public string PayloadsDir => Path.Combine(_root, "payloads");
         public string TempDir => Path.Combine(_root, "tmp");
     }
@@ -41,7 +50,7 @@ public class AppPathsTests
         var saved = AppPaths.Current;
         try
         {
-            AppPaths.Current = new TempPaths(root);
+            AppPaths.Current = new TempPaths(root, saved.LogsDir);
 
             new AppSettings { MaxConcurrentDownloads = 7 }.Save();
 

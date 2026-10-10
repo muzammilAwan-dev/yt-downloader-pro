@@ -272,7 +272,7 @@
     if (SITE.resolvePostUrl) {
       try {
         const hooked = SITE.resolvePostUrl(videoEl);
-        if (hooked) { const url = normalizePostUrl(hooked); if (url) return { url, via: 'site-hook' }; }
+        if (hooked) { const url = normalizePostUrl(hooked); if (url) return { url, via: 'site-hook', diag: hookDiagFor() }; }
       } catch { /* fall through to the generic strategies */ }
     }
     if (SITE.isVideoPage(window.location.href)) {
@@ -286,7 +286,12 @@
       }
     }
     const all = root ? Array.from(root.querySelectorAll('a[href]')) : [];
-    return { url: null, via: 'none', diag: { root: root && root.tagName, anchors: all.length, sample: all.slice(0, 12).map(a => (a.getAttribute('href') || '').slice(0, 70)) } };
+    return { url: null, via: 'none', diag: { root: root && root.tagName, anchors: all.length, sample: all.slice(0, 12).map(a => (a.getAttribute('href') || '').slice(0, 70)), hook: hookDiagFor() } };
+  }
+
+  /** What the site's resolvePostUrl hook tried (if it keeps notes), so a failure in the log says WHY, not just "none". */
+  function hookDiagFor() {
+    try { return SITE.hookDiag ? SITE.hookDiag() : undefined; } catch { return undefined; }
   }
 
   /**
@@ -354,7 +359,7 @@
         if (media.kind === 'image') { sendResponse({ ok: true, kind: 'image', src: imageSrcFor(media.el) }); return; }
         const r = await resolveVideoUrlWithPrime(media.el);
         sendResponse(r.url ? { ok: true, kind: 'video', url: r.url }
-                           : { ok: false, error: "Couldn't find this video's link. Click the video to open it on its own page, then try again." });
+                           : { ok: false, error: unresolvedMessage() });
       } catch (e) {
         sendResponse({ ok: false, error: String((e && e.message) || e) });
       }
@@ -364,14 +369,28 @@
 
   let pendingFeedPromise = Promise.resolve(null); // URL being resolved for the click that opened the dropdown (scrolling afterwards can't change the target)
   let lastFeedKey = '';
+  let lastResolvedEl = null, lastResolvedInfo = null, lastResolvedAt = 0;
+
+  /** What to tell the user when a feed video's link can't be worked out. Sites can override it (clicking a TikTok video pauses it, it doesn't open it). */
+  function unresolvedMessage() {
+    return SITE.unresolvedHint || "Couldn't find this video's link. Click the video to open it on its own page, then try again.";
+  }
 
   function syncFeedButton(hidden) {
     let existing = document.getElementById(CONFIG.CONTAINER_ID);
     const media = findActiveMedia();
     reportVideoCount(media ? 1 : 0);
 
-    const info = media && media.kind === 'video' ? resolveVideoUrl(media.el) : null;
-    const key = media ? `${media.kind}|${info ? `${info.via}|${info.url}` : (media.el.currentSrc || media.el.src || '').slice(-40)}` : 'no-active-media';
+    // The resolver (esp. TikTok's multi-source one) does real work, and this runs on every scroll/mutation tick. The URL here
+    // is only used for the debug-log key; the click handler always re-resolves fresh. So re-resolve only when the video
+    // element changes or every ~1.5s (feed sites recycle elements in place, so a short expiry still catches content swaps).
+    let info = null;
+    if (media && media.kind === 'video') {
+      const now = Date.now();
+      if (media.el !== lastResolvedEl || now - lastResolvedAt > 1500) { lastResolvedInfo = resolveVideoUrl(media.el); lastResolvedEl = media.el; lastResolvedAt = now; }
+      info = lastResolvedInfo;
+    }
+    const key =media ? `${media.kind}|${info ? `${info.via}|${info.url}` : (media.el.currentSrc || media.el.src || '').slice(-40)}` : 'no-active-media';
     if (key !== lastFeedKey) {
       lastFeedKey = key;
       ytdlpLog(info && !info.url ? 'warn' : 'info', 'content', 'Active media', { site: SITE.id, kind: media && media.kind, via: info && info.via, url: info && info.url, diag: info && info.diag });
@@ -435,12 +454,25 @@
   // so they track reasonably well as the page scrolls.
   const geometryTracked = new Map(); // container -> anchorElement
 
+  /**
+   * Where a floating (position:fixed) overlay has to live to be visible. Normally <body>, but while an element is in browser
+   * fullscreen ONLY that element's subtree is painted - a button on <body> silently disappears. Re-parent into the fullscreen
+   * element then. (A <video>/<iframe> in fullscreen can't host children, so those fall back to body.)
+   */
+  function overlayHost() {
+    const fs = document.fullscreenElement;
+    return fs && !/^(VIDEO|IFRAME|CANVAS|IMG|OBJECT|EMBED)$/.test(fs.tagName) ? fs : document.body;
+  }
+  document.addEventListener('fullscreenchange', () => requestAnimationFrame(repositionGeometryTracked));
+
   function repositionGeometryTracked() {
+    const host = overlayHost();
     geometryTracked.forEach((anchorEl, container) => {
       if (!document.body.contains(anchorEl) || !document.body.contains(container)) {
         geometryTracked.delete(container);
         return;
       }
+      if (container.parentElement !== host) host.appendChild(container); // only geometry-tracked floating overlays are in this map; they always belong in the current host
       const r = anchorEl.getBoundingClientRect();
       container.style.position = 'fixed';
       if (container.classList.contains('yt-dlp-compact')) {
@@ -467,7 +499,7 @@
       return;
     }
     if (tier === 'geometry') {
-      document.body.appendChild(container);
+      overlayHost().appendChild(container);
       geometryTracked.set(container, anchor);
       repositionGeometryTracked();
       return;
@@ -829,7 +861,7 @@
       let feedUrl;
       if (SITE.feedStyle) {
         feedUrl = await pendingFeedPromise;
-        if (!feedUrl) throw new Error("Couldn't find this video's link. Click the video to open it on its own page, then try again.");
+        if (!feedUrl) throw new Error(unresolvedMessage());
       }
       await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems, isCropped, sTime, eTime, feedUrl);
 

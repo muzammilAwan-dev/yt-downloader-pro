@@ -111,8 +111,13 @@ const YTDLP_SITES = {
       thumbnail: true, metadata: true, sponsorBlock: false, compatMode: true,
       crop: true, playlist: false, channel: true
     },
-    isVideoPage: (url) => /\/@[\w.-]+\/video\/\d+/.test(url),
-    postLinkRegex: /\/@[\w.-]+\/video\/\d+/,
+    isVideoPage: (url) => /\/@[\w.-]*\/video\/\d+/.test(url),
+    postLinkRegex: /\/@[\w.-]*\/video\/\d+/,
+    // FIX: the logged-out feed renders NO /@user/video/<id> link inside the post (logs showed only /@user, /tag/*, /music/*
+    // anchors), so the generic "find the permalink" strategy can never work there. Read the video id from the player instead.
+    resolvePostUrl: (el) => tiktokResolvePostUrl(el),
+    hookDiag: () => tiktokLastDiag, // read by content.js so the debug log says which sources voted (or stayed silent)
+    unresolvedHint: "Couldn't read this TikTok's video ID. Open the video on its own page (tap the creator's name, then the video) and try again.", // clicking a feed video only pauses it
     isChannelPage: (url) => /\/@[\w.-]+\/?(\?.*)?$/.test(url),
     videoAnchorSelectors: ['[data-e2e="feed-video"]', 'section[data-e2e="feed-video"]', 'video'],
     feedStyle: true, // VERIFIED via dom-probe: home feed prefetches multiple <video> elements simultaneously, same issue as Instagram Reels
@@ -227,6 +232,149 @@ const YTDLP_SITES = {
     channelUrlForCommand: (url) => url,
   },
 };
+
+/**
+ * TikTok feed: work out the permalink of the video in view WITHOUT relying on a link in the DOM.
+ *
+ * Design goal: survive TikTok's front-end churn without code updates. So nothing here depends on one selector.
+ * Instead several INDEPENDENT sources each nominate a video id, every nomination is sanity-checked, and the
+ * sources vote:
+ *   anchor        a real /@user/video/<id> link inside the post                         (weight 10)
+ *   xgwrapper     the player wrapper's own id, <div id="xgwrapper-<n>-<videoId>">         (weight 4)
+ *   attr:<name>   any attribute whose NAME says id (data-more-menu-item-id, data-video-id...) (weight 4)
+ *   react-fiber   the item object in React's props, found by SHAPE not by prop name       (weight 4, +3 if its
+ *                 video.duration matches this <video>'s duration - proves it is THIS video)
+ *   attr-any      any other long number in an attribute                                    (weight 1)
+ * Sanity checks: a TikTok id is a snowflake - its top 32 bits are a unix timestamp, so a number that does not
+ * decode to a plausible date is rejected; ids that appear in /music/, /tag/ or /@user links are rejected (the
+ * music id on the page is a different number from the video id).
+ * Everything considered goes into tiktokLastDiag, which content.js writes to the debug log - so if TikTok
+ * changes and this ever stops working, the log says WHICH source went quiet instead of just "none".
+ * yt-dlp accepts https://www.tiktok.com/@/video/<id>, so a missing author handle is not fatal.
+ */
+let tiktokLastDiag = null;
+
+function tiktokIsPlausibleId(id) {
+  if (!/^\d{17,20}$/.test(id)) return false;
+  try {
+    const ts = Number(BigInt(id) >> 32n); // snowflake: high 32 bits = creation time (unix seconds)
+    return ts >= 1472688000 && ts <= Date.now() / 1000 + 2 * 86400; // after Sep 2016, not in the future
+  } catch { return false; }
+}
+
+function tiktokResolvePostUrl(videoEl) {
+  const diag = { sources: {}, rejected: [], pick: null, total: 0 };
+  tiktokLastDiag = diag;
+
+  // On a real /@user/video/<id> page the URL itself is authoritative - let content.js's generic page-url strategy win.
+  if (YTDLP_SITES.tiktok.isVideoPage(location.href)) { diag.pick = 'page-url'; return null; }
+
+  // The post that owns this video: TikTok's own test hooks first, then climb until a second <video> shows up.
+  // OUTERMOST container wins: <section data-e2e="feed-video"> sits INSIDE the <article>, and the author/music links and the
+  // "more" button (which carries the id) are siblings of that section, not children - the inner one would hide them.
+  let post = videoEl.closest('article') || videoEl.closest('[data-e2e="recommend-list-item-container"]') || videoEl.closest('[data-e2e="feed-video"]');
+  if (!post) {
+    let node = videoEl; post = videoEl.parentElement || videoEl;
+    for (let i = 0; i < 30 && node.parentElement; i++) { node = node.parentElement; if (node.querySelectorAll('video').length > 1) break; post = node; }
+  }
+  const nodes = [post, ...Array.from(post.querySelectorAll('*')).slice(0, 900)];
+
+  // ids that are NOT the video's: whatever shows up in music / tag / user / non-video links.
+  const blocked = new Set();
+  const NUM = /(?<![\d.])\d{17,20}(?![\d.])/g;
+  post.querySelectorAll('a[href]').forEach((a) => {
+    const h = a.getAttribute('href') || '';
+    if (/\/video\/\d/.test(h)) return;
+    (h.match(NUM) || []).forEach((n) => blocked.add(n));
+  });
+
+  const votes = new Map(); // id -> { total, sources: [] }
+  const vote = (id, source, weight) => {
+    if (!tiktokIsPlausibleId(id)) { if (diag.rejected.length < 6) diag.rejected.push({ id: String(id).slice(0, 24), source, why: 'not-a-snowflake' }); return; }
+    if (blocked.has(id)) { if (diag.rejected.length < 6) diag.rejected.push({ id, source, why: 'seen-in-music/tag/user-link' }); return; }
+    const v = votes.get(id) || { total: 0, sources: [] };
+    v.total += weight; v.sources.push(source);
+    votes.set(id, v);
+    diag.sources[source] = (diag.sources[source] || 0) + 1;
+  };
+
+  // 1. a real permalink anchor
+  let anchorAuthor = '';
+  for (const a of post.querySelectorAll('a[href*="/video/"]')) {
+    const m = (a.getAttribute('href') || '').match(/\/@([\w.-]*)\/video\/(\d{17,20})/);
+    if (m) { vote(m[2], 'anchor', 10); anchorAuthor = m[1]; break; }
+  }
+
+  // 2. player wrapper id (xgplayer) - on the video's own ancestors, any ancestor id carrying an id-like number counts
+  let wrapperHit = false;
+  for (let p = videoEl, i = 0; p && p !== post.parentElement && i < 14; p = p.parentElement, i++) {
+    if (!p.id) continue;
+    const m = p.id.match(/^xgwrapper-\d+-(\d{17,20})$/);
+    if (m) { vote(m[1], 'xgwrapper', 4); wrapperHit = true; break; }
+  }
+  if (!wrapperHit) {
+    for (let p = videoEl, i = 0; p && p !== post.parentElement && i < 14; p = p.parentElement, i++) {
+      const m = p.id && p.id.match(NUM);
+      if (m) { vote(m[0], 'ancestor-id', 3); break; }
+    }
+  }
+
+  // 3. attributes anywhere in the post (names that say "id" are trusted, anything else is a weak hint)
+  const ID_NAME = /(video|item|aweme|vid|post|media)[-_]?id/i;
+  const ownAncestors = new Set(); // their `id` attribute was already judged by the wrapper pass above - don't count the same signal twice
+  for (let p = videoEl; p; p = p.parentElement) ownAncestors.add(p);
+  for (const n of nodes) {
+    for (const attr of n.attributes || []) {
+      if (/^(href|src|srcset|style|class|d|points|viewbox|transform)$/i.test(attr.name)) continue;
+      if (attr.name === 'id' && ownAncestors.has(n)) continue;
+      if (attr.name.startsWith('data-ytdlp-')) continue; // our own helper's output from an earlier call - never feed it back in as evidence (TikTok recycles elements, it may be stale)
+      if (attr.value.length > 200) continue;
+      const found = attr.value.match(NUM);
+      if (!found) continue;
+      const trusted = ID_NAME.test(attr.name);
+      found.forEach((id) => vote(id, trusted ? 'attr:' + attr.name.replace(/^data-/, '') : 'attr-any', trusted ? 4 : 1));
+    }
+  }
+
+  // 4. React props, read by tiktok-main.js in the MAIN world (needs the page's own JS objects; the isolated world can't see them)
+  let fiberItems = [];
+  try {
+    videoEl.dispatchEvent(new CustomEvent('ytdlp-resolve-tiktok'));
+    const raw = videoEl.getAttribute('data-ytdlp-items');
+    diag.mainWorld = raw ? 'items' : (videoEl.getAttribute('data-ytdlp-miss') || 'no-response'); // 'no-response' = helper script not running
+    if (raw) fiberItems = JSON.parse(raw);
+  } catch (e) { diag.mainWorld = 'error:' + String(e && e.message || e).slice(0, 80); }
+  const vdur = isFinite(videoEl.duration) ? videoEl.duration : null;
+  const authorOf = new Map();
+  for (const it of fiberItems) {
+    const known = vdur != null && it.dur != null;
+    if (known && Math.abs(it.dur - vdur) > 1.5) { // same-looking item but a different length: it describes ANOTHER video (a neighbour in the list) - disproved, no vote
+      if (diag.rejected.length < 6) diag.rejected.push({ id: String(it.id), source: 'react-fiber', why: `duration ${it.dur}s != video ${Math.round(vdur)}s` });
+      continue;
+    }
+    vote(String(it.id), 'react-fiber', 4);
+    if (known) vote(String(it.id), 'react-fiber+duration', 3);
+    if (it.author) authorOf.set(String(it.id), it.author);
+  }
+
+  // decide
+  const ranked = [...votes.entries()].sort((a, b) => b[1].total - a[1].total);
+  diag.candidates = ranked.slice(0, 4).map(([id, v]) => ({ id, total: v.total, sources: v.sources.join(',') }));
+  if (!ranked.length) return null;
+  const [id, best] = ranked[0];
+  const runnerUp = ranked[1];
+  if (runnerUp && runnerUp[1].total * 2 > best.total) diag.conflict = true; // two ids with comparable support - logged, best one still wins
+  if (best.total < 3 && ranked.length > 1) return null;  // only weak hints and they disagree: refuse rather than download the wrong video
+  diag.pick = id; diag.total = best.total;
+
+  const handle = () => {
+    if (anchorAuthor) return anchorAuthor;
+    if (authorOf.get(id)) return authorOf.get(id);
+    const pick = (sel) => { const e = post.querySelector(sel); const m = e && (e.getAttribute('href') || '').match(/\/@([\w.-]+)\/?(?:[?#].*)?$/); return m ? m[1] : ''; };
+    return pick('a[data-e2e="video-author-avatar"]') || pick('a[data-e2e="browser-username"]') || pick('a[href^="/@"], a[href*="tiktok.com/@"]') || '';
+  };
+  return `https://www.tiktok.com/@${handle()}/video/${id}`;
+}
 
 /** Returns the site config whose `matches` cover this URL, or null. */
 function getSiteForUrl(url) {

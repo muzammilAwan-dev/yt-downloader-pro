@@ -121,8 +121,28 @@ const YTDLP_SITES = {
     isChannelPage: (url) => /\/@[\w.-]+\/?(\?.*)?$/.test(url),
     videoAnchorSelectors: ['[data-e2e="feed-video"]', 'section[data-e2e="feed-video"]', 'video'],
     feedStyle: true, // VERIFIED via dom-probe: home feed prefetches multiple <video> elements simultaneously, same issue as Instagram Reels
-    channelAnchorSelectors: ['[data-e2e="user-page"]', '[data-e2e="user-title"]'],
-    channelUrlForCommand: (url) => url, // yt-dlp's TikTok user extractor pulls the whole profile
+    channelAnchorSelectors: ['[data-e2e="user-page"] [data-e2e="user-bio"]', '[data-e2e="user-page"] [data-e2e="user-subtitle"]', '[data-e2e="user-title"]', '[data-e2e="user-page"]'], // only used if channelFloating is turned off
+    // FIX: a button inserted next to TikTok's profile header depends on a layout that changes constantly, and a button in the wrong place or
+    // clipped away looks exactly like "the feature doesn't exist". Float it in a fixed corner instead - independent of the page's markup.
+    channelFloating: true,
+    // yt-dlp wants the bare profile URL: no ?lang=, ?is_from_webapp= or tab parameters.
+    channelUrlForCommand: (url) => { try { const u = new URL(url); const m = u.pathname.match(/^\/(@[\w.-]+)/); return m ? `${u.origin}/${m[1]}` : url; } catch { return url; } },
+    // Direct links to this profile's videos that are loaded in the page right now. Handed to yt-dlp NEXT TO the profile URL, so if
+    // yt-dlp's profile extractor fails (it needs the secUid + browser impersonation), the videos we can already see still download.
+    // Videos by other accounts (suggestions, Reposts tab) are filtered out by handle.
+    collectChannelItemUrls: () => {
+      const handle = (location.pathname.match(/^\/@([\w.-]+)/) || [])[1];
+      if (!handle) return [];
+      const seen = new Set(), out = [];
+      document.querySelectorAll('a[href*="/video/"]').forEach((a) => {
+        const m = (a.getAttribute('href') || '').match(/\/@([\w.-]+)\/video\/(\d{17,20})/);
+        if (m && m[1].toLowerCase() === handle.toLowerCase() && !seen.has(m[2])) { seen.add(m[2]); out.push(`https://www.tiktok.com/@${m[1]}/video/${m[2]}`); }
+      });
+      return out;
+    },
+    // TikTok titles are just the caption: many videos share one ("#fyp"), and yt-dlp silently SKIPS a file whose name already exists.
+    // Put the video id in the file name so every video gets its own file.
+    uniqueFilenames: true,
     note: 'TikTok changes markup very frequently - highest ongoing-maintenance risk of this list.',
   },
 
@@ -156,6 +176,31 @@ const YTDLP_SITES = {
     // Reddit's player is a custom element with its <video> inside a shadow root, which document.querySelectorAll('video') can't see.
     feedStyle: true,
     hostVideoSelector: 'shreddit-player-2, shreddit-player',
+    // Image / gallery posts: same "button follows the media in view" logic as Instagram/X, saving the image directly (no yt-dlp).
+    // Only Reddit's own image hosts count - external-preview.redd.it is a link/video thumbnail, not the post's media.
+    imagePosts: true,
+    imageSrcRegex: /^https?:\/\/(?:preview|i)\.redd\.it\//,
+    // The feed serves a resized, signed copy: preview.redd.it/<caption-slug>-v0-<id>.jpg?width=640&auto=webp&s=...
+    // The original lives at i.redd.it/<id>.jpg - the caption slug is NOT part of that address (keeping it gives a 404 page).
+    // Reddit also keeps that exact address in a hidden lightbox <img> next to the visible one, so prefer reading it from there
+    // and only fall back to rebuilding it from the preview name.
+    imageOriginalSrc: (img) => {
+      const box = img.closest('figure, shreddit-aspect-ratio, gallery-carousel, li') || img.parentElement;
+      const o = box && box.querySelector('img[src^="https://i.redd.it/"]');
+      return o ? o.src : null;
+    },
+    imageUrlTransform: (src) => {
+      try {
+        const u = new URL(src);
+        if (u.hostname !== 'preview.redd.it') return u.origin + u.pathname;
+        const m = /-v0-([A-Za-z0-9]+)(\.\w+)$/.exec(u.pathname);
+        return m ? `https://i.redd.it/${m[1]}${m[2]}` : `https://i.redd.it${u.pathname}`;
+      } catch { return src; }
+    },
+    // Image posts sit in <shreddit-post>, galleries in <gallery-carousel>; either may keep its <img> inside an (open) shadow root.
+    imageShadowHosts: 'shreddit-post, gallery-carousel, shreddit-media-lightbox-listener, faceplate-img',
+    // Reddit paints a blurred, enlarged copy of the image behind it - never the thing the user wants to save.
+    imageReject: (img) => { try { return img.getAttribute('aria-hidden') === 'true' || /blur/i.test(getComputedStyle(img).filter) || !!img.closest('[class*="background-image"], [class*="blur"]'); } catch { return false; } },
     resolvePostUrl: (el) => { const p = el.closest('shreddit-post'); const l = p && (p.getAttribute('permalink') || p.getAttribute('content-href')); return l ? new URL(l, location.origin).href : null; },
     label: 'Reddit',
     matches: ['*://www.reddit.com/*', '*://reddit.com/*', '*://old.reddit.com/*'],
@@ -272,10 +317,21 @@ function tiktokResolvePostUrl(videoEl) {
   // The post that owns this video: TikTok's own test hooks first, then climb until a second <video> shows up.
   // OUTERMOST container wins: <section data-e2e="feed-video"> sits INSIDE the <article>, and the author/music links and the
   // "more" button (which carries the id) are siblings of that section, not children - the inner one would hide them.
-  let post = videoEl.closest('article') || videoEl.closest('[data-e2e="recommend-list-item-container"]') || videoEl.closest('[data-e2e="feed-video"]');
+  const VIDLINK = 'a[href*="/video/"]';
+  let post = videoEl.closest('article') || videoEl.closest('[data-e2e="recommend-list-item-container"]') ||
+             videoEl.closest('[data-e2e="user-post-item"]') || videoEl.closest('[data-e2e="feed-video"]');
   if (!post) {
+    // Unknown layout (grids, search results, ...). Climb only while it is still ONE item: stop before an ancestor that holds
+    // another <video> or links to other videos - otherwise we end up at <html> and "the post" is the whole page.
     let node = videoEl; post = videoEl.parentElement || videoEl;
-    for (let i = 0; i < 30 && node.parentElement; i++) { node = node.parentElement; if (node.querySelectorAll('video').length > 1) break; post = node; }
+    for (let i = 0; i < 12 && node.parentElement; i++) {
+      node = node.parentElement;
+      if (node.querySelectorAll('video').length > 1) break;
+      const seen = new Set();
+      node.querySelectorAll(VIDLINK).forEach((a) => { const m = (a.getAttribute('href') || '').match(/\/video\/(\d{17,20})/); if (m) seen.add(m[1]); });
+      if (seen.size > 1) break;
+      post = node;
+    }
   }
   const nodes = [post, ...Array.from(post.querySelectorAll('*')).slice(0, 900)];
 
@@ -298,11 +354,18 @@ function tiktokResolvePostUrl(videoEl) {
     diag.sources[source] = (diag.sources[source] || 0) + 1;
   };
 
-  // 1. a real permalink anchor
+  // 1. a real permalink. Best case: the player sits INSIDE its own <a href=".../video/<id>"> (profile grids, search results, related videos).
+  //    Otherwise links inside the post count only if they all point at ONE video - a grid or list holds many, and "the first one" is a guess.
   let anchorAuthor = '';
-  for (const a of post.querySelectorAll('a[href*="/video/"]')) {
-    const m = (a.getAttribute('href') || '').match(/\/@([\w.-]*)\/video\/(\d{17,20})/);
-    if (m) { vote(m[2], 'anchor', 10); anchorAuthor = m[1]; break; }
+  const linkOf = (a) => (a.getAttribute('href') || '').match(/\/@([\w.-]*)\/video\/(\d{17,20})/);
+  const ownLink = videoEl.closest(VIDLINK);
+  const own = ownLink && linkOf(ownLink);
+  if (own) { vote(own[2], 'own-link', 10); anchorAuthor = own[1]; }
+  else {
+    const found = new Map();
+    post.querySelectorAll(VIDLINK).forEach((a) => { const m = linkOf(a); if (m) found.set(m[2], m[1]); });
+    if (found.size === 1) { const [id, au] = [...found][0]; vote(id, 'anchor', 10); anchorAuthor = au; }
+    else found.forEach((au, id) => vote(id, 'anchor-multi', 1)); // many candidates: weak hints only, the player's own id decides
   }
 
   // 2. player wrapper id (xgplayer) - on the video's own ancestors, any ancestor id carrying an id-like number counts

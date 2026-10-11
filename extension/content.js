@@ -574,7 +574,8 @@
     if (!isChannel || hidden) {
       if (existingChannelButton) { geometryTracked.delete(existingChannelButton); existingChannelButton.remove(); }
     } else {
-      const { anchor, tier } = resolveAnchor(SITE.channelAnchorSelectors, SITE.preferAncestor);
+      // channelFloating sites (TikTok) skip the page layout entirely: a fixed corner pill can't end up clipped, hidden or in the wrong place.
+      const { anchor, tier } = SITE.channelFloating ? { anchor: document.body, tier: 'body' } : resolveAnchor(SITE.channelAnchorSelectors, SITE.preferAncestor);
       if (existingChannelButton && !isStillCorrectlyPlaced(existingChannelButton, anchor, tier)) {
         geometryTracked.delete(existingChannelButton);
         existingChannelButton.remove();
@@ -636,6 +637,7 @@
 
   function injectChannelButton(anchor, tier) {
     const container = document.createElement('div');
+    ytdlpLog('info', 'content', 'Channel button injected', { site: SITE.id, tier, anchor: anchor && anchor.tagName });
     container.id = CONFIG.CHANNEL_CONTAINER_ID; // FIX: this id was accidentally dropped in an earlier edit, causing duplicate channel buttons on every recheck
     container.classList.add(FADE_TARGET_CLASS);
     container._ytdlpAnchor = anchor; // see isStillCorrectlyPlaced()
@@ -813,6 +815,18 @@
     warning.innerHTML = `<div class="helper-text" style="text-align:left;">This queues <b>every upload</b> on this ${SITE.label} page. It paces requests automatically to avoid rate limits, skips videos already downloaded on repeat runs, and won't stop on individual broken/private videos.</div>`;
     fragment.appendChild(warning);
 
+    // Sites that can list a page's items from the DOM get a "scroll first" option: profile pages lazy-load, so only what has been scrolled
+    // into view exists in the page. Off by default (yt-dlp's own profile extractor doesn't need it); it makes the direct-link fallback complete.
+    if (SITE.collectChannelItemUrls) {
+      const lbl = document.createElement('label');
+      lbl.className = 'yt-dlp-toggle-label';
+      lbl.innerHTML = `<input type="checkbox" id="channel-load-all"><span class="toggle-text">Scroll the page first to load every upload</span>`;
+      const cb = lbl.querySelector('input');
+      chrome.storage.sync.get(['channelLoadAll'], (res) => { if (res.channelLoadAll) cb.checked = true; });
+      cb.addEventListener('change', (e) => chrome.storage.sync.set({ channelLoadAll: e.target.checked }));
+      fragment.appendChild(lbl);
+    }
+
     const qualities = SITE.audioOnly
       ? [{ value: 'audio', label: '🎵 Best Available Audio', default: true }]
       : [
@@ -966,7 +980,7 @@
 
     const outTemplate = wantsPlaylist && SITE.features.playlist
       ? `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d_%(title)s_${resLabel}.${fmt.ext}"`
-      : `-o "${saveDir}%(title)s_${resLabel}.${fmt.ext}"`;
+      : `-o "${saveDir}${SITE.uniqueFilenames ? '%(title).80s_%(id)s' : '%(title)s'}_${resLabel}.${fmt.ext}"`;
 
     const command = ['yt-dlp', '-f', `"${fmt.f}"`, compatFlag, fmt.opt, `-N ${speed}`, cropperCmd, subCmd, plCmd, sponsorFlag, '--restrict-filenames', metaFlag, thumbFlag, '--no-warnings', '--progress', outTemplate, `"${videoUrl}"`].filter(Boolean).join(' ');
 
@@ -979,6 +993,30 @@
     return url.replace(/^https?:\/\//, '').replace(/[^\w.-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 80) || 'channel';
   }
 
+  /** Max characters of yt-dlp command we are willing to push through one ytdlp:// link (see handleChannelDownload). */
+  const CHANNEL_COMMAND_BUDGET = 6000;
+
+  /**
+   * Profile pages lazy-load: only the items scrolled into view exist in the DOM. Scroll to the bottom until the count of items stops
+   * growing (or a cap is hit), then put the page back where the user was. Bounded by item count and time, and it logs what happened.
+   */
+  async function loadAllChannelItems() {
+    const startY = window.scrollY, t0 = Date.now();
+    const count = () => SITE.collectChannelItemUrls().length;
+    let last = -1, lastChange = Date.now();
+    showToast('Loading every upload - scrolling this page...');
+    while (Date.now() - t0 < 90000) {
+      const n = count();
+      if (n >= 400) break;
+      if (n !== last) { last = n; lastChange = Date.now(); }
+      else if (Date.now() - lastChange > 3500) break; // nothing new for 3.5s: that's all of them
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+      await new Promise((r) => setTimeout(r, 400));
+    }
+    window.scrollTo({ top: startY, behavior: 'instant' });
+    ytdlpLog('info', 'content', 'Scrolled to load channel items', { site: SITE.id, found: last, ms: Date.now() - t0 });
+  }
+
   async function handleChannelDownload(resolution) {
     const confirmed = window.confirm(
       `Download every upload from this ${SITE.label} page?\n\n` +
@@ -988,7 +1026,7 @@
     if (!confirmed) return;
 
     try {
-      const prefs = await chrome.storage.sync.get(['savePath', 'concurrentDownloads', 'audioFormat', 'flagMetadata', 'flagThumbnail', 'compatMode']);
+      const prefs = await chrome.storage.sync.get(['savePath', 'concurrentDownloads', 'audioFormat', 'flagMetadata', 'flagThumbnail', 'compatMode', 'channelLoadAll']);
 
       let saveDir = prefs.savePath ? prefs.savePath.trim().replace(/[/\\]$/, '') + '\\' : '~/Downloads/YTDownloaderPro/';
       saveDir = saveDir.replace(/\\/g, '\\\\');
@@ -1007,29 +1045,51 @@
         ? SITE.channelUrlForCommand(window.location.href)
         : window.location.href;
 
+      // Direct links to the items already loaded in the page, as a safety net next to the profile URL (see sites.js collectChannelItemUrls).
+      let itemUrls = [];
+      if (SITE.collectChannelItemUrls) {
+        if (prefs.channelLoadAll) await loadAllChannelItems();
+        itemUrls = SITE.collectChannelItemUrls();
+      }
+
       const archiveFile = `${saveDir}${slugForArchive(channelUrl)}.archive.txt`;
       const metaFlag = (prefs.flagMetadata === true) ? '--embed-metadata' : '';
       const thumbFlag = (prefs.flagThumbnail !== false && fmt.ext !== 'wav') ? '--embed-thumbnail' : '';
       const compatFlag = (prefs.compatMode === true && SITE.features.compatMode) ? '-S "vcodec:h264,res,acodec:m4a"' : '';
+      const nameTemplate = SITE.uniqueFilenames ? '%(title).80s_%(id)s' : '%(title)s';
 
       // SAFETY RAILS for bulk/channel jobs (see Stage 1 research):
-      //  --yes-playlist + --ignore-errors: one broken/private video doesn't kill the batch
-      //  --download-archive: re-runs only fetch new uploads, not everything again
+      //  --yes-playlist + --ignore-errors: one broken/private video doesn't kill the batch - and if the FIRST url (the profile) fails
+      //    outright, yt-dlp carries on with the direct links after it instead of giving up
+      //  --download-archive: re-runs only fetch new uploads, not everything again (also makes profile + direct links never download twice)
       //  --sleep-requests/--sleep-interval/--max-sleep-interval: paces requests to
       //    avoid tripping bot-detection/rate limits on a bulk pull
-      const command = [
+      const base = [
         'yt-dlp', '--yes-playlist', '--ignore-errors',
         '-f', `"${fmt.f}"`, compatFlag, fmt.opt, `-N ${speed}`,
         '--sleep-requests 1', '--sleep-interval 5', '--max-sleep-interval 15',
         `--download-archive "${archiveFile}"`,
         '--restrict-filenames', metaFlag, thumbFlag, '--no-warnings', '--progress',
-        `-o "${saveDir}%(channel,uploader)s/%(title)s_${resLabel}.${fmt.ext}"`,
-        `"${channelUrl}"`,
+        `-o "${saveDir}%(channel,uploader)s/${nameTemplate}_${resLabel}.${fmt.ext}"`,
       ].filter(Boolean).join(' ');
 
+      // The whole command travels inside one ytdlp:// link, and very long links risk being cut off on the way to the host - so the
+      // direct links are capped. Re-running continues where it left off (the archive skips what's done).
+      let used = base.length + channelUrl.length + 3;
+      const included = [];
+      for (const u of itemUrls) {
+        if (used + u.length + 3 > CHANNEL_COMMAND_BUDGET) break;
+        included.push(u); used += u.length + 3;
+      }
+      const command = [base, `"${channelUrl}"`, ...included.map((u) => `"${u}"`)].join(' ');
+      ytdlpLog('info', 'content', 'Channel download requested', { site: SITE.id, resolution, channelUrl, loadAll: !!prefs.channelLoadAll, itemsFound: itemUrls.length, itemsIncluded: included.length, commandChars: command.length });
+
       await executeFinalCommand(command, false);
-      showToast('Channel download started! Check the application.');
+      showToast(itemUrls.length > included.length
+        ? `Channel download started! (${included.length} of ${itemUrls.length} loaded videos added as a backup - run again later to continue.)`
+        : 'Channel download started! Check the application.');
     } catch (error) {
+      ytdlpLog('error', 'content', 'Channel download failed to start', { site: SITE.id, error: String(error && error.message || error) });
       showToast(`Error: ${error.message}`, 'error');
     }
   }

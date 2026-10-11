@@ -176,6 +176,31 @@ const YTDLP_SITES = {
     // Reddit's player is a custom element with its <video> inside a shadow root, which document.querySelectorAll('video') can't see.
     feedStyle: true,
     hostVideoSelector: 'shreddit-player-2, shreddit-player',
+    // Image / gallery posts: same "button follows the media in view" logic as Instagram/X, saving the image directly (no yt-dlp).
+    // Only Reddit's own image hosts count - external-preview.redd.it is a link/video thumbnail, not the post's media.
+    imagePosts: true,
+    imageSrcRegex: /^https?:\/\/(?:preview|i)\.redd\.it\//,
+    // The feed serves a resized, signed copy: preview.redd.it/<caption-slug>-v0-<id>.jpg?width=640&auto=webp&s=...
+    // The original lives at i.redd.it/<id>.jpg - the caption slug is NOT part of that address (keeping it gives a 404 page).
+    // Reddit also keeps that exact address in a hidden lightbox <img> next to the visible one, so prefer reading it from there
+    // and only fall back to rebuilding it from the preview name.
+    imageOriginalSrc: (img) => {
+      const box = img.closest('figure, shreddit-aspect-ratio, gallery-carousel, li') || img.parentElement;
+      const o = box && box.querySelector('img[src^="https://i.redd.it/"]');
+      return o ? o.src : null;
+    },
+    imageUrlTransform: (src) => {
+      try {
+        const u = new URL(src);
+        if (u.hostname !== 'preview.redd.it') return u.origin + u.pathname;
+        const m = /-v0-([A-Za-z0-9]+)(\.\w+)$/.exec(u.pathname);
+        return m ? `https://i.redd.it/${m[1]}${m[2]}` : `https://i.redd.it${u.pathname}`;
+      } catch { return src; }
+    },
+    // Image posts sit in <shreddit-post>, galleries in <gallery-carousel>; either may keep its <img> inside an (open) shadow root.
+    imageShadowHosts: 'shreddit-post, gallery-carousel, shreddit-media-lightbox-listener, faceplate-img',
+    // Reddit paints a blurred, enlarged copy of the image behind it - never the thing the user wants to save.
+    imageReject: (img) => { try { return img.getAttribute('aria-hidden') === 'true' || /blur/i.test(getComputedStyle(img).filter) || !!img.closest('[class*="background-image"], [class*="blur"]'); } catch { return false; } },
     resolvePostUrl: (el) => { const p = el.closest('shreddit-post'); const l = p && (p.getAttribute('permalink') || p.getAttribute('content-href')); return l ? new URL(l, location.origin).href : null; },
     label: 'Reddit',
     matches: ['*://www.reddit.com/*', '*://reddit.com/*', '*://old.reddit.com/*'],

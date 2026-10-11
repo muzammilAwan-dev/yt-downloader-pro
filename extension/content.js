@@ -203,6 +203,15 @@
     return playing ? score * 2 : score;
   }
 
+  /** Every <img> on the page, plus those a site keeps inside an open shadow root (SITE.imageShadowHosts lists the hosts to look in). */
+  function allImages() {
+    const imgs = Array.from(document.querySelectorAll('img'));
+    if (SITE.imageShadowHosts) {
+      document.querySelectorAll(SITE.imageShadowHosts).forEach((h) => { if (h.shadowRoot) imgs.push(...h.shadowRoot.querySelectorAll('img')); });
+    }
+    return imgs;
+  }
+
   /** What the user is looking at right now: { el, kind: 'video' | 'image' } or null. */
   function findActiveMedia() {
     let best = null, bestScore = 0;
@@ -224,7 +233,8 @@
       });
     }
     if (SITE.imagePosts) {
-      document.querySelectorAll('img').forEach((img) => {
+      allImages().forEach((img) => {
+        if (SITE.imageReject && SITE.imageReject(img)) return;
         const r = img.getBoundingClientRect();
         if (r.width < 240 || r.height < 240) return; // avatars, icons, emoji, story-tray thumbs
         const src = img.currentSrc || img.src;
@@ -327,6 +337,9 @@
   }
 
   function imageSrcFor(imgEl) {
+    let direct = null;
+    try { direct = imgEl && SITE.imageOriginalSrc ? SITE.imageOriginalSrc(imgEl) : null; } catch { /* fall back to the visible src */ }
+    if (direct) return direct;
     const src = imgEl && (imgEl.currentSrc || imgEl.src);
     return src && SITE.imageUrlTransform ? SITE.imageUrlTransform(src) : src;
   }
@@ -468,7 +481,7 @@
   function repositionGeometryTracked() {
     const host = overlayHost();
     geometryTracked.forEach((anchorEl, container) => {
-      if (!document.body.contains(anchorEl) || !document.body.contains(container)) {
+      if (!anchorEl.isConnected || !document.body.contains(container)) { // isConnected, not body.contains: the anchor may live inside a shadow root (Reddit)
         geometryTracked.delete(container);
         return;
       }

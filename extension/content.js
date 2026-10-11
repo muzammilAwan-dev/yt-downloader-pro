@@ -980,7 +980,7 @@
 
     const outTemplate = wantsPlaylist && SITE.features.playlist
       ? `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d_%(title)s_${resLabel}.${fmt.ext}"`
-      : `-o "${saveDir}${SITE.uniqueFilenames ? '%(title).80s_%(id)s' : '%(title)s'}_${resLabel}.${fmt.ext}"`;
+      : `-o "${saveDir}%(title)s${uniqueSuffix(videoUrl)}_${resLabel}.${fmt.ext}"`;
 
     const command = ['yt-dlp', '-f', `"${fmt.f}"`, compatFlag, fmt.opt, `-N ${speed}`, cropperCmd, subCmd, plCmd, sponsorFlag, '--restrict-filenames', metaFlag, thumbFlag, '--no-warnings', '--progress', outTemplate, `"${videoUrl}"`].filter(Boolean).join(' ');
 
@@ -988,6 +988,14 @@
   }
 
   // --- Channel / profile bulk download ---
+
+  // Sites whose captions repeat (TikTok) get the video id in the filename so two videos never overwrite/skip each other.
+  // The id is written out literally and "%(title)s" stays untouched, because the host builds its placeholder title from that exact token.
+  function uniqueSuffix(url) {
+    if (!SITE.uniqueFilenames) return '';
+    const m = /\/video\/(\d{17,20})/.exec(url || '');
+    return `_${m ? m[1] : '%(id)s'}`;
+  }
 
   function slugForArchive(url) {
     return url.replace(/^https?:\/\//, '').replace(/[^\w.-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 80) || 'channel';
@@ -1056,7 +1064,8 @@
       const metaFlag = (prefs.flagMetadata === true) ? '--embed-metadata' : '';
       const thumbFlag = (prefs.flagThumbnail !== false && fmt.ext !== 'wav') ? '--embed-thumbnail' : '';
       const compatFlag = (prefs.compatMode === true && SITE.features.compatMode) ? '-S "vcodec:h264,res,acodec:m4a"' : '';
-      const nameTemplate = SITE.uniqueFilenames ? '%(title).80s_%(id)s' : '%(title)s';
+      // Keep the exact "%(title)s" token: the host's title placeholder logic looks for exactly that text
+      const nameTemplate = SITE.uniqueFilenames ? '%(title)s_%(id)s' : '%(title)s';
 
       // SAFETY RAILS for bulk/channel jobs (see Stage 1 research):
       //  --yes-playlist + --ignore-errors: one broken/private video doesn't kill the batch - and if the FIRST url (the profile) fails

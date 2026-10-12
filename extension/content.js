@@ -654,7 +654,7 @@
     container.id = CONFIG.CHANNEL_CONTAINER_ID; // FIX: this id was accidentally dropped in an earlier edit, causing duplicate channel buttons on every recheck
     container.classList.add(FADE_TARGET_CLASS);
     container._ytdlpAnchor = anchor; // see isStillCorrectlyPlaced()
-    if (tier === 'body') container.classList.add('channel-fallback');
+    if (tier === 'body') { container.classList.add('channel-fallback'); if (SITE.channelFloatCorner) container.dataset.corner = SITE.channelFloatCorner; } // corner: sites whose bottom-right is taken (Twitch chat box) float bottom-left
 
     const button = document.createElement('button');
     button.className = 'yt-dlp-btn yt-dlp-channel-btn';

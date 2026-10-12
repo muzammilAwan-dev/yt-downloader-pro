@@ -220,7 +220,7 @@ const YTDLP_SITES = {
 
   twitch: {
     id: 'twitch',
-    userNote: "VODs and clips.", // shown in the popup's Supported Sites list (plain language; `note` below is developer-facing)
+    userNote: "Live streams, VODs and clips.", // shown in the popup's Supported Sites list (plain language; `note` below is developer-facing)
     label: 'Twitch',
     matches: ['*://www.twitch.tv/*', '*://twitch.tv/*', '*://clips.twitch.tv/*'],
     cookieDomain: '.twitch.tv',
@@ -230,12 +230,26 @@ const YTDLP_SITES = {
       thumbnail: true, metadata: true, sponsorBlock: false, compatMode: true,
       crop: true, playlist: false, channel: true
     },
+    // VERIFIED via probe (v4, home + live channel): the <video> (aria-label "Twitch video player") sits inside div[data-a-target=video-player];
+    // it is a plain light-DOM element with no src (MSE), so the button floats over whatever player is in view - the same
+    // "button follows the media in view" logic as the feed sites. That covers the live channel page, the home-page carousel and the
+    // mini player that keeps playing while you browse. The link of what is playing comes from twitchResolvePostUrl (below).
+    feedStyle: true,
+    resolvePostUrl: (el) => twitchResolvePostUrl(el),
+    hookDiag: () => twitchLastDiag,
+    unresolvedHint: "Couldn't tell which channel this player belongs to. Open the channel (or the video / clip) on its own page and try again.",
+    // VODs and clips: the page URL is the item. Live channels are resolved by the hook (path -> channel login).
     isVideoPage: (url) => /\/videos\/\d+/.test(url) || /clips\.twitch\.tv\//.test(url) || /\/[\w]+\/clip\//.test(url),
-    isChannelPage: (url) => /^\/[\w]+\/videos(\/all)?\/?(\?.*)?$/.test(new URL(url).pathname + (new URL(url).search || '')),
-    videoAnchorSelectors: ['[data-test-selector="video-player__video-container"]', 'video'],
-    channelAnchorSelectors: ['[data-a-target="videos-tab"]'],
-    channelUrlForCommand: (url) => url,
-    note: 'Twitch also supports downloading chat replay (--write-comments) - not wired into the UI yet, listed as a future site-specific extra.',
+    // /<channel>/videos and /<channel>/clips are the bulk-download pages (yt-dlp handles both as playlists)
+    isChannelPage: (url) => { try { return /^\/[\w]+\/(?:videos|clips)(?:\/all)?\/?$/.test(new URL(url).pathname); } catch { return false; } },
+    videoAnchorSelectors: ['[data-a-target="video-player"]', '[data-test-selector="video-player__video-container"]', 'video'],
+    // Twitch's tab row isn't verified (probe was taken on the live page, which has no Videos tab), so the bulk button floats - bottom-LEFT so
+    // it can't sit on top of the chat box that lives at the bottom-right.
+    channelFloating: true,
+    channelFloatCorner: 'left',
+    channelAnchorSelectors: ['[data-a-target="videos-tab"]'], // only used if channelFloating is turned off
+    channelUrlForCommand: (url) => { try { const u = new URL(url); return u.origin + u.pathname.replace(/\/$/, ''); } catch { return url; } }, // drop ?filter=&sort= tracking-ish query; yt-dlp lists everything
+    note: 'Live recording is open-ended: yt-dlp records until the stream ends or the task is stopped in the app. Chat replay (--write-comments) is not wired into the UI yet.',
   },
 
   vimeo: {
@@ -437,6 +451,70 @@ function tiktokResolvePostUrl(videoEl) {
     return pick('a[data-e2e="video-author-avatar"]') || pick('a[data-e2e="browser-username"]') || pick('a[href^="/@"], a[href*="tiktok.com/@"]') || '';
   };
   return `https://www.tiktok.com/@${handle()}/video/${id}`;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Twitch: which channel / video is the player in view playing?
+// Pages: /<channel> (live), /<channel>/videos|about|schedule (live player stays on top), /videos/<id> (VOD), /<channel>/clip/<slug>,
+// home page (a featured stream autoplays in a carousel), and a mini player that keeps playing while you browse elsewhere.
+// ---------------------------------------------------------------------------------------------------------------------
+let twitchLastDiag = null;
+
+// Top-level paths that are Twitch pages, not channels (a channel login is 3-25 chars of a-z 0-9 _).
+const TWITCH_RESERVED = new Set(['directory', 'videos', 'video', 'settings', 'downloads', 'p', 'popout', 'embed', 'subscriptions', 'inventory', 'drops',
+  'wallet', 'friends', 'turbo', 'jobs', 'store', 'prime', 'search', 'u', 'moderator', 'dashboard', 'broadcast', 'team', 'event', 'events', 'schedule',
+  'following', 'privacy', 'legal', 'login', 'signup', 'payments', 'subs', 'bits', 'gift', 'help', 'about', 'partner', 'creatorcamp', 'turbo', 'ads', 'clips', 'all']);
+
+function twitchLoginFromHref(href) {
+  try {
+    const u = new URL(href, 'https://www.twitch.tv');
+    if (!/(^|\.)twitch\.tv$/.test(u.hostname)) return null;
+    const m = /^\/([A-Za-z0-9_]{3,25})(?:\/(?:home|about|schedule|videos|clips|chat))?\/?$/.exec(u.pathname);
+    return m && !TWITCH_RESERVED.has(m[1].toLowerCase()) ? m[1] : null;
+  } catch { return null; }
+}
+
+function twitchResolvePostUrl(el) {
+  const diag = { tried: [], pick: null };
+  twitchLastDiag = diag;
+  const done = (login, via) => { diag.pick = login ? { login, via } : null; return login ? `https://www.twitch.tv/${login}` : null; };
+
+  // 1. a VOD / clip page: the page URL is the item - return nothing so the generic page-URL rule applies
+  if (YTDLP_SITES.twitch.isVideoPage(location.href)) { diag.tried.push('item-page'); return null; }
+
+  // 2. a channel page: the player on it is that channel's live stream
+  const fromPath = twitchLoginFromHref(location.href);
+  diag.tried.push('path:' + (fromPath || '-'));
+  if (fromPath) return done(fromPath, 'path');
+
+  // 3. a card / carousel item around the player (home page featured stream): the first channel link inside it
+  const card = el.closest('[data-a-target="featured-item"], [data-a-target^="card-"], article');
+  if (card) {
+    for (const a of card.querySelectorAll('a[href]')) {
+      const login = twitchLoginFromHref(a.getAttribute('href'));
+      if (login) { diag.tried.push('card-link'); return done(login, 'card-link'); }
+    }
+    diag.tried.push('card-link:none');
+  }
+
+  // 4. the page's own data: Twitch's player components carry the channel login as a prop (found by name, not by position)
+  try {
+    let fiberKey = null, start = null;
+    for (let p = el, i = 0; p && i < 30 && !start; p = p.parentElement, i++) {
+      fiberKey = Object.keys(p).find((k) => k.startsWith('__reactFiber$'));
+      if (fiberKey) start = p[fiberKey];
+    }
+    let hops = 0;
+    for (let f = start; f && hops < 90; f = f.return, hops++) {
+      const pr = f.memoizedProps;
+      if (!pr || typeof pr !== 'object') continue;
+      for (const v of [pr.channelLogin, pr.channel && pr.channel.login, pr.channelName]) {
+        if (typeof v === 'string' && /^[A-Za-z0-9_]{3,25}$/.test(v) && !TWITCH_RESERVED.has(v.toLowerCase())) { diag.tried.push('react@' + hops); return done(v, 'react'); }
+      }
+    }
+    diag.tried.push(start ? 'react:none' : 'react:no-fiber');
+  } catch (e) { diag.tried.push('react:error'); }
+  return done(null);
 }
 
 /** Returns the site config whose `matches` cover this URL, or null. */

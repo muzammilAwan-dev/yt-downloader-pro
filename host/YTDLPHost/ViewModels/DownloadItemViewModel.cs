@@ -38,7 +38,11 @@ namespace YTDLPHost.ViewModels
         {
             get
             {
-                if (Task.Status == DownloadStatus.Completed) return "Completed";
+                if (Task.Status == DownloadStatus.Completed)
+                {
+                    // Bulk jobs show what happened, e.g. "Completed - 1 saved, 120 failed (DRM-protected)".
+                    return string.IsNullOrEmpty(Task.ResultNote) ? "Completed" : $"Completed - {Task.ResultNote}";
+                }
                 if (Task.Status == DownloadStatus.Error) return "Error";
                 if (Task.Status == DownloadStatus.Cancelled) return "Cancelled";
                 if (Task.Status == DownloadStatus.Paused) return "Paused";
@@ -53,7 +57,18 @@ namespace YTDLPHost.ViewModels
                     ? Task.CurrentPhase 
                     : $"{Task.PlaylistInfo} - {Task.CurrentPhase}";
 
-                if (Task.IsIndeterminate) return prefix;
+                if (Task.IsIndeterminate)
+                {
+                    // Live / unknown-length downloads have no percentage, but they do have size, speed and elapsed time.
+                    if (Task.CurrentPhase.StartsWith("Downloading", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(Task.Eta))
+                    {
+                        string live = prefix;
+                        if (!string.IsNullOrEmpty(Task.FileSize)) live += $" | {Task.FileSize}";
+                        if (!string.IsNullOrEmpty(Task.Speed)) live += $" | {Task.Speed}";
+                        return $"{live} | {Task.Eta} elapsed";
+                    }
+                    return prefix;
+                }
                 
                 string sizeStr = string.IsNullOrEmpty(Task.FileSize) ? "" : $" of {Task.FileSize}";
                 string details = $" | {Task.Progress:0.0}%{sizeStr}";
@@ -90,6 +105,7 @@ namespace YTDLPHost.ViewModels
                          e.PropertyName == nameof(Task.FileSize) || 
                          e.PropertyName == nameof(Task.CurrentPhase) || 
                          e.PropertyName == nameof(Task.PlaylistInfo) || 
+                         e.PropertyName == nameof(Task.ResultNote) || 
                          e.PropertyName == nameof(Task.IsIndeterminate))
                 {
                     OnPropertyChanged(nameof(ProgressDisplay));

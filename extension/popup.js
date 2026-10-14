@@ -373,7 +373,8 @@
     if (startT || endT) {
         const s = startT ? startT : '00:00:00';
         const e = endT ? endT : 'inf';
-        cropperOptions = `--download-sections "*${s}-${e}" --force-keyframes-at-cuts `;
+        // see content.js: HLS sites (Twitch) must not force a re-encode at the cut points
+        cropperOptions = `--download-sections "*${s}-${e}" ${currentSite && currentSite.cropKeyframeCuts === false ? '' : '--force-keyframes-at-cuts '}`;
     }
 
     const subOptions = (settings.embedSubs && settings.resolution !== 'audio')

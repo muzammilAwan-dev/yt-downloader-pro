@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -94,11 +95,31 @@ namespace YTDLPHost.Models
         [ObservableProperty]
         private bool _logFileSaved;
 
+        // One-line summary for bulk jobs once they finish, e.g. "1 saved, 120 skipped (120 DRM-protected)". Shown next to "Completed".
+        [ObservableProperty]
+        private string _resultNote = "";
+
         // --- IGNORED FOR JSON SERIALIZATION --- 
         // We only save core metadata to history.json. We discard volatile UI logs to prevent massive memory leaks.
 
+        // Files of the item that is downloading RIGHT NOW. Only these are fair game for cleanup when the task is cancelled.
         [JsonIgnore]
         public ConcurrentBag<string> TrackedFiles { get; } = new();
+
+        // Files of items that already finished (or were already on disk before this task started). Cancelling or finishing a bulk
+        // job must NEVER delete these - they are the user's downloads.
+        [JsonIgnore]
+        public ConcurrentBag<string> SettledFiles { get; } = new();
+
+        /// <summary>Called when a bulk job moves on to its next item: everything tracked so far belongs to a finished item now.</summary>
+        public void SettleCurrentItem()
+        {
+            foreach (var f in TrackedFiles.Distinct().ToList()) SettledFiles.Add(f);
+            while (!TrackedFiles.IsEmpty)
+            {
+                TrackedFiles.TryTake(out _);
+            }
+        }
 
         [JsonIgnore]
         private readonly StringBuilder _fullLogBuilder = new();
@@ -136,6 +157,16 @@ namespace YTDLPHost.Models
             }
         }
 
+        /// <summary>Writes a line to the full on-disk log only (not the live log view). Used for noisy ffmpeg diagnostics.</summary>
+        public void AppendLogQuiet(string? line)
+        {
+            if (string.IsNullOrWhiteSpace(line)) return;
+            lock (_logLock)
+            {
+                _fullLogBuilder.AppendLine(line);
+            }
+        }
+
         public void ClearLog()
         {
             lock (_logLock)
@@ -149,6 +180,11 @@ namespace YTDLPHost.Models
                 {
                     TrackedFiles.TryTake(out _);
                 }
+                while (!SettledFiles.IsEmpty)
+                {
+                    SettledFiles.TryTake(out _);
+                }
+                ResultNote = "";
             }
         }
     }

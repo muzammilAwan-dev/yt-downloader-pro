@@ -965,7 +965,10 @@
     if (isCropped && (sTime || eTime)) {
         const startSec = sTime ? sTime : '00:00:00';
         const endSec = eTime ? eTime : 'inf';
-        cropperCmd = `--download-sections "*${startSec}-${endSec}" --force-keyframes-at-cuts `;
+        // --force-keyframes-at-cuts re-encodes the whole clip. Sites that stream HLS (Twitch) opt out: for a live stream the re-encode ran at ~0.1x
+        // realtime (an 8-minute wait for 1 minute of video, MPEG-2 output, dropped segments). Without it ffmpeg stream-copies: instant, lossless,
+        // and the cut snaps to the nearest keyframe (a second or two on Twitch).
+        cropperCmd = `--download-sections "*${startSec}-${endSec}" ${SITE.cropKeyframeCuts === false ? '' : '--force-keyframes-at-cuts '}`;
     }
 
     const subCmd = (wantsSubs && resolution !== 'audio' && SITE.features.subtitles)

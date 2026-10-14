@@ -921,33 +921,45 @@ namespace YTDLPHost.ViewModels
             var stems = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var dirs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+            // FIX: bulk jobs ("download all uploads", playlists). Cancelling used to wipe EVERY file the job had produced, because the
+            // tracked list spanned all items. The runner now moves finished items to task.SettledFiles; TrackedFiles holds only the item
+            // that is downloading right now. On a bulk cancel we additionally never delete a file that is already complete - only
+            // partial / intermediate leftovers of that one in-flight item.
+            bool isBulk = !string.IsNullOrEmpty(task.PlaylistInfo);
+            var settled = new HashSet<string>(task.SettledFiles, StringComparer.OrdinalIgnoreCase);
+
             foreach (var filePath in task.TrackedFiles.Distinct().ToList())
             {
+                if (settled.Contains(filePath)) continue;
                 if (!forceDeleteAll && filePath.Equals(task.OutputPath, StringComparison.OrdinalIgnoreCase)) continue;
 
-                // The exact file yt-dlp reported as its destination for this stream.
-                TryDeleteFile(filePath);
-                // FIX: while a stream is still downloading (which is exactly the
-                // state a cancelled task is in), yt-dlp writes to "<file>.part"
-                // and sometimes a matching "<file>.ytdl" resume-info file - the
-                // final filename itself usually doesn't exist yet at cancel time,
-                // so the check above almost never actually found anything to delete.
-                TryDeleteFile(filePath + ".part");
-                TryDeleteFile(filePath + ".ytdl");
+                var fileName = Path.GetFileName(filePath);
+                // Per-format intermediates of a multi-stream download ("Title.f137.mp4", "Title.f251.webm") are never a deliverable.
+                bool isIntermediate = Regex.IsMatch(fileName, @"\.f[\w-]+\.[^.]+$");
+
+                if (forceDeleteAll && isBulk && !isIntermediate)
+                {
+                    // A completed file of the in-flight item (e.g. cancelled while yt-dlp sleeps before the next item) is kept;
+                    // only its unfinished ".part"/".ytdl" companions are removed.
+                    TryDeleteFile(filePath + ".part");
+                    TryDeleteFile(filePath + ".ytdl");
+                }
+                else
+                {
+                    // The exact file yt-dlp reported as its destination for this stream.
+                    TryDeleteFile(filePath);
+                    // While a stream is still downloading (exactly the state a cancelled task is in), yt-dlp writes to "<file>.part"
+                    // and sometimes a matching "<file>.ytdl" resume-info file; the final name usually doesn't exist yet.
+                    TryDeleteFile(filePath + ".part");
+                    TryDeleteFile(filePath + ".ytdl");
+                }
 
                 var dir = Path.GetDirectoryName(filePath);
                 if (string.IsNullOrEmpty(dir)) continue;
                 dirs.Add(dir);
 
-                // FIX: multi-stream downloads (separate video/audio before
-                // merging) get per-format suffixes like "Title.f137.mp4" and
-                // "Title.f251.webm". task.OutputPath only ever holds whichever
-                // stream's "Destination:" line was reported LAST, so building
-                // the wildcard sweep below from OutputPath alone (the old
-                // behavior) would only ever catch ONE stream's leftovers and
-                // silently miss the other's - deriving a stem from every
-                // tracked file instead catches all of them.
-                var fileName = Path.GetFileName(filePath);
+                // Multi-stream downloads get per-format suffixes, and task.OutputPath only holds the LAST reported destination, so the
+                // leftover sweep below derives a stem from every tracked file.
                 var stem = Regex.Replace(fileName, @"\.f[\w-]+\.[^.]+$", "");
                 stem = Path.GetFileNameWithoutExtension(stem);
                 if (!string.IsNullOrEmpty(stem)) stems.Add(stem);
@@ -955,9 +967,8 @@ namespace YTDLPHost.ViewModels
 
             if (!forceDeleteAll) return;
 
-            // Belt-and-braces sweep: anything left in the same folder(s) that
-            // still matches one of this task's title stems and looks like a
-            // leftover fragment/resume file yt-dlp didn't clean up itself.
+            // Belt-and-braces sweep: leftover fragment/resume files of THIS in-flight item only. Settled items are never swept - a
+            // short stem such as "Song" would otherwise also match the finished "Song (remix)" next to it.
             foreach (var dir in dirs)
             {
                 if (!Directory.Exists(dir)) continue;
@@ -969,10 +980,12 @@ namespace YTDLPHost.ViewModels
 
                     foreach (var file in files)
                     {
+                        if (settled.Contains(file)) continue;
                         if (file.EndsWith(".part", StringComparison.OrdinalIgnoreCase) ||
                             file.EndsWith(".ytdl", StringComparison.OrdinalIgnoreCase) ||
                             file.EndsWith(".frag", StringComparison.OrdinalIgnoreCase) ||
-                            file.Contains(".part-Frag", StringComparison.OrdinalIgnoreCase))
+                            file.Contains(".part-Frag", StringComparison.OrdinalIgnoreCase) ||
+                            file.Contains(".temp.", StringComparison.OrdinalIgnoreCase))
                         {
                             TryDeleteFile(file);
                         }

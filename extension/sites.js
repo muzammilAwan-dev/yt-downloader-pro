@@ -245,6 +245,7 @@ const YTDLP_SITES = {
     videoAnchorSelectors: ['[data-a-target="video-player"]', '[data-test-selector="video-player__video-container"]', 'video'],
     // Twitch's tab row isn't verified (probe was taken on the live page, which has no Videos tab), so the bulk button floats - bottom-LEFT so
     // it can't sit on top of the chat box that lives at the bottom-right.
+    cropKeyframeCuts: false, // HLS: cutting with --force-keyframes-at-cuts re-encodes (0.1x speed, MPEG-2 output) - stream-copy instead
     channelFloating: true,
     channelFloatCorner: 'left',
     channelAnchorSelectors: ['[data-a-target="videos-tab"]'], // only used if channelFloating is turned off

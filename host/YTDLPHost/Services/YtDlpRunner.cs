@@ -57,10 +57,27 @@ namespace YTDLPHost.Services
 
         private bool _isYoutube;
         private bool _usedCookies;
+        private bool _cookiesLoggedIn;
         private int _requestedHeight;
         private string _qualityNote = "";
 
         public static bool IsYoutubeCommand(string command) => YoutubeUrlRegex.IsMatch(command);
+
+        // yt-dlp counts a YouTube session as logged in only if the Netscape cookie file holds one of these.
+        private static bool CookieFileHasYoutubeLogin(string path)
+        {
+            try
+            {
+                foreach (var line in File.ReadLines(path))
+                {
+                    var cols = line.Split('\t');
+                    if (cols.Length >= 7 && (cols[5] is "SAPISID" or "__Secure-3PAPISID" or "__Secure-1PAPISID") && cols[6].Trim().Length > 0)
+                        return true;
+                }
+            }
+            catch { }
+            return false;
+        }
 
         // "Sign in to confirm you're not a bot" - the apostrophe may arrive garbled, so match the stable parts only.
         private static bool IsBotCheckError(string text) =>
@@ -113,7 +130,7 @@ namespace YTDLPHost.Services
             _savedItems = _skippedItems = _failedItems = _drmItems = 0;
             _lastErrorLine = ""; _lastGoodTitle = "";
             _sectionSeconds = 0; _lastStatsLog = DateTime.MinValue; _loggedFfmpegStart = false;
-            _isYoutube = false; _usedCookies = false; _requestedHeight = 0; _qualityNote = "";
+            _isYoutube = false; _usedCookies = false; _cookiesLoggedIn = false; _requestedHeight = 0; _qualityNote = "";
 
             task.ClearLog();
             task.CurrentPhase = "Starting...";
@@ -194,6 +211,15 @@ namespace YTDLPHost.Services
                 if (!string.IsNullOrEmpty(task.CookieFilePath) && File.Exists(task.CookieFilePath))
                 {
                     _usedCookies = true;
+                    if (_isYoutube)
+                    {
+                        _cookiesLoggedIn = CookieFileHasYoutubeLogin(task.CookieFilePath);
+                        if (!_cookiesLoggedIn)
+                        {
+                            task.AppendLog("[ENGINE] The cookie file has no SAPISID / __Secure-3PAPISID cookie, so yt-dlp will treat this as a LOGGED-OUT session " +
+                                           "(guest client list, no auth header). Sign in to YouTube in this browser, reload the extension and try again.");
+                        }
+                    }
                     if (!command.Contains("--cookies"))
                     {
                         command += $" --cookies \"{task.CookieFilePath}\"";
@@ -314,9 +340,26 @@ namespace YTDLPHost.Services
                     else if (_isYoutube && IsBotCheckError(_errorBuffer.ToString()))
                     {
                         // The raw yt-dlp line stays in the log (and is copyable); this says what to actually do.
-                        task.ErrorMessage = _usedCookies
-                            ? "YouTube still asked for a sign-in (bot check) even with your browser session. Make sure you are signed in to YouTube in this browser, reload the video page, and run the download again from there. If it keeps happening, your network/IP is being flagged: try again later or from another connection."
-                            : "YouTube is asking for a sign-in (bot check). Turn on \"Bypass Age & Bot Lock\" while you are signed in to YouTube in this browser, then start the download again from the video page.";
+                        string errText = _errorBuffer.ToString();
+                        bool rateLimited = errText.Contains("429", StringComparison.Ordinal) ||
+                                           errText.Contains("Too Many Requests", StringComparison.OrdinalIgnoreCase);
+
+                        if (!_usedCookies)
+                        {
+                            task.ErrorMessage = "YouTube is asking for a sign-in (bot check). Turn on \"Bypass Age & Bot Lock\" while you are signed in to YouTube in this browser, then start the download again from the video page.";
+                        }
+                        else if (!_cookiesLoggedIn)
+                        {
+                            task.ErrorMessage = "YouTube treated this as a signed-out session: no YouTube login cookie (SAPISID) reached the downloader. Sign in to YouTube in this browser, reload the extension and the video page, then try again.";
+                        }
+                        else if (rateLimited)
+                        {
+                            task.ErrorMessage = "YouTube is rate-limiting this connection (HTTP 429), so the bot check was triggered even with your login. Stop retrying for a while (15-60 minutes), avoid VPN/shared networks, then try again.";
+                        }
+                        else
+                        {
+                            task.ErrorMessage = "YouTube still asked for a sign-in (bot check) even with your login. Reload the video page and try again; if it keeps happening your session cookies may have been rotated or this network is being flagged.";
+                        }
                     }
                     else if (isBulk && _drmItems > 0 && _drmItems == _failedItems)
                     {

@@ -20,8 +20,16 @@ const YTDLP_SITES = {
     builtIn: true, // ships enabled by default in the static manifest - no opt-in needed
     matches: ['*://*.youtube.com/*', '*://youtu.be/*'],
     cookieDomain: '.youtube.com',
-    cookieAllowlist: [
-      '__Secure-1PSID', '__Secure-3PSID', '__Secure-1PSIDTS',
+    // yt-dlp only treats a session as logged in (and then uses the logged-in client list + SAPISIDHASH auth header)
+    // when it finds SAPISID / __Secure-3PAPISID. The old minimal allowlist left those out, so yt-dlp saw a guest
+    // session and the bot check was not bypassed. Google rotates and renames its auth cookies, so send everything
+    // except analytics noise / oversized values (see ytdlpSelectCookies) instead of chasing names.
+    cookieAllowAll: true,
+    cookieAllowlist: [   // only used if cookieAllowAll is turned off; must keep the *APISID cookies
+      'SID', 'HSID', 'SSID', 'APISID', 'SAPISID',
+      '__Secure-1PAPISID', '__Secure-3PAPISID',
+      '__Secure-1PSID', '__Secure-3PSID', '__Secure-1PSIDTS', '__Secure-3PSIDTS',
+      '__Secure-1PSIDCC', '__Secure-3PSIDCC', 'SIDCC',
       'LOGIN_INFO', 'VISITOR_INFO1_LIVE', 'VISITOR_PRIVACY_METADATA',
       'SOCS', 'YSC', 'PREF'
     ],

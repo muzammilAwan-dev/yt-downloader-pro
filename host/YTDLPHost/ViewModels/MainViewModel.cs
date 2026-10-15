@@ -535,6 +535,17 @@ namespace YTDLPHost.ViewModels
         private string _lastBlockReason = string.Empty;
 
         /// <summary>Allowlist check (see CommandValidator). The payload comes from a ytdlp:// link, i.e. untrusted input.</summary>
+        // Printable ASCII only, no double quote, no backslash, max 512 chars. Real browser UAs fit easily.
+        private static bool IsSafeUserAgent(string ua)
+        {
+            if (ua.Length == 0 || ua.Length > 512) return false;
+            foreach (char c in ua)
+            {
+                if (c < 0x20 || c > 0x7E || c == '"' || c == '\\') return false;
+            }
+            return true;
+        }
+
         private bool IsCommandSafe(string command)
         {
             if (CommandValidator.TryValidate(command, out var reason)) return true;
@@ -623,8 +634,18 @@ namespace YTDLPHost.ViewModels
                             string exactUserAgent = DecodeBase64(parts[2]);
                             if (!string.IsNullOrWhiteSpace(exactUserAgent) && !command.Contains("--user-agent"))
                             {
-                                command += $" --user-agent \"{exactUserAgent}\"";
-                                AppLogger.Log("[COOKIES] Injected native browser User-Agent to match cookies.");
+                                // SECURITY: this value comes from part 3 of the link, AFTER the command was validated.
+                                // Appended unchecked, a value like  x" --exec "calc.exe  ends the quoted argument and
+                                // adds flags the validator never saw. Strict check; if it fails, the UA is skipped.
+                                if (IsSafeUserAgent(exactUserAgent))
+                                {
+                                    command += $" --user-agent \"{exactUserAgent}\"";
+                                    AppLogger.Log("[COOKIES] Injected native browser User-Agent to match cookies.");
+                                }
+                                else
+                                {
+                                    AppLogger.Log("[SECURITY] Ignored unsafe User-Agent supplied in payload.");
+                                }
                             }
                         }
                         catch (Exception ex)

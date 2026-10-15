@@ -19,7 +19,11 @@ function getCookiesForSite(siteId, sendResponse) {
       return;
     }
 
-    const filteredCookies = cookies.filter(c => site.cookieAllowlist.includes(c.name));
+    const filteredCookies = self.ytdlpSelectCookies(site, cookies);
+    if (filteredCookies.length === 0) {
+      sendResponse("");
+      return;
+    }
 
     let netscapeFormat = "# Netscape HTTP Cookie File\n";
     netscapeFormat += "# http://curl.haxx.se/rfc/cookie_spec.html\n";

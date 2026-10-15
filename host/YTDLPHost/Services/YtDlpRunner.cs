@@ -260,7 +260,12 @@ namespace YTDLPHost.Services
                     task.Status = DownloadStatus.Error;
                     task.IsIndeterminate = false;
 
-                    if (isBulk && _drmItems > 0 && _drmItems == _failedItems)
+                    if (_errorBuffer.ToString().Contains("only works when logged-in", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // yt-dlp's own wording (Vimeo, Oct 2026). Say what to do in plain language; the raw line stays in the log.
+                        task.ErrorMessage = "Vimeo needs you to be logged in. Log in to vimeo.com in your browser, reload the video page and try the download again.";
+                    }
+                    else if (isBulk && _drmItems > 0 && _drmItems == _failedItems)
                     {
                         task.ErrorMessage = $"None of the {_failedItems} item(s) could be downloaded: they are DRM-protected (e.g. SoundCloud Go+ / protected tracks), which yt-dlp cannot download.";
                     }

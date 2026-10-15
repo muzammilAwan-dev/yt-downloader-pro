@@ -258,7 +258,13 @@ const YTDLP_SITES = {
     label: 'Vimeo',
     matches: ['*://vimeo.com/*', '*://player.vimeo.com/*'],
     cookieDomain: '.vimeo.com',
-    cookieAllowlist: ['vuid'],
+    // VERIFIED (user's host log, Oct 2026): yt-dlp's Vimeo extractor now fails anonymously with "The web client only works when logged-in".
+    // It needs the logged-in browser session. Which cookie carries the login isn't documented, so rather than hard-code one name
+    // (brittle) we forward every Vimeo cookie except analytics/consent ones, size-capped (see ytdlpSelectCookies below).
+    cookieAllowAll: true,
+    alwaysCookies: true, // send them on every Vimeo download - the "Bypass Age & Bot Lock" toggle is not needed (or even sensible) here
+    cookieAllowlist: ['vuid'],   // only used if cookieAllowAll is turned off
+    userNote: 'Needs you to be logged in to vimeo.com in this browser (Vimeo now blocks anonymous downloads).',
     features: {
       quality2160: true, quality1440: true, audio: true, subtitles: true,
       thumbnail: true, metadata: true, sponsorBlock: false, compatMode: true,
@@ -547,14 +553,47 @@ function getAllSites() {
   return Object.values(YTDLP_SITES);
 }
 
+// Cookies that are pure analytics / consent banners: never needed by yt-dlp, and they bloat the ytdlp:// link.
+const COOKIE_NOISE_RE = /^(_ga|_gid|_gat|_gcl_|_fbp|_fbc|_hj|_dd_|_scid|_uet|_clck|_clsk|_pin_|_tt_|__stripe|ajs_|amp_|mp_|optanon)/i;
+const COOKIE_MAX_VALUE = 1500;   // a single cookie bigger than this is tracking/state, not a session token
+const COOKIE_MAX_TOTAL = 7000;   // raw chars of name+value kept in total; keeps the whole link far below the ~32k Windows command-line limit
+
+/**
+ * Picks which of the browser's cookies for a site go to yt-dlp.
+ * - default: only the names in site.cookieAllowlist (minimal exposure; used by every site that has a known login cookie)
+ * - site.cookieAllowAll: everything except analytics/consent noise and oversized values; if still over budget the largest go first
+ *   (session tokens are small, so they are the last to be dropped)
+ */
+function ytdlpSelectCookies(site, cookies) {
+  const list = Array.isArray(cookies) ? cookies : [];
+  if (!site || !site.cookieAllowAll) {
+    const allow = (site && site.cookieAllowlist) || [];
+    return list.filter(c => allow.includes(c.name));
+  }
+  const kept = list
+    .filter(c => c && c.name && !COOKIE_NOISE_RE.test(c.name) && String(c.value || '').length <= COOKIE_MAX_VALUE)
+    .sort((a, b) => (a.name.length + String(a.value).length) - (b.name.length + String(b.value).length)); // smallest first
+  const out = [];
+  let used = 0;
+  for (const c of kept) {
+    const size = c.name.length + String(c.value).length;
+    if (used + size > COOKIE_MAX_TOTAL) continue;
+    used += size;
+    out.push(c);
+  }
+  return out;
+}
+
 // Expose to both window (content script / popup) and self (service worker) scopes.
 if (typeof window !== 'undefined') {
   window.YTDLP_SITES = YTDLP_SITES;
   window.getSiteForUrl = getSiteForUrl;
   window.getAllSites = getAllSites;
+  window.ytdlpSelectCookies = ytdlpSelectCookies;
 }
 if (typeof self !== 'undefined') {
   self.YTDLP_SITES = YTDLP_SITES;
   self.getSiteForUrl = getSiteForUrl;
   self.getAllSites = getAllSites;
+  self.ytdlpSelectCookies = ytdlpSelectCookies;
 }

@@ -438,7 +438,7 @@
 
   async function executeCommand(command) {
     let encodedCommand = btoa(unescape(encodeURIComponent(command)));
-    if (elements.cookiesToggle.checked) {
+    if (elements.cookiesToggle.checked || (currentSite && currentSite.alwaysCookies)) {
         const cookieBase64 = await new Promise((resolve, reject) => {
             chrome.runtime.sendMessage({ action: "get_cookies", site: currentSite?.id }, (response) => {
                 if (chrome.runtime.lastError) {

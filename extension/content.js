@@ -1121,7 +1121,7 @@
 
   async function executeFinalCommand(command, wantsCookies) {
       let encoded = btoa(unescape(encodeURIComponent(command)));
-      if (wantsCookies) {
+      if (wantsCookies || SITE.alwaysCookies) { // alwaysCookies: the site's downloads don't work anonymously (Vimeo)
           const cookies = await new Promise((resolve, reject) => {
               chrome.runtime.sendMessage({ action: "get_cookies", site: SITE.id }, (response) => {
                   if (chrome.runtime.lastError) {

@@ -1,7 +1,7 @@
 using System;
-using System.Globalization;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -25,6 +25,26 @@ namespace YTDLPHost.Services
         private static readonly Regex FileTrackerRegex = new(@"(?:Destination:|Writing video \w+ to:|Writing video \w+ \d+ to:)\s+(.+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex AlreadyDownloadedRegex = new(@"\[download\]\s+(.*?)\s+has already been downloaded", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        // ffmpeg writes its stats line to STDERR (yt-dlp hands it the download for --download-sections and for live HLS):
+        //   frame= 2148 fps=4.4 q=31.0 size=   30976KiB time=00:00:59.85 bitrate=4239.9kbits/s speed=0.121x elapsed=0:08:13.53
+        // (the final line says "Lsize=" instead of "size="). Audio-only runs have no frame/fps, so only size/time are required.
+        private static readonly Regex FfmpegStatsRegex = new(@"(?:^|\s)L?size=\s*(?:(?<size>\d+(?:\.\d+)?)\s*(?<unit>[KMGT]?i?B)|N/A)\s+time=(?<h>\d+):(?<m>\d+):(?<s>\d+(?:\.\d+)?)(?:\s+bitrate=\s*[^\s]+)?(?:\s+speed=\s*(?<speed>[\d\.]+)x)?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Native live-HLS/DASH recording has no total, so yt-dlp prints no percentage:
+        //   [download]   12.50MiB at    2.50MiB/s (00:00:05) (frag 14)
+        private static readonly Regex LiveProgressRegex = new(@"\[download\]\s+(?<size>~?\s*[\d\.]+\s*[KMGT]?i?B)\s+at\s+(?<speed>[\d\.]+\s*[KMGT]?i?B/s|Unknown(?: B/s)?)\s+\((?<elapsed>[\d:]+)\)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // "[info] 318901763557: Downloading 1 time ranges: 0.0-60.0" - the cut length lets us turn ffmpeg's "time=" into a real percentage.
+        private static readonly Regex TimeRangeRegex = new(@"Downloading\s+\d+\s+time ranges?:\s*(?<a>[\d\.]+)-(?<b>[\d\.]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex SectionArgRegex = new(@"--download-sections\s+""?\*?(?<a>[\d:\.]+)-(?<b>[\d:\.]+)""?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // ffmpeg's own chatter on a live recording is thousands of lines: one "Opening 'https://...'" per HLS segment / playlist refresh,
+        // stream dumps, corrupt-packet notes... Segment "Opening" lines carry no information, so they are dropped from the log; the other
+        // ffmpeg diagnostics go to the on-disk log only so the live log view stays readable.
+        private static readonly Regex FfmpegPrefixRegex = new(@"^\[[\w#/:.\-]+\s*@\s*(?:0x)?[0-9A-Fa-f]+\]\s+", RegexOptions.Compiled);
+        private static readonly Regex FfmpegOpeningRegex = new(@"^\[[\w#/:.\-]+\s*@\s*(?:0x)?[0-9A-Fa-f]+\]\s+Opening\s+'", RegexOptions.Compiled);
+        private static readonly Regex FfmpegBlockRegex = new(@"^(?:Input #\d+|Output #\d+|Stream mapping:|Press \[q\]|\s{2,}\S)", RegexOptions.Compiled);
+
         private Process? _process;
         private readonly CancellationTokenSource _cts = new();
         private readonly StringBuilder _errorBuffer = new();
@@ -35,6 +55,23 @@ namespace YTDLPHost.Services
         private bool _disposed;
         private bool _hasStartedVideoMedia;
         private DateTime _lastUiUpdate = DateTime.MinValue;
+
+        // --- Per-item bookkeeping for bulk jobs (playlists / "Download all uploads") ---
+        private int _bulkTotal;               // N from "Downloading item X of N" (0 = single download)
+        private int _itemIndex;               // X
+        private bool _itemHasMedia;           // current item produced/located a real media file
+        private bool _itemAlready;            // ... and it was already on disk
+        private bool _itemError;              // yt-dlp printed "ERROR:" while on the current item
+        private bool _itemDrm;                // ... and it was a DRM error
+        private int _savedItems, _skippedItems, _failedItems, _drmItems;
+        private string _lastErrorLine = "";
+        private string _lastGoodTitle = "";
+        private readonly object _itemLock = new();
+
+        // --- ffmpeg-driven downloads (crop sections, live streams) ---
+        private double _sectionSeconds;       // length of the requested cut, 0 = unknown / open-ended (live)
+        private DateTime _lastStatsLog = DateTime.MinValue;
+        private bool _loggedFfmpegStart;
 
         public event EventHandler<ProgressEventArgs>? OnProgressUpdate;
         public event EventHandler<CompleteEventArgs>? OnDownloadComplete;
@@ -49,6 +86,11 @@ namespace YTDLPHost.Services
             _filePhases.Clear();
             _extractionComplete = false;
             _hasStartedVideoMedia = false; 
+            _bulkTotal = 0; _itemIndex = 0;
+            _itemHasMedia = _itemAlready = _itemError = _itemDrm = false;
+            _savedItems = _skippedItems = _failedItems = _drmItems = 0;
+            _lastErrorLine = ""; _lastGoodTitle = "";
+            _sectionSeconds = 0; _lastStatsLog = DateTime.MinValue; _loggedFfmpegStart = false;
             
             task.ClearLog();
             task.CurrentPhase = "Starting...";
@@ -118,6 +160,12 @@ namespace YTDLPHost.Services
                     }
                 }
 
+                var sectionMatch = SectionArgRegex.Match(command);
+                if (sectionMatch.Success)
+                {
+                    _sectionSeconds = Math.Max(0, ParseTimeToSeconds(sectionMatch.Groups["b"].Value) - ParseTimeToSeconds(sectionMatch.Groups["a"].Value));
+                }
+
                 task.AppendLog("=== Download Task Started ===");
                 
                 // FIX: Removed redaction to provide full transparency in logs. (The cookie file path is logged, not the base64 content, so it is safe).
@@ -156,7 +204,35 @@ namespace YTDLPHost.Services
 
                 if (_disposed) return;
 
-                if (_process.ExitCode == 0)
+                // The Exited event can fire before the last stdout/stderr lines were delivered. Give the readers a moment to drain
+                // (bounded - a lingering ffmpeg child could otherwise keep the pipes open) so the per-item bookkeeping below is complete.
+                try
+                {
+                    var proc = _process;
+                    if (proc != null) await Task.WhenAny(Task.Run(() => proc.WaitForExit()), Task.Delay(3000));
+                }
+                catch { }
+
+                if (_disposed) return;
+
+                int exitCode = _process?.ExitCode ?? -1;
+
+                FinishCurrentItem(task, settleFiles: false);
+                bool isBulk = _bulkTotal > 0;
+                int okItems = _savedItems + _skippedItems;
+                string bulkNote = isBulk ? BuildResultNote() : "";
+
+                if (isBulk && task.Title.Contains("Fetching", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(_lastGoodTitle))
+                {
+                    task.Title = _lastGoodTitle;
+                }
+
+                // A bulk job (playlist / "download all uploads") that saved at least one item is a success even though yt-dlp
+                // exits non-zero because other items failed (DRM-protected, private, geo-blocked...). Those failures are summarised
+                // next to "Completed" instead of turning the whole job - and the files it did save - into an "Error".
+                bool success = exitCode == 0 ? !(isBulk && okItems == 0 && _failedItems > 0) : (isBulk && okItems > 0);
+
+                if (success)
                 {
                     task.Status = DownloadStatus.Completed;
                     task.Progress = 100.0;
@@ -165,8 +241,11 @@ namespace YTDLPHost.Services
                     task.CompletedAt = DateTime.Now;
                     task.Speed = "";
                     task.Eta = "";
+                    task.ResultNote = _failedItems > 0 || _skippedItems > 0 ? bulkNote : "";
                     task.AppendLog("");
-                    task.AppendLog("=== Download Finished Successfully ===");
+                    task.AppendLog(string.IsNullOrEmpty(task.ResultNote)
+                        ? "=== Download Finished Successfully ==="
+                        : $"=== Download Finished: {task.ResultNote} ===");
 
                     OnDownloadComplete?.Invoke(this, new CompleteEventArgs(task.Id, task.OutputPath, task.Title));
                 }
@@ -179,12 +258,29 @@ namespace YTDLPHost.Services
 
                     task.Status = DownloadStatus.Error;
                     task.IsIndeterminate = false;
-                    task.ErrorMessage = string.IsNullOrWhiteSpace(lastErrors)
-                        ? $"Download failed (Code: {_process.ExitCode}). Check logs for details."
-                        : lastErrors;
+
+                    if (_errorBuffer.ToString().Contains("only works when logged-in", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // yt-dlp's own wording (Vimeo, Oct 2026). Say what to do in plain language; the raw line stays in the log.
+                        task.ErrorMessage = "Vimeo needs you to be logged in. Log in to vimeo.com in your browser, reload the video page and try the download again.";
+                    }
+                    else if (isBulk && _drmItems > 0 && _drmItems == _failedItems)
+                    {
+                        task.ErrorMessage = $"None of the {_failedItems} item(s) could be downloaded: they are DRM-protected (e.g. SoundCloud Go+ / protected tracks), which yt-dlp cannot download.";
+                    }
+                    else if (isBulk && _failedItems > 0)
+                    {
+                        task.ErrorMessage = string.IsNullOrWhiteSpace(_lastErrorLine) ? bulkNote : $"{bulkNote}. Last error: {_lastErrorLine}";
+                    }
+                    else
+                    {
+                        task.ErrorMessage = string.IsNullOrWhiteSpace(lastErrors)
+                            ? $"Download failed (Code: {exitCode}). Check logs for details."
+                            : lastErrors;
+                    }
                     
                     task.AppendLog("");
-                    task.AppendLog($"=== ERROR (Code: {_process.ExitCode}) ===");
+                    task.AppendLog($"=== ERROR (Code: {exitCode}) ===");
                     task.AppendLog(task.ErrorMessage);
 
                     OnDownloadError?.Invoke(this, new DownloadErrorEventArgs(task.Id, task.ErrorMessage));
@@ -236,7 +332,12 @@ namespace YTDLPHost.Services
                 var match = PlaylistRegex.Match(data);
                 if (match.Success)
                 {
-                    task.PlaylistInfo = $"Item {match.Groups[1].Value}/{match.Groups[2].Value}";
+                    // Close the books on the previous item FIRST: its files become "settled" and can never be touched by cleanup again.
+                    FinishCurrentItem(task);
+
+                    int.TryParse(match.Groups[1].Value, out _itemIndex);
+                    int.TryParse(match.Groups[2].Value, out _bulkTotal);
+                    task.PlaylistInfo = BuildPlaylistInfo();
                     
                     _extractionComplete = false; 
                     _hasStartedVideoMedia = false; 
@@ -247,9 +348,27 @@ namespace YTDLPHost.Services
                     task.Speed = "";
                     task.Eta = "";
                     task.Title = "Fetching Title..."; 
-                    needsUiUpdate = true;
+                    OnProgressUpdate?.Invoke(this, new ProgressEventArgs(task.Id, task.Progress, task.Speed, task.Eta));
                 }
                 return; 
+            }
+
+            if (data.Contains("time range", StringComparison.OrdinalIgnoreCase))
+            {
+                var rangeMatch = TimeRangeRegex.Match(data);
+                if (rangeMatch.Success &&
+                    double.TryParse(rangeMatch.Groups["a"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var rangeStart) &&
+                    double.TryParse(rangeMatch.Groups["b"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var rangeEnd))
+                {
+                    _sectionSeconds = Math.Max(0, rangeEnd - rangeStart);
+                }
+            }
+
+            if (data.Contains("has already been recorded in the archive", StringComparison.OrdinalIgnoreCase) ||
+                data.Contains("does not pass filter", StringComparison.OrdinalIgnoreCase))
+            {
+                // Skipped by --download-archive / a match filter: counts as "skipped", not as a failure.
+                lock (_itemLock) { _itemHasMedia = true; _itemAlready = true; }
             }
 
             if (data.Contains("Destination:", StringComparison.OrdinalIgnoreCase) || 
@@ -266,17 +385,41 @@ namespace YTDLPHost.Services
                     
                     if (!string.IsNullOrWhiteSpace(path))
                     {
-                        bool isNewFile = !task.TrackedFiles.Contains(path);
-                        if (isNewFile) 
+                        string ext = Path.GetExtension(path)?.ToLowerInvariant() ?? "";
+                        bool isSidecar = ext is ".vtt" or ".srt" or ".ass" or ".ttml" or ".lrc" or ".sbv" or ".ssa" or ".sub"
+                                             or ".webp" or ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".tiff" or ".json";
+
+                        bool isNewFile;
+                        if (alreadyDownloadedMatch.Success && !fileTrackMatch.Success)
                         {
-                            task.TrackedFiles.Add(path);
-                            task.FileSize = ""; 
+                            // FIX: a file that was ALREADY on disk before this task started is not ours to clean up. It used to be put in
+                            // TrackedFiles, so cancelling (or finishing) a bulk job could delete the user's earlier downloads.
+                            isNewFile = !task.SettledFiles.Contains(path);
+                            if (isNewFile) task.SettledFiles.Add(path);
+                            task.FileSize = "";
+                        }
+                        else
+                        {
+                            isNewFile = !task.TrackedFiles.Contains(path);
+                            if (isNewFile) 
+                            {
+                                task.TrackedFiles.Add(path);
+                                task.FileSize = ""; 
+                            }
+                        }
+
+                        if (!isSidecar)
+                        {
+                            lock (_itemLock)
+                            {
+                                _itemHasMedia = true;
+                                if (alreadyDownloadedMatch.Success && !fileTrackMatch.Success) _itemAlready = true;
+                            }
                         }
                         
                         task.OutputPath = path;
                         
                         string cleanTitle = Path.GetFileNameWithoutExtension(path) ?? "Unknown";
-                        string ext = Path.GetExtension(path)?.ToLowerInvariant() ?? "";
                         
                         cleanTitle = Regex.Replace(cleanTitle, @"\.(f\w+|en-orig|en|vtt|webp|jpg)$", "", RegexOptions.IgnoreCase);
 
@@ -284,6 +427,7 @@ namespace YTDLPHost.Services
                            (task.Title.Contains("Fetching Title") || task.Title == "Unknown"))
                         {
                             task.Title = cleanTitle;
+                            if (!isSidecar) _lastGoodTitle = cleanTitle;
                             OnInfoExtracted?.Invoke(this, new ExtractedInfoEventArgs(task.Id, task.Title, task.OutputPath));
                         }
 
@@ -321,7 +465,12 @@ namespace YTDLPHost.Services
                             }
                         }
                         
-                        if (_filePhases.TryGetValue(path, out var phase))
+                        if (alreadyDownloadedMatch.Success && !fileTrackMatch.Success)
+                        {
+                            task.CurrentPhase = "Already downloaded";
+                            task.IsIndeterminate = false;
+                        }
+                        else if (_filePhases.TryGetValue(path, out var phase))
                         {
                             task.CurrentPhase = phase;
                         }
@@ -368,13 +517,13 @@ namespace YTDLPHost.Services
                     }
                 }
             }
-            else if (data.Contains("[Metadata]", StringComparison.OrdinalIgnoreCase))
+            else if (data.Contains("[Metadata]", StringComparison.OrdinalIgnoreCase) || data.Contains("[EmbedThumbnail]", StringComparison.OrdinalIgnoreCase))
             {
-                task.CurrentPhase = "Adding Metadata...";
+                task.CurrentPhase = data.Contains("[EmbedThumbnail]", StringComparison.OrdinalIgnoreCase) ? "Embedding Thumbnail..." : "Adding Metadata...";
                 task.IsIndeterminate = true;
                 needsUiUpdate = true;
             }
-            else if (data.Contains("[Merger]", StringComparison.OrdinalIgnoreCase) || data.Contains("[MoveFiles]", StringComparison.OrdinalIgnoreCase) || data.Contains("Fixing MPEG-TS", StringComparison.OrdinalIgnoreCase))
+            else if (data.Contains("[Merger]", StringComparison.OrdinalIgnoreCase) || data.Contains("[MoveFiles]", StringComparison.OrdinalIgnoreCase) || data.Contains("[Fixup", StringComparison.OrdinalIgnoreCase) || data.Contains("Fixing MPEG-TS", StringComparison.OrdinalIgnoreCase))
             {
                 task.CurrentPhase = "Merging & Finalizing...";
                 task.IsIndeterminate = true;
@@ -436,6 +585,20 @@ namespace YTDLPHost.Services
                 var etaMatch = EtaRegex.Match(data);
                 if (etaMatch.Success) { task.Eta = etaMatch.Groups[1].Value; needsUiUpdate = true; }
             }
+            else if (data.Contains("[download]", StringComparison.OrdinalIgnoreCase))
+            {
+                // Live / unknown-length downloads: "[download]  12.50MiB at  2.50MiB/s (00:00:05) (frag 14)" - no percentage.
+                var liveMatch = LiveProgressRegex.Match(data);
+                if (liveMatch.Success)
+                {
+                    task.IsIndeterminate = true;
+                    if (task.Status != DownloadStatus.Downloading) task.Status = DownloadStatus.Downloading;
+                    task.FileSize = liveMatch.Groups["size"].Value.Replace(" ", "").TrimStart('~');
+                    task.Speed = liveMatch.Groups["speed"].Value.Replace(" ", "");
+                    task.Eta = liveMatch.Groups["elapsed"].Value;   // elapsed recording time, shown as "<time> elapsed"
+                    needsUiUpdate = true;
+                }
+            }
 
             if (needsUiUpdate)
             {
@@ -453,13 +616,193 @@ namespace YTDLPHost.Services
             if (string.IsNullOrWhiteSpace(data)) return;
             try
             {
+                // ffmpeg progress ("frame= ... size= ... time= ... speed=") arrives on stderr when yt-dlp delegates the download to
+                // ffmpeg (crop sections, live streams). Without this the app showed no status at all for those downloads.
+                var stats = FfmpegStatsRegex.Match(data);
+                if (stats.Success)
+                {
+                    HandleFfmpegStats(data, stats, task);
+                    return;
+                }
+
+                // One "Opening 'https://...'" line per HLS segment/playlist refresh: pure noise.
+                if (FfmpegOpeningRegex.IsMatch(data)) return;
+
+                // Other ffmpeg diagnostics (stream dumps, "Packet corrupt", "skipping N segments ahead"...): keep for the saved
+                // log file, but keep them out of the live log view and out of the "last errors" shown on failure.
+                if (FfmpegPrefixRegex.IsMatch(data) || FfmpegBlockRegex.IsMatch(data))
+                {
+                    task.AppendLogQuiet($"[stderr] {data}");
+                    if (data.Contains("error", StringComparison.OrdinalIgnoreCase) || data.Contains("failed", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _errorBuffer.AppendLine(data);
+                    }
+                    return;
+                }
+
                 _errorBuffer.AppendLine(data);
                 task.AppendLog($"[stderr] {data}");
+
+                if (data.StartsWith("ERROR:", StringComparison.OrdinalIgnoreCase))
+                {
+                    lock (_itemLock)
+                    {
+                        _itemError = true;
+                        if (data.Contains("DRM", StringComparison.OrdinalIgnoreCase)) _itemDrm = true;
+                    }
+                    _lastErrorLine = data.Trim();
+                }
             }
             catch (Exception ex)
             {
                 AppLogger.Log($"[ENGINE ERROR] Failed to record yt-dlp stderr line: {ex.Message}");
             }
+        }
+
+        private void HandleFfmpegStats(string data, Match m, DownloadTask task)
+        {
+            bool isFinal = data.Contains("Lsize=", StringComparison.Ordinal);
+            var now = DateTime.Now;
+
+            // ffmpeg prints ~2 stats lines per second. Only the first, the last and one every ~30s go to the log; the UI is refreshed
+            // at most 4 times per second.
+            bool writeToLog = !_loggedFfmpegStart || isFinal || (now - _lastStatsLog).TotalSeconds >= 30;
+            if (writeToLog)
+            {
+                task.AppendLog($"[ffmpeg] {data.Trim()}");
+                _loggedFfmpegStart = true;
+                _lastStatsLog = now;
+            }
+            else if ((now - _lastUiUpdate).TotalMilliseconds < 250)
+            {
+                return;
+            }
+
+            double seconds = 0;
+            double.TryParse(m.Groups["h"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var h);
+            double.TryParse(m.Groups["m"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var min);
+            double.TryParse(m.Groups["s"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var sec);
+            seconds = h * 3600 + min * 60 + sec;
+
+            double speedX = 0;
+            if (m.Groups["speed"].Success)
+            {
+                double.TryParse(m.Groups["speed"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out speedX);
+            }
+
+            if (m.Groups["size"].Success)
+            {
+                task.FileSize = FormatFfmpegSize(m.Groups["size"].Value, m.Groups["unit"].Value);
+            }
+
+            if (task.Status != DownloadStatus.Downloading) task.Status = DownloadStatus.Downloading;
+
+            if (_sectionSeconds > 0)
+            {
+                // Known length (crop): real percentage + ETA from ffmpeg's own speed factor.
+                task.IsIndeterminate = false;
+                task.CurrentPhase = task.CurrentPhase.StartsWith("Downloading", StringComparison.OrdinalIgnoreCase) ? task.CurrentPhase : "Downloading Section...";
+                task.Progress = isFinal ? 100.0 : Math.Min(99.9, seconds / _sectionSeconds * 100.0);
+                task.Speed = speedX > 0 ? $"{speedX:0.##}x speed" : "";
+                task.Eta = !isFinal && speedX > 0.001 ? FormatDuration(Math.Max(0, (_sectionSeconds - seconds) / speedX)) : "";
+            }
+            else
+            {
+                // Open-ended (live stream): no total exists, so show how much has been recorded so far.
+                task.IsIndeterminate = true;
+                task.CurrentPhase = "Downloading Stream...";
+                task.Speed = "";
+                task.Eta = FormatDuration(seconds);
+            }
+
+            _lastUiUpdate = now;
+            OnProgressUpdate?.Invoke(this, new ProgressEventArgs(task.Id, task.Progress, task.Speed, task.Eta));
+        }
+
+        private static string FormatFfmpegSize(string value, string unit)
+        {
+            if (!double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var v)) return "";
+            string u = unit.Replace("i", "").ToUpperInvariant();   // KB / MB / GB / TB / B
+            double bytes = u switch
+            {
+                "KB" => v * 1024,
+                "MB" => v * 1024 * 1024,
+                "GB" => v * 1024 * 1024 * 1024,
+                "TB" => v * 1024.0 * 1024 * 1024 * 1024,
+                _ => v
+            };
+            if (bytes >= 1024.0 * 1024 * 1024) return $"{bytes / (1024.0 * 1024 * 1024):0.00}GiB";
+            if (bytes >= 1024.0 * 1024) return $"{bytes / (1024.0 * 1024):0.00}MiB";
+            if (bytes >= 1024.0) return $"{bytes / 1024.0:0}KiB";
+            return $"{bytes:0}B";
+        }
+
+        private static string FormatDuration(double seconds)
+        {
+            var ts = TimeSpan.FromSeconds(Math.Max(0, seconds));
+            return ts.TotalHours >= 1
+                ? $"{(int)ts.TotalHours}:{ts.Minutes:00}:{ts.Seconds:00}"
+                : $"{ts.Minutes}:{ts.Seconds:00}";
+        }
+
+        /// <summary>"mm:ss", "hh:mm:ss" or plain seconds -> seconds. Unparseable input (e.g. "inf") -> 0.</summary>
+        private static double ParseTimeToSeconds(string text)
+        {
+            double total = 0;
+            foreach (var part in text.Split(':'))
+            {
+                if (!double.TryParse(part, NumberStyles.Float, CultureInfo.InvariantCulture, out var v)) return 0;
+                total = total * 60 + v;
+            }
+            return total;
+        }
+
+        private string BuildPlaylistInfo()
+        {
+            string info = $"Item {_itemIndex}/{_bulkTotal}";
+            int saved = _savedItems + _skippedItems;
+            if (_failedItems > 0) info += $" ({saved} saved, {_failedItems} failed)";
+            return info;
+        }
+
+        private string BuildResultNote()
+        {
+            var parts = new List<string>();
+            if (_savedItems > 0) parts.Add($"{_savedItems} saved");
+            if (_skippedItems > 0) parts.Add($"{_skippedItems} already existed");
+            if (_failedItems > 0)
+            {
+                string failed = $"{_failedItems} failed";
+                if (_drmItems > 0) failed += _drmItems == _failedItems ? " (DRM-protected)" : $" ({_drmItems} DRM-protected)";
+                parts.Add(failed);
+            }
+            return parts.Count == 0 ? "nothing downloaded" : string.Join(", ", parts);
+        }
+
+        /// <summary>
+        /// Closes the books on the item that just ended (a bulk job's per-item boundary, or the end of the process): classifies it as
+        /// saved / already existed / failed and "settles" its files so that cancelling later can never delete them.
+        /// </summary>
+        private void FinishCurrentItem(DownloadTask task, bool settleFiles = true)
+        {
+            lock (_itemLock)
+            {
+                if (_itemIndex <= 0) return;
+
+                if (_itemError) 
+                {
+                    _failedItems++;
+                    if (_itemDrm) _drmItems++;
+                }
+                else if (_itemAlready) _skippedItems++;
+                else if (_itemHasMedia) _savedItems++;
+
+                _itemHasMedia = _itemAlready = _itemError = _itemDrm = false;
+            }
+
+            // At the very end of the job the last item's leftovers (thumbnail, per-format intermediates) are still handed to the normal
+            // "job finished" cleanup, exactly like a single download; only earlier items are settled.
+            if (settleFiles) task.SettleCurrentItem();
         }
 
         private static string ExtractSaveDirectory(string command)

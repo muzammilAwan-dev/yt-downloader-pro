@@ -65,7 +65,7 @@ The extension adds its download button on these sites. Downloading itself is don
 | **TikTok** | Videos | Experimental; TikTok changes its markup often |
 | **Reddit** | Videos | Experimental |
 | **Twitch** | VODs and clips | Basic support |
-| **Vimeo** | Videos | Basic support |
+| **Vimeo** | Videos | Basic support. **You must be logged in to vimeo.com in your browser:** yt-dlp can no longer download from Vimeo anonymously, so the extension passes your Vimeo session automatically |
 | **SoundCloud** | Tracks (audio) | Basic support |
 
 - Turn individual sites on or off in the popup under **Settings → Supported sites**.
@@ -106,6 +106,7 @@ Because this extension talks to the native host and reads session cookies, it mu
 - **Compatibility Mode (H.264/AAC):** turn on if downloads show a black screen or no audio on older TVs/phones (modern YouTube serves VP9/AV1 by default).
 - **Timestamp cropping:** enter start/end (e.g. `01:15`–`01:25`) to download only that clip instead of the whole video.
 - **Instagram / Facebook / X:** these usually need you to be logged in. Enable "Bypass Age & Bot issue" so your browser session is passed to the download.
+- **Vimeo:** log in to vimeo.com in the same browser first. No toggle is needed; your Vimeo session is sent automatically. If you see "Vimeo needs you to be logged in", log in, reload the video page and try again.
 - **No sound in a downloaded file:** video and audio are merged with `ffmpeg`. Check that `%LOCALAPPDATA%\YTDownloaderProEngine` contains `ffmpeg.exe`.
 - **Multi-connection speed:** for large 4K files, set speed to Fast (4x) or Extreme (8x) in Settings.
 
@@ -119,7 +120,7 @@ Because this extension talks to the native host and reads session cookies, it mu
 ## 🔒 Privacy & Security
 
 - **Local-only:** no analytics, telemetry, or external servers besides the sites you download from and the yt-dlp/ffmpeg/deno downloads themselves.
-- Session cookies are captured only when you enable "Bypass Age & Bot issue," passed locally via Base64, written to a temp file for the duration of that download, and deleted immediately after — they are never committed to the queue's persisted history.
+- Session cookies are captured only when you enable "Bypass Age & Bot issue" (the exception is Vimeo, which cannot be downloaded without a login, so its session cookies are sent on every Vimeo download; analytics and consent cookies are left out), passed locally via Base64, written to a temp file for the duration of that download, and deleted immediately after — they are never committed to the queue's persisted history.
 - Any web page can open a `ytdlp://` link, so the payload is treated as untrusted. `CommandValidator` accepts only the `yt-dlp` options the extension actually uses, requires every other argument to be an http(s) link, and only allows output files with a media extension in a normal folder (no `..`, network shares, system or startup folders, or the engine folder). Anything else is blocked and the reason is logged.
 - Your browser asks before opening the app the first time. Ticking "Always allow" is convenient, and the validator is what keeps that safe.
 - Photos are saved with the browser's own download manager; nothing is uploaded anywhere.

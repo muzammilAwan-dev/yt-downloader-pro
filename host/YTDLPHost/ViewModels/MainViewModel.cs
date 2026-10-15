@@ -479,6 +479,13 @@ namespace YTDLPHost.ViewModels
             }
         }
 
+        // yt-dlp's own release channels. Anything unrecognised falls back to nightly (where YouTube fixes land first).
+        private static string GetUpdateChannel()
+        {
+            var channel = (AppSettings.Load().UpdateChannel ?? "").Trim().ToLowerInvariant();
+            return channel is "stable" or "nightly" or "master" ? channel : "nightly";
+        }
+
         private void UpdateYtDlp(string ytdlpPath, string engineDir)
         {
             try
@@ -486,7 +493,7 @@ namespace YTDLPHost.ViewModels
                 var psi = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = ytdlpPath,
-                    Arguments = "-U",
+                    Arguments = $"--update-to {GetUpdateChannel()}",
                     CreateNoWindow = true,
                     WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
                     UseShellExecute = false,
@@ -632,7 +639,9 @@ namespace YTDLPHost.ViewModels
                         try
                         {
                             string exactUserAgent = DecodeBase64(parts[2]);
-                            if (!string.IsNullOrWhiteSpace(exactUserAgent) && !command.Contains("--user-agent"))
+                            // Not for YouTube: yt-dlp sends a client-specific User-Agent per Innertube client (mweb, tv, visionos...),
+                            // and YouTube cookies are not bound to the browser UA. A global desktop-Chrome UA only creates a mismatch.
+                            if (!string.IsNullOrWhiteSpace(exactUserAgent) && !command.Contains("--user-agent") && !YtDlpRunner.IsYoutubeCommand(command))
                             {
                                 // SECURITY: this value comes from part 3 of the link, AFTER the command was validated.
                                 // Appended unchecked, a value like  x" --exec "calc.exe  ends the quoted argument and

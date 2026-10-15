@@ -129,6 +129,19 @@ namespace YTDLPHost.ViewModels
             };
 
             ToggleLogCommand = new RelayCommand(() => IsLogVisible = !IsLogVisible);
+            CopyLogCommand = new RelayCommand(() => CopyToClipboard(Task.FullLogText));
+            CopyErrorCommand = new RelayCommand(() => CopyToClipboard(Task.ErrorMessage));
+        }
+
+        public ICommand CopyLogCommand { get; }
+        public ICommand CopyErrorCommand { get; }
+
+        // The on-screen log keeps only the last 100 lines; the copy button gives the complete log. The clipboard can be
+        // locked by another app for a moment (COMException), which must never crash the UI.
+        private static void CopyToClipboard(string? text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            try { System.Windows.Clipboard.SetDataObject(text, true); } catch { }
         }
 
         public void Refresh()

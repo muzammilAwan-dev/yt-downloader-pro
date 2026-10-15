@@ -45,6 +45,28 @@ namespace YTDLPHost.Services
         private static readonly Regex FfmpegOpeningRegex = new(@"^\[[\w#/:.\-]+\s*@\s*(?:0x)?[0-9A-Fa-f]+\]\s+Opening\s+'", RegexOptions.Compiled);
         private static readonly Regex FfmpegBlockRegex = new(@"^(?:Input #\d+|Output #\d+|Stream mapping:|Press \[q\]|\s{2,}\S)", RegexOptions.Compiled);
 
+        // --- YouTube quality guard ---
+        // When YouTube withholds the adaptive formats (PO-token / SABR enforcement) yt-dlp silently falls back to a legacy muxed
+        // progressive itag. "[info] <id>: Downloading 1 format(s): 18" is the only trace of that, so it is detected and reported.
+        private static readonly Regex YoutubeUrlRegex = new(@"https?://(?:[\w-]+\.)*(?:youtube\.com|youtu\.be|youtube-nocookie\.com)/", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex FormatPickRegex = new(@"\[info\]\s+\S+:\s+Downloading\s+\d+\s+format\(s\):\s+(?<ids>\S+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex RequestedHeightRegex = new(@"height<=(\d+)", RegexOptions.Compiled);
+        private static readonly Regex NoWarningsRegex = new(@"\s--no-warnings(?=\s|$)", RegexOptions.Compiled);
+        private static readonly Regex PlayerClientListRegex = new(@"^[A-Za-z0-9_,\-]+$", RegexOptions.Compiled);
+        private static readonly Dictionary<string, int> LegacyMuxedHeights = new() { ["17"] = 144, ["36"] = 240, ["18"] = 360, ["22"] = 720 };
+
+        private bool _isYoutube;
+        private bool _usedCookies;
+        private int _requestedHeight;
+        private string _qualityNote = "";
+
+        public static bool IsYoutubeCommand(string command) => YoutubeUrlRegex.IsMatch(command);
+
+        // "Sign in to confirm you're not a bot" - the apostrophe may arrive garbled, so match the stable parts only.
+        private static bool IsBotCheckError(string text) =>
+            text.Contains("Sign in to confirm", StringComparison.OrdinalIgnoreCase) &&
+            text.Contains("not a bot", StringComparison.OrdinalIgnoreCase);
+
         private Process? _process;
         private readonly CancellationTokenSource _cts = new();
         private readonly StringBuilder _errorBuffer = new();
@@ -91,7 +113,8 @@ namespace YTDLPHost.Services
             _savedItems = _skippedItems = _failedItems = _drmItems = 0;
             _lastErrorLine = ""; _lastGoodTitle = "";
             _sectionSeconds = 0; _lastStatsLog = DateTime.MinValue; _loggedFfmpegStart = false;
-            
+            _isYoutube = false; _usedCookies = false; _requestedHeight = 0; _qualityNote = "";
+
             task.ClearLog();
             task.CurrentPhase = "Starting...";
             task.IsIndeterminate = true;
@@ -138,6 +161,27 @@ namespace YTDLPHost.Services
                     command += $" --limit-rate {settings.SpeedLimit}";
                 }
 
+                _isYoutube = IsYoutubeCommand(command);
+                var heightMatch = RequestedHeightRegex.Match(command);
+                if (heightMatch.Success) int.TryParse(heightMatch.Groups[1].Value, out _requestedHeight);
+
+                if (_isYoutube)
+                {
+                    // --no-warnings hides yt-dlp's explanation when YouTube withholds formats ("... require a GVS PO Token ...").
+                    // Keep warnings for YouTube so the log says WHY a download came out low quality.
+                    command = NoWarningsRegex.Replace(command, "");
+
+                    // Do NOT pin player_client here. The upstream default list is retuned in every yt-dlp release (it already
+                    // switches itself when cookies are present); a hard-coded list goes stale and silently caps quality.
+                    // The settings.json override exists only as a manual emergency hotfix.
+                    var clients = settings.YoutubePlayerClients?.Trim() ?? "";
+                    if (clients.Length > 0 && PlayerClientListRegex.IsMatch(clients) && !command.Contains("--extractor-args"))
+                    {
+                        command += $" --extractor-args \"youtube:player_client={clients}\"";
+                        task.AppendLog($"[ENGINE] YouTube player_client override from settings: {clients}");
+                    }
+                }
+
                 if (!string.IsNullOrWhiteSpace(task.CookiePayload))
                 {
                     if (string.IsNullOrWhiteSpace(task.CookieFilePath) || !File.Exists(task.CookieFilePath))
@@ -149,14 +193,10 @@ namespace YTDLPHost.Services
 
                 if (!string.IsNullOrEmpty(task.CookieFilePath) && File.Exists(task.CookieFilePath))
                 {
+                    _usedCookies = true;
                     if (!command.Contains("--cookies"))
                     {
                         command += $" --cookies \"{task.CookieFilePath}\"";
-                    }
-
-                    if (!command.Contains("--extractor-args"))
-                    {
-                        command += " --extractor-args \"youtube:player_client=web_safari,mweb\"";
                     }
                 }
 
@@ -188,6 +228,11 @@ namespace YTDLPHost.Services
 
                 psi.Environment.Remove("WT_SESSION");
                 psi.Environment.Remove("WT_PROFILE_ID");
+
+                // yt-dlp writes to piped stdout/stderr in the Windows ANSI code page by default, so a typographic apostrophe
+                // ("you're") reaches the UTF-8 reader below as an invalid byte and shows up as "you�re". Force UTF-8 output.
+                psi.Environment["PYTHONUTF8"] = "1";
+                psi.Environment["PYTHONIOENCODING"] = "utf-8";
 
                 _process = new Process { StartInfo = psi, EnableRaisingEvents = true };
                 _process.OutputDataReceived += (s, e) => HandleOutput(e.Data, task);
@@ -241,7 +286,9 @@ namespace YTDLPHost.Services
                     task.CompletedAt = DateTime.Now;
                     task.Speed = "";
                     task.Eta = "";
-                    task.ResultNote = _failedItems > 0 || _skippedItems > 0 ? bulkNote : "";
+                    string resultNote = _failedItems > 0 || _skippedItems > 0 ? bulkNote : "";
+                    if (_qualityNote.Length > 0) resultNote = resultNote.Length == 0 ? _qualityNote : $"{resultNote}; {_qualityNote}";
+                    task.ResultNote = resultNote;
                     task.AppendLog("");
                     task.AppendLog(string.IsNullOrEmpty(task.ResultNote)
                         ? "=== Download Finished Successfully ==="
@@ -263,6 +310,13 @@ namespace YTDLPHost.Services
                     {
                         // yt-dlp's own wording (Vimeo, Oct 2026). Say what to do in plain language; the raw line stays in the log.
                         task.ErrorMessage = "Vimeo needs you to be logged in. Log in to vimeo.com in your browser, reload the video page and try the download again.";
+                    }
+                    else if (_isYoutube && IsBotCheckError(_errorBuffer.ToString()))
+                    {
+                        // The raw yt-dlp line stays in the log (and is copyable); this says what to actually do.
+                        task.ErrorMessage = _usedCookies
+                            ? "YouTube still asked for a sign-in (bot check) even with your browser session. Make sure you are signed in to YouTube in this browser, reload the video page, and run the download again from there. If it keeps happening, your network/IP is being flagged: try again later or from another connection."
+                            : "YouTube is asking for a sign-in (bot check). Turn on \"Bypass Age & Bot Lock\" while you are signed in to YouTube in this browser, then start the download again from the video page.";
                     }
                     else if (isBulk && _drmItems > 0 && _drmItems == _failedItems)
                     {
@@ -326,6 +380,18 @@ namespace YTDLPHost.Services
             task.AppendLog(data);
             bool needsUiUpdate = false;
             double oldProgress = task.Progress;
+
+            if (_isYoutube && _requestedHeight > 0 && _qualityNote.Length == 0)
+            {
+                var pick = FormatPickRegex.Match(data);
+                if (pick.Success && LegacyMuxedHeights.TryGetValue(pick.Groups["ids"].Value, out var gotHeight) && gotHeight < _requestedHeight)
+                {
+                    _qualityNote = $"only {gotHeight}p offered by YouTube (wanted {_requestedHeight}p)";
+                    task.AppendLog($"[ENGINE] YouTube offered only legacy format {pick.Groups["ids"].Value} ({gotHeight}p) although {_requestedHeight}p was requested. " +
+                                   "See the 'PO Token' / 'SABR' warnings above for the reason. Fixes: update yt-dlp (UpdateChannel in settings.json), " +
+                                   "or set YoutubePlayerClients there as a temporary override.");
+                }
+            }
 
             if (data.Contains("[download] Downloading item", StringComparison.OrdinalIgnoreCase))
             {

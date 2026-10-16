@@ -63,6 +63,24 @@ namespace YTDLPHost.Services
 
         public static bool IsYoutubeCommand(string command) => YoutubeUrlRegex.IsMatch(command);
 
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern uint GetACP();
+
+        // The encoding yt-dlp.exe (a PyInstaller build) really uses for piped output: the system ANSI code page (e.g. 1252).
+        // .NET only knows it after the CodePages provider is registered; fall back to UTF-8 if anything goes wrong.
+        private static Encoding AnsiCodePageEncoding()
+        {
+            try
+            {
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                return Encoding.GetEncoding((int)GetACP());
+            }
+            catch
+            {
+                return Encoding.UTF8;
+            }
+        }
+
         // yt-dlp counts a YouTube session as logged in only if the Netscape cookie file holds one of these.
         private static bool CookieFileHasYoutubeLogin(string path)
         {
@@ -248,17 +266,17 @@ namespace YTDLPHost.Services
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     WorkingDirectory = engineDir,
-                    StandardOutputEncoding = Encoding.UTF8,
+                    StandardOutputEncoding = Encoding.UTF8,   // replaced with the ANSI code page just below
                     StandardErrorEncoding = Encoding.UTF8
                 };
 
                 psi.Environment.Remove("WT_SESSION");
                 psi.Environment.Remove("WT_PROFILE_ID");
 
-                // yt-dlp writes to piped stdout/stderr in the Windows ANSI code page by default, so a typographic apostrophe
-                // ("you're") reaches the UTF-8 reader below as an invalid byte and shows up as "you�re". Force UTF-8 output.
-                psi.Environment["PYTHONUTF8"] = "1";
-                psi.Environment["PYTHONIOENCODING"] = "utf-8";
+                // The bundled yt-dlp.exe ignores PYTHONUTF8 / PYTHONIOENCODING and writes piped output in the Windows ANSI code page,
+                // so decoding it as UTF-8 turned the typographic apostrophe in "you're" into "you�re". Decode with the same code page.
+                psi.StandardOutputEncoding = AnsiCodePageEncoding();
+                psi.StandardErrorEncoding = AnsiCodePageEncoding();
 
                 _process = new Process { StartInfo = psi, EnableRaisingEvents = true };
                 _process.OutputDataReceived += (s, e) => HandleOutput(e.Data, task);

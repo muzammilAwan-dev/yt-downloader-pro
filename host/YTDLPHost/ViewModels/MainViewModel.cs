@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -25,15 +24,11 @@ namespace YTDLPHost.ViewModels
 
         private readonly TrayIconService _trayService;
         private readonly ObservableCollection<DownloadItemViewModel> _downloads = new();
-        private readonly ConcurrentDictionary<Guid, YtDlpRunner> _activeRunners = new();
         private readonly object _duplicateLock = new(); 
         
         public AppSettings Settings { get; }
 
-        private bool _isProcessingQueue;
-        private bool _queueNeedsRestart; 
         private bool _disposed;
-        private bool _isDependenciesReady;
         private bool _hasDependencyError;
 
         [ObservableProperty] private bool _isWindowVisible = true;
@@ -74,6 +69,7 @@ namespace YTDLPHost.ViewModels
         private readonly IAppLifetime _lifetime;
         private readonly EngineProvisioner _engine;
         private readonly CommandIngest _ingest;
+        private readonly DownloadQueue _queue;
 
         public MainViewModel(IUiDispatcher ui, IDialogService dialogs, IAppLifetime lifetime)
         {
@@ -82,6 +78,13 @@ namespace YTDLPHost.ViewModels
             _lifetime = lifetime;
             _engine = new EngineProvisioner(AppPaths.Current, _httpClient);
             _ingest = new CommandIngest(AppPaths.Current);
+
+            // Scheduling lives in DownloadQueue (Core). The limit is read from the saved settings each time, as before.
+            _queue = new DownloadQueue(_downloads, _ui, () => new YtDlpRunner(), () => AppSettings.Load().MaxConcurrentDownloads);
+            _queue.ItemStarted += OnQueueItemStarted;
+            _queue.ItemChanged += _ => UpdateActiveCount();
+            _queue.ItemCompleted += OnQueueItemCompleted;
+            _queue.Drained += () => StatusText = "All downloads complete";
 
             InitializeCrashReporting();
             AppLogger.Log("[VM] Initializing MainViewModel...");
@@ -136,20 +139,20 @@ namespace YTDLPHost.ViewModels
                     var activeVms = _downloads.Where(d => d.Task.Status == DownloadStatus.Downloading).ToList();
                     foreach(var vm in activeVms)
                     {
-                        await SuspendToQueueAsync(vm);
+                        await _queue.SuspendToQueueAsync(vm);
                     }
                 }
-                else if (maxChanged && _activeRunners.Count > Settings.MaxConcurrentDownloads)
+                else if (maxChanged && _queue.ActiveCount > Settings.MaxConcurrentDownloads)
                 {
                     AppLogger.Log("[SETTINGS] Max concurrent slots reduced. Suspending excess tasks...");
-                    int excess = _activeRunners.Count - Settings.MaxConcurrentDownloads;
+                    int excess = _queue.ActiveCount - Settings.MaxConcurrentDownloads;
                     
                     var activeVms = _downloads.Where(d => d.Task.Status == DownloadStatus.Downloading)
                                               .Reverse() 
                                               .Take(excess).ToList();
                     foreach(var vm in activeVms)
                     {
-                        await SuspendToQueueAsync(vm);
+                        await _queue.SuspendToQueueAsync(vm);
                     }
                 }
 
@@ -191,41 +194,7 @@ namespace YTDLPHost.ViewModels
             };
         }
 
-        private void TriggerQueueProcessing()
-        {
-            if (_isProcessingQueue)
-            {
-                _queueNeedsRestart = true;
-                return;
-            }
-            _ = ProcessQueueAsync();
-        }
-
-        private async Task SuspendToQueueAsync(DownloadItemViewModel vm)
-        {
-            AppLogger.Log($"[QUEUE] Hot-swapping task ID: {vm.Id} to apply dynamic settings.");
-            
-            _ui.Invoke(() => 
-            {
-                vm.Task.CurrentPhase = "Applying Settings...";
-                vm.Refresh();
-            });
-
-            if (_activeRunners.TryRemove(vm.Id, out var runner))
-            {
-                await Task.Run(() => runner.Cancel()); 
-            }
-            
-            _ui.Invoke(() => 
-            {
-                if (vm.Task.Status != DownloadStatus.Cancelled && vm.Task.Status != DownloadStatus.Error && vm.Task.Status != DownloadStatus.Completed)
-                {
-                    vm.Task.Status = DownloadStatus.Queued;
-                    vm.Refresh();
-                    UpdateActiveCount();
-                }
-            });
-        }
+        private void TriggerQueueProcessing() => _queue.Trigger();
 
         private void LoadPersistedHistory()
         {
@@ -299,7 +268,7 @@ namespace YTDLPHost.ViewModels
                 if (_engine.AllPresent())
                 {
                     AppLogger.Log("[DEPENDENCIES] Core dependencies located securely.");
-                    _isDependenciesReady = true;
+                    _queue.MarkEngineReady();
                     _engine.StartBackgroundUpdate();
                     TriggerQueueProcessing();
                     return;
@@ -347,7 +316,7 @@ namespace YTDLPHost.ViewModels
                     if (setupVm != null) _downloads.Remove(setupVm);
                 });
 
-                _isDependenciesReady = true;
+                _queue.MarkEngineReady();
                 _engine.StartBackgroundUpdate();
                 TriggerQueueProcessing();
             }
@@ -449,159 +418,25 @@ namespace YTDLPHost.ViewModels
             }
         }
 
-        private async Task ProcessQueueAsync()
+        private void OnQueueItemStarted(DownloadItemViewModel vm)
         {
-            if (_isProcessingQueue) return;
-            _isProcessingQueue = true;
-
-            try
-            {
-                while (!_disposed)
-                {
-                    _queueNeedsRestart = false; 
-
-                    if (!_isDependenciesReady) break;
-
-                    var savedSettings = AppSettings.Load();
-                    int maxAllowed = savedSettings.MaxConcurrentDownloads;
-
-                    bool startedAny = false;
-
-                    while (_activeRunners.Count < maxAllowed)
-                    {
-                        DownloadItemViewModel? nextItem = null;
-
-                        _ui.Invoke(() => 
-                        {
-                            var activeVideoIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                            foreach (var d in _downloads)
-                            {
-                                if (d.Task.Status == DownloadStatus.Downloading)
-                                {
-                                    activeVideoIds.Add(CommandInfo.ExtractVideoId(d.Task.Command));
-                                }
-                            }
-
-                            foreach (var d in _downloads)
-                            {
-                                if (d.Task.Status == DownloadStatus.Queued)
-                                {
-                                    string vidId = CommandInfo.ExtractVideoId(d.Task.Command);
-                                    if (activeVideoIds.Contains(vidId))
-                                    {
-                                        if (d.Task.CurrentPhase != "Waiting (Similar video active)...")
-                                        {
-                                            d.Task.CurrentPhase = "Waiting (Similar video active)...";
-                                            d.Refresh();
-                                        }
-                                    }
-                                    else if (d.Task.CurrentPhase == "Waiting (Similar video active)...")
-                                    {
-                                        d.Task.CurrentPhase = "Queued";
-                                        d.Refresh();
-                                    }
-                                }
-                            }
-
-                            nextItem = _downloads.FirstOrDefault(d => 
-                                d.Task.Status == DownloadStatus.Queued && 
-                                !activeVideoIds.Contains(CommandInfo.ExtractVideoId(d.Task.Command)));
-
-                            if (nextItem != null)
-                            {
-                                nextItem.Task.Status = DownloadStatus.Downloading;
-                                nextItem.Task.CurrentPhase = "Starting..."; 
-                                nextItem.Refresh(); 
-                                SelectedItem = nextItem; 
-                                StatusText = $"Downloading: {nextItem.DisplayTitle}"; 
-                            }
-                        });
-
-                        if (nextItem == null) break;
-
-                        RequestScrollToItem?.Invoke(this, nextItem);
-                        UpdateActiveCount();
-
-                        AppLogger.Log($"[QUEUE] Spawning execution runner for task ID: {nextItem.Id}");
-                        _ = StartDownloadTaskAsync(nextItem);
-                        startedAny = true;
-
-                        await Task.Delay(1000); 
-                    }
-
-                    if (!startedAny)
-                    {
-                        if (_queueNeedsRestart) continue; 
-                        break;
-                    }
-                }
-
-                _ui.Invoke(() =>
-                {
-                    if (_activeRunners.IsEmpty && !_downloads.Any(d => d.Task.Status == DownloadStatus.Queued)) 
-                    {
-                        StatusText = "All downloads complete";
-                    }
-                });
-            }
-            finally
-            {
-                _isProcessingQueue = false;
-                
-                if (_queueNeedsRestart)
-                {
-                    TriggerQueueProcessing();
-                }
-            }
-        }
-
-        private async Task StartDownloadTaskAsync(DownloadItemViewModel vm)
-        {
-            var runner = new YtDlpRunner();
-            _activeRunners.TryAdd(vm.Id, runner);
-
-            runner.OnProgressUpdate += OnRunnerProgress;
-            runner.OnDownloadComplete += OnRunnerComplete;
-            runner.OnDownloadError += OnRunnerError;
-            runner.OnInfoExtracted += OnRunnerInfo;
-
-            await runner.ExecuteAsync(vm.Task);
-
-            runner.Dispose();
-            _activeRunners.TryRemove(vm.Id, out _);
-
+            SelectedItem = vm;
+            StatusText = $"Downloading: {vm.DisplayTitle}";
+            RequestScrollToItem?.Invoke(this, vm);
             UpdateActiveCount();
-            TriggerQueueProcessing();
         }
 
-        private void OnRunnerProgress(object? sender, ProgressEventArgs e)
+        private void OnQueueItemCompleted(DownloadItemViewModel vm, string title)
         {
-            var vm = _downloads.FirstOrDefault(d => d.Id == e.TaskId);
-            if (vm != null) 
-            {
-                _ui.Post(UiPriority.Background, () => { vm.Refresh(); UpdateActiveCount(); });
-            }
-        }
+            HasCompletedDownloads = true;
+            UpdateActiveCount();
+            _trayService.ShowDownloadCompleteNotification("Download Complete", title);
 
-        private void OnRunnerComplete(object? sender, CompleteEventArgs e)
-        {
-            var vm = _downloads.FirstOrDefault(d => d.Id == e.TaskId);
-            if (vm != null)
+            _ = Task.Run(() =>
             {
-                _ui.Post(UiPriority.Background, () =>
-                {
-                    vm.Refresh();
-                    HasCompletedDownloads = true;
-                    UpdateActiveCount();
-                    _trayService.ShowDownloadCompleteNotification("Download Complete", e.Title);
-                    
-                    _ = Task.Run(() => 
-                    {
-                        CleanupPartialFiles(vm.Task);
-                        ScrubStrayThumbnails(vm.Task); 
-                    });
-                });
-            }
+                CleanupPartialFiles(vm.Task);
+                ScrubStrayThumbnails(vm.Task);
+            });
         }
 
         private void ScrubStrayThumbnails(DownloadTask task)
@@ -630,29 +465,11 @@ namespace YTDLPHost.ViewModels
             catch { }
         }
 
-        private void OnRunnerError(object? sender, DownloadErrorEventArgs e)
-        {
-            var vm = _downloads.FirstOrDefault(d => d.Id == e.TaskId);
-            if (vm != null) 
-            {
-                _ui.Post(UiPriority.Background, () => { vm.Refresh(); UpdateActiveCount(); });
-            }
-        }
-
-        private void OnRunnerInfo(object? sender, ExtractedInfoEventArgs e)
-        {
-            var vm = _downloads.FirstOrDefault(d => d.Id == e.TaskId);
-            if (vm != null) 
-            {
-                _ui.Post(UiPriority.Background, () => vm.Refresh());
-            }
-        }
-
         private void PauseDownload(DownloadItemViewModel? vm)
         {
             if (vm == null || vm.Task.Title == "Initial System Setup") return;
             AppLogger.Log($"[QUEUE] Process suspended for task ID: {vm.Id}");
-            if (_activeRunners.TryRemove(vm.Id, out var runner)) runner.Cancel();
+            _queue.TryStop(vm.Id);
             vm.Task.Status = DownloadStatus.Paused;
             vm.Refresh();
             UpdateActiveCount();
@@ -662,7 +479,7 @@ namespace YTDLPHost.ViewModels
         {
             if (vm == null || vm.Task.Title == "Initial System Setup") return;
             AppLogger.Log($"[QUEUE] Process termination requested for task ID: {vm.Id}");
-            if (_activeRunners.TryRemove(vm.Id, out var runner)) runner.Cancel();
+            _queue.TryStop(vm.Id);
             vm.Task.Status = DownloadStatus.Cancelled;
             vm.Refresh();
             UpdateActiveCount();
@@ -769,7 +586,7 @@ namespace YTDLPHost.ViewModels
         {
             if (vm == null || vm.Task.Title == "Initial System Setup") return;
             AppLogger.Log($"[QUEUE] Task purged from registry. ID: {vm.Id}");
-            if (_activeRunners.TryRemove(vm.Id, out var runner)) runner.Cancel();
+            _queue.TryStop(vm.Id);
             CleanupCookieFile(vm.Task);
             _downloads.Remove(vm);
             UpdateActiveCount();
@@ -840,7 +657,7 @@ namespace YTDLPHost.ViewModels
             AppLogger.Log("[SYSTEM] Application termination sequence invoked.");
             AppLogger.Shutdown();
             foreach (var vm in _downloads) CleanupCookieFile(vm.Task);
-            foreach (var runner in _activeRunners.Values) runner.Cancel();
+            _queue.CancelAll();
             _lifetime.Shutdown();
         }
 
@@ -851,7 +668,7 @@ namespace YTDLPHost.ViewModels
             _saveHistoryCts?.Cancel();
             _saveHistoryCts?.Dispose(); 
             AppLogger.Shutdown();
-            foreach (var runner in _activeRunners.Values) runner.Dispose();
+            _queue.Dispose();
             foreach (var vm in _downloads) CleanupCookieFile(vm.Task);
             _trayService.Dispose();
         }

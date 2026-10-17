@@ -12,7 +12,7 @@ using YTDLPHost.Models;
 
 namespace YTDLPHost.Services
 {
-    public class YtDlpRunner : IDisposable
+    public class YtDlpRunner : IDownloadRunner
     {
         private static readonly Regex CmdTrimRegex = new(@"^(?:yt-dlp\.exe|yt-dlp)\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private static readonly Regex PercentRegex = new(@"\[download\]\s+(?:(\d+\.?\d*)%|100%)", RegexOptions.Compiled);

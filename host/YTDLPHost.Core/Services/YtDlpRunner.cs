@@ -23,6 +23,8 @@ namespace YTDLPHost.Services
         private static readonly Regex OutputTemplateRegex = new(@"-o\s+""([^""]+)""", RegexOptions.Compiled);
         private static readonly Regex PathTemplateRegex = new(@"-P\s+""([^""]+)""", RegexOptions.Compiled);
         private static readonly Regex FileTrackerRegex = new(@"(?:Destination:|Writing video \w+ to:|Writing video \w+ \d+ to:)\s+(.+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        // The final name of a merged download appears ONLY on this line (never as "Destination:").
+        private static readonly Regex MergerOutputRegex = new(@"\[Merger\]\s+Merging formats into\s+""(.+)""", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex AlreadyDownloadedRegex = new(@"\[download\]\s+(.*?)\s+has already been downloaded", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // ffmpeg writes its stats line to STDERR (yt-dlp hands it the download for --download-sections and for live HLS):
@@ -659,6 +661,16 @@ namespace YTDLPHost.Services
                 task.Speed = "";
                 task.Eta = "";
                 needsUiUpdate = true;
+
+                // Without this, OutputPath keeps pointing at a per-stream file (Title.f251.webm) that yt-dlp deletes after the
+                // merge, so "Open folder" cannot select the video and "Play" falls back to just opening the folder.
+                var mergeMatch = MergerOutputRegex.Match(data);
+                if (mergeMatch.Success)
+                {
+                    string mergedPath = mergeMatch.Groups[1].Value.Trim();
+                    task.OutputPath = mergedPath;
+                    if (!task.TrackedFiles.Contains(mergedPath)) task.TrackedFiles.Add(mergedPath);
+                }
 
                 if (data.Contains("Destination:", StringComparison.OrdinalIgnoreCase))
                 {

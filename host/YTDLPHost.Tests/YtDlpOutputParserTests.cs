@@ -89,6 +89,19 @@ public class YtDlpOutputParserTests
     }
 
     [Fact]
+    public void Merger_line_records_the_final_merged_file_as_the_output()
+    {
+        // Per-stream files are deleted after the merge; only the "Merging formats into" line names the file that is kept.
+        var t = Run(
+            "[download] Destination: " + Dir + "/Title.f137.mp4",
+            "[download] Destination: " + Dir + "/Title.f251.webm",
+            "[Merger] Merging formats into \"" + Dir + "/Title.mp4\"");
+
+        Assert.Equal(Dir + "/Title.mp4", t.OutputPath);
+        Assert.Contains(Dir + "/Title.mp4", t.TrackedFiles);
+    }
+
+    [Fact]
     public void Merger_line_switches_to_indeterminate_finalizing()
     {
         var t = new DownloadTask { CurrentPhase = "Downloading Video...", Speed = "1MiB/s", Eta = "00:01" };

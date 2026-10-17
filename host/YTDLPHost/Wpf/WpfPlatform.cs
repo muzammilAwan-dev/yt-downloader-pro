@@ -36,6 +36,16 @@ namespace YTDLPHost.Wpf
         }
     }
 
+    public sealed class WpfClipboardService : IClipboardService
+    {
+        // SetDataObject(copy: true) keeps the text after the app exits. The clipboard can be locked by another
+        // application for a moment (COMException); that must never crash the UI.
+        public void SetText(string text)
+        {
+            try { System.Windows.Clipboard.SetDataObject(text, true); } catch { }
+        }
+    }
+
     public sealed class WpfAppLifetime : IAppLifetime
     {
         public event Action<Exception>? UiUnhandledException;

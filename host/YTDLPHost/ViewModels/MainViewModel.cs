@@ -67,13 +67,15 @@ namespace YTDLPHost.ViewModels
         private readonly IUiDispatcher _ui;
         private readonly IDialogService _dialogs;
         private readonly IAppLifetime _lifetime;
+        private readonly IClipboardService _clipboard;
         private readonly EngineProvisioner _engine;
         private readonly CommandIngest _ingest;
         private readonly DownloadQueue _queue;
 
-        public MainViewModel(IUiDispatcher ui, IDialogService dialogs, IAppLifetime lifetime)
+        public MainViewModel(IUiDispatcher ui, IDialogService dialogs, IAppLifetime lifetime, IClipboardService clipboard)
         {
             _ui = ui;
+            _clipboard = clipboard;
             _dialogs = dialogs;
             _lifetime = lifetime;
             _engine = new EngineProvisioner(AppPaths.Current, _httpClient);
@@ -201,7 +203,7 @@ namespace YTDLPHost.ViewModels
             var recoveredTasks = HistoryManager.LoadHistory();
             foreach (var task in recoveredTasks)
             {
-                var vm = new DownloadItemViewModel(task);
+                var vm = new DownloadItemViewModel(task, _clipboard);
                 AttachTaskObserver(vm);
                 _downloads.Add(vm);
             }
@@ -284,7 +286,7 @@ namespace YTDLPHost.ViewModels
                     CurrentPhase = "Initializing download...",
                     IsIndeterminate = true
                 };
-                setupVm = new DownloadItemViewModel(setupTask);
+                setupVm = new DownloadItemViewModel(setupTask, _clipboard);
 
                 _ui.Invoke(() =>
                 {
@@ -396,7 +398,7 @@ namespace YTDLPHost.ViewModels
                         Status = DownloadStatus.Queued
                     };
 
-                    var vm = new DownloadItemViewModel(task);
+                    var vm = new DownloadItemViewModel(task, _clipboard);
                     AttachTaskObserver(vm);
 
                     _ui.Invoke(() =>

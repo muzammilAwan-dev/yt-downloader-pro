@@ -8,6 +8,10 @@ public class CommandIngestTests : IDisposable
 {
     private const string Cmd = "yt-dlp \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\"";
 
+    // Not YouTube: the browser User-Agent is only forwarded for other sites (YouTube picks its own per client),
+    // so every User-Agent test below uses this command to actually exercise the append and the safety check.
+    private const string OtherCmd = "yt-dlp \"https://vimeo.com/123456789\"";
+
     private readonly string _root = Path.Combine(Path.GetTempPath(), "ytdlp-ingest-tests-" + Guid.NewGuid());
 
     private sealed class TempPaths : IAppPaths
@@ -159,16 +163,26 @@ public class CommandIngestTests : IDisposable
     {
         const string ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 
+        var prepared = Ingest().Prepare(Parsed(Link(OtherCmd, userAgent: ua)));
+
+        Assert.Equal($"{OtherCmd} --user-agent \"{ua}\"", prepared.Command);
+        Assert.True(CommandValidator.TryValidate(prepared.Command, out _));
+    }
+
+    [Fact]
+    public void YouTube_commands_never_get_the_browser_user_agent()
+    {
+        const string ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+
         var prepared = Ingest().Prepare(Parsed(Link(Cmd, userAgent: ua)));
 
-        Assert.Equal($"{Cmd} --user-agent \"{ua}\"", prepared.Command);
-        Assert.True(CommandValidator.TryValidate(prepared.Command, out _));
+        Assert.Equal(Cmd, prepared.Command);
     }
 
     [Fact]
     public void An_existing_user_agent_flag_is_not_duplicated()
     {
-        var command = Cmd + " --user-agent \"Mine/1.0\"";
+        var command = OtherCmd + " --user-agent \"Mine/1.0\"";
 
         var prepared = Ingest().Prepare(Parsed(Link(command, userAgent: "Other/2.0")));
 
@@ -186,11 +200,11 @@ public class CommandIngestTests : IDisposable
     [InlineData("Mozilla/5.0 \u00E9")]                            // non-ASCII
     public void A_hostile_user_agent_can_never_add_flags(string hostileUserAgent)
     {
-        var payload = Parsed(Link(Cmd, userAgent: hostileUserAgent));
+        var payload = Parsed(Link(OtherCmd, userAgent: hostileUserAgent));
 
         var prepared = Ingest().Prepare(payload);
 
-        Assert.Equal(Cmd, prepared.Command);                       // the User-Agent is skipped entirely
+        Assert.Equal(OtherCmd, prepared.Command);                  // the User-Agent is skipped entirely
         Assert.DoesNotContain("--exec", prepared.Command);
         Assert.True(CommandValidator.TryValidate(prepared.Command, out _));
     }
@@ -198,17 +212,17 @@ public class CommandIngestTests : IDisposable
     [Fact]
     public void An_oversized_user_agent_is_skipped()
     {
-        var prepared = Ingest().Prepare(Parsed(Link(Cmd, userAgent: new string('A', 600))));
+        var prepared = Ingest().Prepare(Parsed(Link(OtherCmd, userAgent: new string('A', 600))));
 
-        Assert.Equal(Cmd, prepared.Command);
+        Assert.Equal(OtherCmd, prepared.Command);
     }
 
     [Fact]
     public void A_broken_user_agent_part_is_swallowed()
     {
-        var payload = Parsed(Link(Cmd)) with { UserAgentPart = "!!!!" };
+        var payload = Parsed(Link(OtherCmd)) with { UserAgentPart = "!!!!" };
 
-        Assert.Equal(Cmd, Ingest().Prepare(payload).Command);
+        Assert.Equal(OtherCmd, Ingest().Prepare(payload).Command);
     }
 
     public void Dispose()

@@ -27,6 +27,12 @@ namespace YTDLPHost.Services
         void Show(string title, string message, DialogKind kind = DialogKind.Info);
     }
 
+    /// <summary>Puts text on the system clipboard. Replaces direct System.Windows.Clipboard calls. Implementations must not throw.</summary>
+    public interface IClipboardService
+    {
+        void SetText(string text);
+    }
+
     /// <summary>
     /// App-level lifetime and window operations the view model needs but must not implement itself.
     /// </summary>

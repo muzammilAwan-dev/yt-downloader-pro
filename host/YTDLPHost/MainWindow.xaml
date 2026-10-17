@@ -31,6 +31,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <Grid Grid.Row="0">
@@ -106,14 +107,30 @@
 
                     <ProgressBar Grid.Row="2" Style="{StaticResource DownloadProgressBar}" Value="{Binding Progress, Mode=OneWay}" IsIndeterminate="{Binding Task.IsIndeterminate, Mode=OneWay}" Maximum="100" Margin="22,8,0,0" Visibility="{Binding Task.Status, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=invert}"/>
 
-                    <Border Grid.Row="3" Background="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Margin="22,12,0,0" Padding="8" Visibility="{Binding IsLogVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ScrollViewer Height="150" VerticalScrollBarVisibility="Auto">
-                            <TextBox Text="{Binding Task.UiLogText, Mode=OneWay}" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}" BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" FontSize="11" FontFamily="Consolas, Monospace"/>
-                        </ScrollViewer>
-                    </Border>
-                    
+                    <!-- Error banner (row 3) and log panel (row 4) live in separate rows so they never overlap. -->
                     <Border Grid.Row="3" Background="#15F44336" CornerRadius="6" Padding="8,6" Margin="22,8,0,0" Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <TextBlock Text="{Binding ErrorMessage}" FontSize="11" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- Read-only TextBox instead of TextBlock: the text can be selected and copied. -->
+                            <TextBox Grid.Column="0" Text="{Binding ErrorMessage, Mode=OneWay}" IsReadOnly="True" Background="Transparent" BorderThickness="0" Padding="0" Foreground="{StaticResource ErrorBrush}" FontSize="11" TextWrapping="Wrap" Cursor="IBeam"/>
+                            <Button Grid.Column="1" Style="{StaticResource IconButtonStyle}" Command="{Binding CopyErrorCommand}" ToolTip="Copy error" VerticalAlignment="Top" Margin="8,0,0,0">
+                                <Path Data="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" Fill="{StaticResource ErrorBrush}" Width="14" Height="14" Stretch="Uniform"/>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="4" Background="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Margin="22,8,0,0" Padding="8" Visibility="{Binding IsLogVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Grid>
+                            <ScrollViewer Height="150" VerticalScrollBarVisibility="Auto">
+                                <TextBox Text="{Binding Task.UiLogText, Mode=OneWay}" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}" BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" FontSize="11" FontFamily="Consolas, Monospace"/>
+                            </ScrollViewer>
+                            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding CopyLogCommand}" ToolTip="Copy full log" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,16,0">
+                                <Path Data="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" Fill="{StaticResource TextMutedBrush}" Width="14" Height="14" Stretch="Uniform"/>
+                            </Button>
+                        </Grid>
                     </Border>
                 </Grid>
             </Border>

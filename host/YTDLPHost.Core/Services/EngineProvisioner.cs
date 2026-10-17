@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO.Compression;
+using YTDLPHost.Models;
 
 namespace YTDLPHost.Services
 {
@@ -138,7 +139,7 @@ namespace YTDLPHost.Services
             }
         }
 
-        /// <summary>Fire-and-forget "yt-dlp -U" so the engine stays current without blocking startup.</summary>
+        /// <summary>Fire-and-forget "yt-dlp --update-to &lt;channel&gt;" so the engine stays current without blocking startup.</summary>
         public void StartBackgroundUpdate() => _ = Task.Run(UpdateYtDlp);
 
         private async Task<byte[]> DownloadFileWithRetryAsync(string url, int maxRetries = 3)
@@ -158,6 +159,15 @@ namespace YTDLPHost.Services
             return await _http.GetByteArrayAsync(url);
         }
 
+        /// <summary>
+        /// yt-dlp's own release channels. Anything unrecognised (or empty) falls back to nightly, where YouTube fixes land first.
+        /// </summary>
+        internal static string NormalizeUpdateChannel(string? raw)
+        {
+            var channel = (raw ?? "").Trim().ToLowerInvariant();
+            return channel is "stable" or "nightly" or "master" ? channel : "nightly";
+        }
+
         private void UpdateYtDlp()
         {
             try
@@ -165,7 +175,7 @@ namespace YTDLPHost.Services
                 var psi = new ProcessStartInfo
                 {
                     FileName = YtDlpPath,
-                    Arguments = "-U",
+                    Arguments = $"--update-to {NormalizeUpdateChannel(AppSettings.Load().UpdateChannel)}",
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden,
                     UseShellExecute = false,

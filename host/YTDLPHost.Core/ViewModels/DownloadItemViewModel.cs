@@ -4,11 +4,14 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using YTDLPHost.Models;
+using YTDLPHost.Services;
 
 namespace YTDLPHost.ViewModels
 {
     public partial class DownloadItemViewModel : ObservableObject
     {
+        private readonly IClipboardService? _clipboard;
+
         [ObservableProperty]
         private DownloadTask _task;
 
@@ -90,8 +93,9 @@ namespace YTDLPHost.ViewModels
 
         public ICommand ToggleLogCommand { get; }
 
-        public DownloadItemViewModel(DownloadTask task)
+        public DownloadItemViewModel(DownloadTask task, IClipboardService? clipboard = null)
         {
+            _clipboard = clipboard;
             Task = task;
             
             Task.PropertyChanged += (s, e) =>
@@ -129,6 +133,19 @@ namespace YTDLPHost.ViewModels
             };
 
             ToggleLogCommand = new RelayCommand(() => IsLogVisible = !IsLogVisible);
+            CopyLogCommand = new RelayCommand(() => CopyToClipboard(Task.FullLogText));
+            CopyErrorCommand = new RelayCommand(() => CopyToClipboard(Task.ErrorMessage));
+        }
+
+        public ICommand CopyLogCommand { get; }
+        public ICommand CopyErrorCommand { get; }
+
+        // The on-screen log keeps only the last 100 lines; the copy button gives the complete log. The clipboard can be
+        // locked by another app for a moment (COMException on Windows), which must never crash the UI.
+        private void CopyToClipboard(string? text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            try { _clipboard?.SetText(text); } catch { }
         }
 
         public void Refresh()

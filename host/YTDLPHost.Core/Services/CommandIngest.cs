@@ -91,7 +91,9 @@ namespace YTDLPHost.Services
                 try
                 {
                     string exactUserAgent = CommandInfo.DecodeBase64(payload.UserAgentPart);
-                    if (!string.IsNullOrWhiteSpace(exactUserAgent) && !command.Contains("--user-agent"))
+                    // Not for YouTube: yt-dlp sends a client-specific User-Agent per Innertube client (mweb, tv, visionos...),
+                    // and YouTube cookies are not bound to the browser UA. A global desktop-Chrome UA only creates a mismatch.
+                    if (!string.IsNullOrWhiteSpace(exactUserAgent) && !command.Contains("--user-agent") && !YtDlpRunner.IsYoutubeCommand(command))
                     {
                         // SECURITY: this value arrives in the third part of the link, AFTER the command was
                         // validated. Appended unchecked, a value like  x" --exec "calc  would end the quoted

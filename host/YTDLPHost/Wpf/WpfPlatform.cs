@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using YTDLPHost.Services;
 
 namespace YTDLPHost.Wpf
@@ -43,6 +44,42 @@ namespace YTDLPHost.Wpf
         public void SetText(string text)
         {
             try { System.Windows.Clipboard.SetDataObject(text, true); } catch { }
+        }
+    }
+
+    public sealed class WindowsShellActions : IShellActions
+    {
+        public void RevealFile(string path) =>
+            Start(new ProcessStartInfo { FileName = "explorer.exe", Arguments = $"/select,\"{path}\"", UseShellExecute = true });
+
+        public void OpenFolder(string path) =>
+            Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
+
+        public void OpenFile(string path) =>
+            Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
+
+        // A missing file association or a vanished folder must not crash the app: log it and carry on.
+        private static void Start(ProcessStartInfo psi)
+        {
+            try { Process.Start(psi); }
+            catch (Exception ex) { AppLogger.Log($"[SHELL ERROR] Could not open '{psi.FileName} {psi.Arguments}': {ex.Message}"); }
+        }
+    }
+
+    /// <summary>The one place that decides which implementations the WPF app uses. Avalonia gets its own in Phase 4.</summary>
+    public static class WpfPlatform
+    {
+        public static PlatformServices Create()
+        {
+            var tray = new TrayIconService(); // implements both the tray and the notification interface
+            return new PlatformServices(
+                new WpfUiDispatcher(),
+                new WpfDialogService(),
+                new WpfAppLifetime(),
+                new WpfClipboardService(),
+                tray,
+                tray,
+                new WindowsShellActions());
         }
     }
 

@@ -11,14 +11,16 @@ namespace YTDLPHost.Services
 {
     /// <summary>
     /// Manages the system tray icon, context menu operations, and Windows toast notifications.
+    /// Implements both Core interfaces; other platforms will provide separate tray and notification classes.
     /// </summary>
-    public class TrayIconService : IDisposable
+    public class TrayIconService : ITrayService, INotifier
     {
         private NotifyIcon? _notifyIcon;
         private bool _disposed;
 
         public event EventHandler? ShowWindowRequested;
         public event EventHandler? ExitRequested;
+        public event EventHandler? Activated;
 
         /// <summary>
         /// Initializes the tray icon, binds click events, and configures the context menu.
@@ -74,7 +76,7 @@ namespace YTDLPHost.Services
                 {
                     Application.Current?.Dispatcher.BeginInvoke(() =>
                     {
-                        ShowWindowRequested?.Invoke(this, EventArgs.Empty);
+                        Activated?.Invoke(this, EventArgs.Empty);
                     });
                 };
             }
@@ -163,7 +165,7 @@ namespace YTDLPHost.Services
         /// <summary>
         /// Triggers a completion notification using Windows Toasts with a balloon fallback.
         /// </summary>
-        public void ShowDownloadCompleteNotification(string title, string fileName)
+        public void NotifyDownloadComplete(string fileName)
         {
             try
             {

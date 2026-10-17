@@ -22,7 +22,6 @@ namespace YTDLPHost.ViewModels
 
         private static readonly HttpClient _httpClient = CreateConfiguredHttpClient();
 
-        private readonly TrayIconService _trayService;
         private readonly ObservableCollection<DownloadItemViewModel> _downloads = new();
         private readonly object _duplicateLock = new(); 
         
@@ -68,16 +67,22 @@ namespace YTDLPHost.ViewModels
         private readonly IDialogService _dialogs;
         private readonly IAppLifetime _lifetime;
         private readonly IClipboardService _clipboard;
+        private readonly ITrayService _tray;
+        private readonly INotifier _notifier;
+        private readonly DownloadOpener _opener;
         private readonly EngineProvisioner _engine;
         private readonly CommandIngest _ingest;
         private readonly DownloadQueue _queue;
 
-        public MainViewModel(IUiDispatcher ui, IDialogService dialogs, IAppLifetime lifetime, IClipboardService clipboard)
+        public MainViewModel(PlatformServices platform)
         {
-            _ui = ui;
-            _clipboard = clipboard;
-            _dialogs = dialogs;
-            _lifetime = lifetime;
+            _ui = platform.Ui;
+            _dialogs = platform.Dialogs;
+            _lifetime = platform.Lifetime;
+            _clipboard = platform.Clipboard;
+            _tray = platform.Tray;
+            _notifier = platform.Notifier;
+            _opener = new DownloadOpener(platform.Shell);
             _engine = new EngineProvisioner(AppPaths.Current, _httpClient);
             _ingest = new CommandIngest(AppPaths.Current);
 
@@ -93,16 +98,18 @@ namespace YTDLPHost.ViewModels
             
             Settings = AppSettings.Load();
             
-            _trayService = new TrayIconService();
-            _trayService.ShowWindowRequested += (s, e) => RequestShowWindow?.Invoke(this, EventArgs.Empty);
-            _trayService.ExitRequested += (s, e) => ExitCommand.Execute(null);
-            _trayService.Initialize();
+            _tray.ShowWindowRequested += (s, e) => RequestShowWindow?.Invoke(this, EventArgs.Empty);
+            _tray.ExitRequested += (s, e) => ExitCommand.Execute(null);
+            _notifier.Activated += (s, e) => RequestShowWindow?.Invoke(this, EventArgs.Empty);
+            _tray.Initialize();
 
             ProcessUrlCommand = new RelayCommand<string>(ProcessUrl);
-            PauseDownloadCommand = new RelayCommand<DownloadItemViewModel>(PauseDownload);
-            CancelDownloadCommand = new RelayCommand<DownloadItemViewModel>(CancelDownload);
+            // Stopping a download can take a moment (the process tree must exit), so these three are async and the UI stays
+            // responsive meanwhile. AllowConcurrentExecutions keeps each row independent (pausing one does not disable the others).
+            PauseDownloadCommand = new AsyncRelayCommand<DownloadItemViewModel>(PauseDownloadAsync, AsyncRelayCommandOptions.AllowConcurrentExecutions);
+            CancelDownloadCommand = new AsyncRelayCommand<DownloadItemViewModel>(CancelDownloadAsync, AsyncRelayCommandOptions.AllowConcurrentExecutions);
             ResumeDownloadCommand = new RelayCommand<DownloadItemViewModel>(ResumeDownload);
-            RemoveDownloadCommand = new RelayCommand<DownloadItemViewModel>(RemoveDownload);
+            RemoveDownloadCommand = new AsyncRelayCommand<DownloadItemViewModel>(RemoveDownloadAsync, AsyncRelayCommandOptions.AllowConcurrentExecutions);
             OpenFolderCommand = new RelayCommand<DownloadItemViewModel>(OpenFolder);
             PlayFileCommand = new RelayCommand<DownloadItemViewModel>(PlayFile);
             
@@ -432,7 +439,7 @@ namespace YTDLPHost.ViewModels
         {
             HasCompletedDownloads = true;
             UpdateActiveCount();
-            _trayService.ShowDownloadCompleteNotification("Download Complete", title);
+            _notifier.NotifyDownloadComplete(title);
 
             _ = Task.Run(() =>
             {
@@ -467,21 +474,21 @@ namespace YTDLPHost.ViewModels
             catch { }
         }
 
-        private void PauseDownload(DownloadItemViewModel? vm)
+        private async Task PauseDownloadAsync(DownloadItemViewModel? vm)
         {
             if (vm == null || vm.Task.Title == "Initial System Setup") return;
             AppLogger.Log($"[QUEUE] Process suspended for task ID: {vm.Id}");
-            _queue.TryStop(vm.Id);
+            await _queue.StopAsync(vm.Id);
             vm.Task.Status = DownloadStatus.Paused;
             vm.Refresh();
             UpdateActiveCount();
         }
 
-        private void CancelDownload(DownloadItemViewModel? vm)
+        private async Task CancelDownloadAsync(DownloadItemViewModel? vm)
         {
             if (vm == null || vm.Task.Title == "Initial System Setup") return;
             AppLogger.Log($"[QUEUE] Process termination requested for task ID: {vm.Id}");
-            _queue.TryStop(vm.Id);
+            await _queue.StopAsync(vm.Id);
             vm.Task.Status = DownloadStatus.Cancelled;
             vm.Refresh();
             UpdateActiveCount();
@@ -584,32 +591,26 @@ namespace YTDLPHost.ViewModels
             TriggerQueueProcessing();
         }
 
-        private void RemoveDownload(DownloadItemViewModel? vm)
+        private async Task RemoveDownloadAsync(DownloadItemViewModel? vm)
         {
             if (vm == null || vm.Task.Title == "Initial System Setup") return;
             AppLogger.Log($"[QUEUE] Task purged from registry. ID: {vm.Id}");
-            _queue.TryStop(vm.Id);
+            await _queue.StopAsync(vm.Id);
             CleanupCookieFile(vm.Task);
             _downloads.Remove(vm);
             UpdateActiveCount();
         }
 
-        private static void OpenFolder(DownloadItemViewModel? vm)
+        private void OpenFolder(DownloadItemViewModel? vm)
         {
             if (vm?.Task == null || vm.Task.Title == "Initial System Setup") return;
-            var path = vm.Task.OutputPath;
-            if (!string.IsNullOrEmpty(path) && File.Exists(path)) { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "explorer.exe", Arguments = $"/select,\"{path}\"", UseShellExecute = true }); return; }
-            if (!string.IsNullOrEmpty(path)) { var dir = Path.GetDirectoryName(path); if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir)) { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = dir, UseShellExecute = true }); return; } }
-            var saveDir = ExtractSaveDirectory(vm.Task.Command);
-            if (Directory.Exists(saveDir)) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = saveDir, UseShellExecute = true });
+            _opener.ShowInFolder(vm.Task);
         }
 
-        private static void PlayFile(DownloadItemViewModel? vm)
+        private void PlayFile(DownloadItemViewModel? vm)
         {
             if (vm?.Task == null || vm.Task.Title == "Initial System Setup") return;
-            var path = vm.Task.OutputPath;
-            if (!string.IsNullOrEmpty(path) && File.Exists(path)) { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = path, UseShellExecute = true }); return; }
-            OpenFolder(vm);
+            _opener.Play(vm.Task);
         }
 
         private void ClearCompleted()
@@ -631,27 +632,8 @@ namespace YTDLPHost.ViewModels
             _ui.Post(() =>
             {
                 ActiveDownloadCount = _downloads.Count(d => d.Task.Status == DownloadStatus.Queued || d.Task.Status == DownloadStatus.Downloading);
-                _trayService.UpdateTooltip(ActiveDownloadCount == 0 ? "YT Downloader Pro - Idle" : $"YT Downloader Pro - {ActiveDownloadCount} active");
+                _tray.UpdateTooltip(ActiveDownloadCount == 0 ? "YT Downloader Pro - Idle" : $"YT Downloader Pro - {ActiveDownloadCount} active");
             });
-        }
-
-        private static string ExtractSaveDirectory(string command)
-        {
-            var match = CommandInfo.OutputTemplateRegex.Match(command);
-            if (match.Success)
-            {
-                var template = match.Groups[1].Value;
-                var dir = Path.GetDirectoryName(template);
-                if (!string.IsNullOrEmpty(dir))
-                {
-                    dir = dir.Replace("/", "\\");
-                    dir = Environment.ExpandEnvironmentVariables(dir);
-                    if (dir.StartsWith("~\\") || dir.StartsWith("~")) dir = Path.Combine(AppPaths.Current.HomeDir, dir.Substring(1).TrimStart('\\'));
-                    if (!Directory.Exists(dir)) try { Directory.CreateDirectory(dir); } catch { }
-                    if (Directory.Exists(dir)) return dir;
-                }
-            }
-            return AppPaths.Current.HomeDir;
         }
 
         private void ExitApplication()
@@ -672,7 +654,7 @@ namespace YTDLPHost.ViewModels
             AppLogger.Shutdown();
             _queue.Dispose();
             foreach (var vm in _downloads) CleanupCookieFile(vm.Task);
-            _trayService.Dispose();
+            _tray.Dispose();
         }
     }
 }

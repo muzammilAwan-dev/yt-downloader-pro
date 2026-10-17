@@ -291,13 +291,14 @@ namespace YTDLPHost.Services
             });
 
         /// <summary>
-        /// Stops the runner of an item (pause / cancel / remove) and frees its slot. Returns false if it had none.
-        /// The caller sets the item's new status afterwards. Cancelling can block for a few seconds while the process dies.
+        /// Stops the runner of an item (pause / cancel / remove) and frees its slot at once. Returns false if it had none.
+        /// The kill itself can take seconds (the runner waits for the process tree to exit), so it runs off the calling
+        /// thread and the caller awaits it instead of freezing the UI. The caller sets the item's new status afterwards.
         /// </summary>
-        public bool TryStop(Guid itemId)
+        public async Task<bool> StopAsync(Guid itemId)
         {
             if (!_active.TryRemove(itemId, out var runner)) return false;
-            runner.Cancel();
+            await Task.Run(() => runner.Cancel()).ConfigureAwait(false);
             return true;
         }
 
@@ -332,14 +333,20 @@ namespace YTDLPHost.Services
             });
         }
 
-        /// <summary>Asks every running download to stop (application exit). Registrations stay until each runner ends.</summary>
+        /// <summary>
+        /// Asks every running download to stop (application exit) and waits for all of them together, at most 10 s,
+        /// so N slow kills cost the slowest one and not their sum. Registrations stay until each runner ends.
+        /// </summary>
         public void CancelAll()
         {
-            foreach (var runner in _active.Values)
+            var cancels = _active.Values.Select(runner => Task.Run(() =>
             {
                 try { runner.Cancel(); }
                 catch (Exception ex) { AppLogger.Log($"[QUEUE ERROR] Runner cancel fault: {ex.Message}"); }
-            }
+            })).ToArray();
+
+            try { Task.WaitAll(cancels, TimeSpan.FromSeconds(10)); }
+            catch (Exception ex) { AppLogger.Log($"[QUEUE ERROR] Waiting for runners to cancel failed: {ex.Message}"); }
         }
 
         public void Dispose()

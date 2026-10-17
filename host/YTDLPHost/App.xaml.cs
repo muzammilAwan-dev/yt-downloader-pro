@@ -88,7 +88,7 @@ namespace YTDLPHost
 
             AppLogger.Log("[BOOT] Primary instance established. Initializing UI components.");
             _singleInstanceManager.UrlReceived += OnUrlReceived;
-            _mainViewModel = new MainViewModel(new WpfUiDispatcher(), new WpfDialogService(), new WpfAppLifetime(), new WpfClipboardService());
+            _mainViewModel = new MainViewModel(WpfPlatform.Create());
             
             _mainViewModel.RequestShowWindow += OnRequestShowWindow;
 

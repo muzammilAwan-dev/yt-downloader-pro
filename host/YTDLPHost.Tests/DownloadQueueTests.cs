@@ -110,7 +110,7 @@ public class DownloadQueueTests
     }
 
     [Fact]
-    public async Task TryStop_cancels_the_runner_and_frees_the_slot()
+    public async Task StopAsync_cancels_the_runner_and_frees_the_slot()
     {
         using var h = new QueueHarness(max: 1);
         var a = h.Add(Cmd(1));
@@ -119,8 +119,8 @@ public class DownloadQueueTests
         h.Queue.Trigger();
         await WaitFor(() => h.RunnerCount == 1, "first runner");
 
-        Assert.False(h.Queue.TryStop(Guid.NewGuid()));
-        Assert.True(h.Queue.TryStop(a.Id));
+        Assert.False(await h.Queue.StopAsync(Guid.NewGuid()));
+        Assert.True(await h.Queue.StopAsync(a.Id));
         a.Task.Status = DownloadStatus.Paused; // what the caller does after stopping
 
         Assert.True(h.Runner(0).WasCancelled);
@@ -166,7 +166,7 @@ public class DownloadQueueTests
         h.Queue.Trigger();
         await WaitFor(() => h.RunnerCount == 1, "first runner");
 
-        Assert.True(h.Queue.TryStop(a.Id)); // slot freed, but runner 0 has not returned yet
+        Assert.True(await h.Queue.StopAsync(a.Id)); // slot freed, but runner 0 has not returned yet
         h.Ui.Invoke(() =>
         {
             a.Task.Status = DownloadStatus.Queued; // the user resumes
@@ -238,6 +238,22 @@ public class DownloadQueueTests
         await Settle();
         Assert.Equal(3, h.RunnerCount);
         Assert.Equal(3, h.Queue.ActiveCount);
+    }
+
+    [Fact]
+    public async Task CancelAll_cancels_every_running_runner()
+    {
+        using var h = new QueueHarness(max: 2);
+        h.Add(Cmd(1));
+        h.Add(Cmd(2));
+
+        h.Queue.Trigger();
+        await WaitFor(() => h.RunnerCount == 2, "two runners");
+
+        h.Queue.CancelAll();
+
+        Assert.True(h.Runner(0).WasCancelled);
+        Assert.True(h.Runner(1).WasCancelled);
     }
 
     [Fact]

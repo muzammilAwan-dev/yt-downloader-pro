@@ -18,8 +18,6 @@ namespace YTDLPHost.ViewModels
 {
     public partial class MainViewModel : ObservableObject, IDisposable
     {
-        private static readonly Regex CommandPathRegex = new(@"-(?:o|P)\s+""([^""]+)""", RegexOptions.Compiled);
-
         private static readonly HttpClient _httpClient = CreateConfiguredHttpClient();
 
         private readonly ObservableCollection<DownloadItemViewModel> _downloads = new();
@@ -28,7 +26,6 @@ namespace YTDLPHost.ViewModels
         public AppSettings Settings { get; }
 
         private bool _disposed;
-        private bool _hasDependencyError;
 
         [ObservableProperty] private bool _isWindowVisible = true;
         [ObservableProperty] private string _statusText = "Ready";
@@ -70,6 +67,8 @@ namespace YTDLPHost.ViewModels
         private readonly ITrayService _tray;
         private readonly INotifier _notifier;
         private readonly DownloadOpener _opener;
+        private readonly HistorySaver _history;
+        private readonly EngineSetup _setup;
         private readonly EngineProvisioner _engine;
         private readonly CommandIngest _ingest;
         private readonly DownloadQueue _queue;
@@ -93,13 +92,16 @@ namespace YTDLPHost.ViewModels
             _queue.ItemCompleted += OnQueueItemCompleted;
             _queue.Drained += () => StatusText = "All downloads complete";
 
+            _history = new HistorySaver(_ui, () => _downloads.Select(d => d.Task).ToList());
+            _setup = new EngineSetup(_engine, _queue, _downloads, _ui, _clipboard, text => StatusText = text);
+
             InitializeCrashReporting();
             AppLogger.Log("[VM] Initializing MainViewModel...");
             
             Settings = AppSettings.Load();
             
             _tray.ShowWindowRequested += (s, e) => RequestShowWindow?.Invoke(this, EventArgs.Empty);
-            _tray.ExitRequested += (s, e) => ExitCommand.Execute(null);
+            _tray.ExitRequested += (s, e) => ExitApplication();
             _notifier.Activated += (s, e) => RequestShowWindow?.Invoke(this, EventArgs.Empty);
             _tray.Initialize();
 
@@ -117,56 +119,7 @@ namespace YTDLPHost.ViewModels
             ShowWindowCommand = new RelayCommand(() => RequestShowWindow?.Invoke(this, EventArgs.Empty));
             ExitCommand = new RelayCommand(ExitApplication);
             
-            SaveSettingsCommand = new RelayCommand(async () => 
-            {
-                if (Settings.MaxConcurrentDownloads < 1) Settings.MaxConcurrentDownloads = 1;
-                if (Settings.MaxConcurrentDownloads > 15) Settings.MaxConcurrentDownloads = 15;
-
-                string speed = Settings.SpeedLimit?.Trim() ?? "0";
-                if (speed != "0" && !Regex.IsMatch(speed, @"^\d+(\.\d+)?[KMG]$", RegexOptions.IgnoreCase))
-                {
-                    _dialogs.Show("YT Downloader Pro - Settings Error", "Invalid speed limit format.\n\nPlease use '0' for unlimited, or a number followed by K, M, or G (e.g., 500K, 2.5M, 10M).", DialogKind.Warning);
-                    
-                    var safeSettings = AppSettings.Load();
-                    Settings.SpeedLimit = safeSettings.SpeedLimit;
-                    OnPropertyChanged(nameof(Settings));
-                    return; 
-                }
-                
-                Settings.SpeedLimit = speed.Replace(" ", "").ToUpperInvariant();
-
-                var oldSettings = AppSettings.Load(); 
-                bool speedChanged = oldSettings.SpeedLimit != Settings.SpeedLimit;
-                bool maxChanged = oldSettings.MaxConcurrentDownloads != Settings.MaxConcurrentDownloads;
-                
-                Settings.Save();
-                OnPropertyChanged(nameof(Settings)); 
-
-                if (speedChanged)
-                {
-                    AppLogger.Log("[SETTINGS] Speed limit modified. Suspending active tasks to apply new throttle rules...");
-                    var activeVms = _downloads.Where(d => d.Task.Status == DownloadStatus.Downloading).ToList();
-                    foreach(var vm in activeVms)
-                    {
-                        await _queue.SuspendToQueueAsync(vm);
-                    }
-                }
-                else if (maxChanged && _queue.ActiveCount > Settings.MaxConcurrentDownloads)
-                {
-                    AppLogger.Log("[SETTINGS] Max concurrent slots reduced. Suspending excess tasks...");
-                    int excess = _queue.ActiveCount - Settings.MaxConcurrentDownloads;
-                    
-                    var activeVms = _downloads.Where(d => d.Task.Status == DownloadStatus.Downloading)
-                                              .Reverse() 
-                                              .Take(excess).ToList();
-                    foreach(var vm in activeVms)
-                    {
-                        await _queue.SuspendToQueueAsync(vm);
-                    }
-                }
-
-                TriggerQueueProcessing();
-            });
+            SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
             
             MinimizeToTrayCommand = new RelayCommand(() => 
             {
@@ -179,12 +132,12 @@ namespace YTDLPHost.ViewModels
                 HasDownloads = _downloads.Count > 0;
                 HasCompletedDownloads = _downloads.Any(d => d.IsCompleted);
                 UpdateActiveCount();
-                PersistHistory();
+                _history.RequestSave();
             };
 
             LoadPersistedHistory();
 
-            _ = CheckAndDownloadDependenciesAsync();
+            _ = _setup.RunAsync();
         }
 
         private void InitializeCrashReporting()
@@ -220,140 +173,49 @@ namespace YTDLPHost.ViewModels
             }
         }
 
-        private CancellationTokenSource? _saveHistoryCts;
-        private void PersistHistory()
-        {
-            _saveHistoryCts?.Cancel();
-            _saveHistoryCts = new CancellationTokenSource();
-            var token = _saveHistoryCts.Token;
-
-            List<DownloadTask> snapshot = new();
-            _ui.Invoke(() =>
-            {
-                snapshot = _downloads.Select(d => d.Task).ToList();
-            });
-
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await Task.Delay(2500, token); 
-                    if (!token.IsCancellationRequested)
-                    {
-                        HistoryManager.SaveHistory(snapshot);
-                    }
-                }
-                catch (TaskCanceledException) { }
-            });
-        }
-
         private void AttachTaskObserver(DownloadItemViewModel vm)
         {
             vm.Task.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(DownloadTask.Status) || e.PropertyName == nameof(DownloadTask.ErrorMessage))
                 {
-                    PersistHistory();
+                    _history.RequestSave();
                 }
             };
         }
 
-        private static string StageText(EngineStage stage) => stage switch
+        private async Task SaveSettingsAsync()
         {
-            EngineStage.DownloadingYtDlp => "Downloading yt-dlp engine...",
-            EngineStage.DownloadingFfmpeg => "Downloading FFmpeg media codecs...",
-            EngineStage.ExtractingFfmpeg => "Extracting codecs...",
-            EngineStage.DownloadingDeno => "Downloading JS engine...",
-            EngineStage.ExtractingDeno => "Extracting JS engine...",
-            _ => "Setting up..."
-        };
+            Settings.MaxConcurrentDownloads = SettingsRules.ClampConcurrentDownloads(Settings.MaxConcurrentDownloads);
 
-        private async Task CheckAndDownloadDependenciesAsync()
-        {
-            DownloadItemViewModel? setupVm = null;
-
-            try
+            if (!SettingsRules.TryNormalizeSpeedLimit(Settings.SpeedLimit, out var speed))
             {
-                if (_engine.AllPresent())
-                {
-                    AppLogger.Log("[DEPENDENCIES] Core dependencies located securely.");
-                    _queue.MarkEngineReady();
-                    _engine.StartBackgroundUpdate();
-                    TriggerQueueProcessing();
-                    return;
-                }
+                _dialogs.Show("YT Downloader Pro - Settings Error", "Invalid speed limit format.\n\nPlease use '0' for unlimited, or a number followed by K, M, or G (e.g., 500K, 2.5M, 10M).", DialogKind.Warning);
 
-                AppLogger.Log("[DEPENDENCIES] Dependencies missing. Creating UX Setup Card.");
-
-                var setupTask = new DownloadTask
-                {
-                    Id = Guid.NewGuid(),
-                    Title = "Initial System Setup",
-                    Status = DownloadStatus.Downloading,
-                    CurrentPhase = "Initializing download...",
-                    IsIndeterminate = true
-                };
-                setupVm = new DownloadItemViewModel(setupTask, _clipboard);
-
-                _ui.Invoke(() =>
-                {
-                    _downloads.Insert(0, setupVm);
-                    StatusText = "Downloading required engine updates... Please wait.";
-                });
-
-                await _engine.InstallMissingAsync(stage => _ui.Invoke(() =>
-                {
-                    if (setupVm != null) { setupVm.Task.CurrentPhase = StageText(stage); setupVm.Refresh(); }
-                }));
-
-                _ui.Invoke(() =>
-                {
-                    if (setupVm != null)
-                    {
-                        setupVm.Task.CurrentPhase = "Setup Complete!";
-                        setupVm.Task.Status = DownloadStatus.Completed;
-                        setupVm.Task.Progress = 100.0;
-                        setupVm.Task.IsIndeterminate = false;
-                        setupVm.Refresh();
-                    }
-                    StatusText = "Ready";
-                });
-
-                await Task.Delay(2000);
-                _ui.Invoke(() =>
-                {
-                    if (setupVm != null) _downloads.Remove(setupVm);
-                });
-
-                _queue.MarkEngineReady();
-                _engine.StartBackgroundUpdate();
-                TriggerQueueProcessing();
+                Settings.SpeedLimit = AppSettings.Load().SpeedLimit;
+                OnPropertyChanged(nameof(Settings));
+                return;
             }
-            catch (Exception ex)
-            {
-                AppLogger.Log($"[DEPENDENCIES ERROR] Failed to provision dependencies: {ex.Message}");
-                _hasDependencyError = true;
 
-                _ui.Invoke(() =>
-                {
-                    StatusText = "Network Error. Please check your internet connection.";
-                    if (setupVm != null)
-                    {
-                        setupVm.Task.Status = DownloadStatus.Error;
-                        setupVm.Task.CurrentPhase = "Setup Failed! Please restart the app.";
-                        setupVm.Task.IsIndeterminate = false;
-                        setupVm.Task.ErrorMessage = "Check your internet connection and try again.";
-                        setupVm.Refresh();
-                    }
-                });
-            }
+            Settings.SpeedLimit = speed;
+
+            var oldSettings = AppSettings.Load();
+            bool speedChanged = oldSettings.SpeedLimit != Settings.SpeedLimit;
+            bool maxChanged = oldSettings.MaxConcurrentDownloads != Settings.MaxConcurrentDownloads;
+
+            Settings.Save();
+            OnPropertyChanged(nameof(Settings));
+
+            await _queue.ApplySettingsAsync(speedChanged, maxChanged, Settings.MaxConcurrentDownloads);
         }
+
+        private static bool IsSetupCard(DownloadItemViewModel? vm) => vm?.Task.Title == EngineSetup.SetupCardTitle;
 
         public void ProcessUrl(string? rawUrl)
         {
             if (string.IsNullOrWhiteSpace(rawUrl)) return;
 
-            if (_hasDependencyError)
+            if (_setup.HasFailed)
             {
                 _dialogs.Show("Setup Required", "YT Downloader Pro cannot process links because the initial core setup failed.\n\nPlease ensure you have an active internet connection and restart the application.", DialogKind.Error);
                 return;
@@ -398,7 +260,7 @@ namespace YTDLPHost.ViewModels
                     {
                         UrlPayload = payload.UrlPayload,
                         Command = prepared.Command,
-                        CookiePayload = prepared.CookieContent,
+                        CookiePayload = prepared.CookieContent ?? "",
                         CookieFilePath = prepared.CookieFilePath,
                         Resolution = CommandInfo.ExtractResolution(prepared.Command),
                         Title = CommandInfo.ExtractTitleHint(prepared.Command),
@@ -443,40 +305,14 @@ namespace YTDLPHost.ViewModels
 
             _ = Task.Run(() =>
             {
-                CleanupPartialFiles(vm.Task);
-                ScrubStrayThumbnails(vm.Task);
+                DownloadCleaner.CleanupPartialFiles(vm.Task);
+                DownloadCleaner.ScrubStrayThumbnails(vm.Task);
             });
-        }
-
-        private void ScrubStrayThumbnails(DownloadTask task)
-        {
-            try 
-            {
-                if (string.IsNullOrEmpty(task.OutputPath)) return;
-                string dir = Path.GetDirectoryName(task.OutputPath) ?? "";
-                string title = Path.GetFileNameWithoutExtension(task.OutputPath) ?? "";
-                
-                if (Directory.Exists(dir) && !string.IsNullOrEmpty(title))
-                {
-                    var files = Directory.GetFiles(dir, $"{title}*");
-                    string outExt = Path.GetExtension(task.OutputPath).ToLowerInvariant();
-                    
-                    foreach (var file in files)
-                    {
-                        string ext = Path.GetExtension(file).ToLowerInvariant();
-                        if ((ext == ".webp" || ext == ".jpg" || ext == ".jpeg" || ext == ".png") && ext != outExt)
-                        {
-                            try { File.Delete(file); } catch { }
-                        }
-                    }
-                }
-            } 
-            catch { }
         }
 
         private async Task PauseDownloadAsync(DownloadItemViewModel? vm)
         {
-            if (vm == null || vm.Task.Title == "Initial System Setup") return;
+            if (vm == null || IsSetupCard(vm)) return;
             AppLogger.Log($"[QUEUE] Process suspended for task ID: {vm.Id}");
             await _queue.StopAsync(vm.Id);
             vm.Task.Status = DownloadStatus.Paused;
@@ -486,103 +322,20 @@ namespace YTDLPHost.ViewModels
 
         private async Task CancelDownloadAsync(DownloadItemViewModel? vm)
         {
-            if (vm == null || vm.Task.Title == "Initial System Setup") return;
+            if (vm == null || IsSetupCard(vm)) return;
             AppLogger.Log($"[QUEUE] Process termination requested for task ID: {vm.Id}");
             await _queue.StopAsync(vm.Id);
             vm.Task.Status = DownloadStatus.Cancelled;
             vm.Refresh();
             UpdateActiveCount();
             
-            _ = Task.Run(() => CleanupPartialFiles(vm.Task, forceDeleteAll: true));
-            CleanupCookieFile(vm.Task);
-        }
-
-        private void CleanupPartialFiles(DownloadTask task, bool forceDeleteAll = false)
-        {
-            var stems = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var dirs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            // FIX: bulk jobs ("download all uploads", playlists). Cancelling used to wipe EVERY file the job had produced, because the
-            // tracked list spanned all items. The runner now moves finished items to task.SettledFiles; TrackedFiles holds only the item
-            // that is downloading right now. On a bulk cancel we additionally never delete a file that is already complete - only
-            // partial / intermediate leftovers of that one in-flight item.
-            bool isBulk = !string.IsNullOrEmpty(task.PlaylistInfo);
-            var settled = new HashSet<string>(task.SettledFiles, StringComparer.OrdinalIgnoreCase);
-
-            foreach (var filePath in task.TrackedFiles.Distinct().ToList())
-            {
-                if (settled.Contains(filePath)) continue;
-                if (!forceDeleteAll && filePath.Equals(task.OutputPath, StringComparison.OrdinalIgnoreCase)) continue;
-
-                var fileName = Path.GetFileName(filePath);
-                // Per-format intermediates of a multi-stream download ("Title.f137.mp4", "Title.f251.webm") are never a deliverable.
-                bool isIntermediate = Regex.IsMatch(fileName, @"\.f[\w-]+\.[^.]+$");
-
-                if (forceDeleteAll && isBulk && !isIntermediate)
-                {
-                    // A completed file of the in-flight item (e.g. cancelled while yt-dlp sleeps before the next item) is kept;
-                    // only its unfinished ".part"/".ytdl" companions are removed.
-                    TryDeleteFile(filePath + ".part");
-                    TryDeleteFile(filePath + ".ytdl");
-                }
-                else
-                {
-                    // The exact file yt-dlp reported as its destination for this stream.
-                    TryDeleteFile(filePath);
-                    // While a stream is still downloading (exactly the state a cancelled task is in), yt-dlp writes to "<file>.part"
-                    // and sometimes a matching "<file>.ytdl" resume-info file; the final name usually doesn't exist yet.
-                    TryDeleteFile(filePath + ".part");
-                    TryDeleteFile(filePath + ".ytdl");
-                }
-
-                var dir = Path.GetDirectoryName(filePath);
-                if (string.IsNullOrEmpty(dir)) continue;
-                dirs.Add(dir);
-
-                // Multi-stream downloads get per-format suffixes, and task.OutputPath only holds the LAST reported destination, so the
-                // leftover sweep below derives a stem from every tracked file.
-                var stem = Regex.Replace(fileName, @"\.f[\w-]+\.[^.]+$", "");
-                stem = Path.GetFileNameWithoutExtension(stem);
-                if (!string.IsNullOrEmpty(stem)) stems.Add(stem);
-            }
-
-            if (!forceDeleteAll) return;
-
-            // Belt-and-braces sweep: leftover fragment/resume files of THIS in-flight item only. Settled items are never swept - a
-            // short stem such as "Song" would otherwise also match the finished "Song (remix)" next to it.
-            foreach (var dir in dirs)
-            {
-                if (!Directory.Exists(dir)) continue;
-                foreach (var stem in stems)
-                {
-                    string[] files;
-                    try { files = Directory.GetFiles(dir, $"{stem}*"); }
-                    catch { continue; }
-
-                    foreach (var file in files)
-                    {
-                        if (settled.Contains(file)) continue;
-                        if (file.EndsWith(".part", StringComparison.OrdinalIgnoreCase) ||
-                            file.EndsWith(".ytdl", StringComparison.OrdinalIgnoreCase) ||
-                            file.EndsWith(".frag", StringComparison.OrdinalIgnoreCase) ||
-                            file.Contains(".part-Frag", StringComparison.OrdinalIgnoreCase) ||
-                            file.Contains(".temp.", StringComparison.OrdinalIgnoreCase))
-                        {
-                            TryDeleteFile(file);
-                        }
-                    }
-                }
-            }
-        }
-
-        private static void TryDeleteFile(string path)
-        {
-            try { if (File.Exists(path)) File.Delete(path); } catch { }
+            _ = Task.Run(() => DownloadCleaner.CleanupPartialFiles(vm.Task, forceDeleteAll: true));
+            DownloadCleaner.CleanupCookieFile(vm.Task);
         }
 
         private void ResumeDownload(DownloadItemViewModel? vm)
         {
-            if (vm == null || vm.Task.Title == "Initial System Setup") return;
+            if (vm == null || IsSetupCard(vm)) return;
             AppLogger.Log($"[QUEUE] Process resumption initiated for task ID: {vm.Id}");
             vm.Task.Status = DownloadStatus.Queued;
             vm.Task.ErrorMessage = "";
@@ -593,38 +346,33 @@ namespace YTDLPHost.ViewModels
 
         private async Task RemoveDownloadAsync(DownloadItemViewModel? vm)
         {
-            if (vm == null || vm.Task.Title == "Initial System Setup") return;
+            if (vm == null || IsSetupCard(vm)) return;
             AppLogger.Log($"[QUEUE] Task purged from registry. ID: {vm.Id}");
             await _queue.StopAsync(vm.Id);
-            CleanupCookieFile(vm.Task);
+            DownloadCleaner.CleanupCookieFile(vm.Task);
             _downloads.Remove(vm);
             UpdateActiveCount();
         }
 
         private void OpenFolder(DownloadItemViewModel? vm)
         {
-            if (vm?.Task == null || vm.Task.Title == "Initial System Setup") return;
+            if (vm?.Task == null || IsSetupCard(vm)) return;
             _opener.ShowInFolder(vm.Task);
         }
 
         private void PlayFile(DownloadItemViewModel? vm)
         {
-            if (vm?.Task == null || vm.Task.Title == "Initial System Setup") return;
+            if (vm?.Task == null || IsSetupCard(vm)) return;
             _opener.Play(vm.Task);
         }
 
         private void ClearCompleted()
         {
             var completed = _downloads.Where(d => d.Task.Status == DownloadStatus.Completed).ToList();
-            foreach (var vm in completed) { CleanupCookieFile(vm.Task); _downloads.Remove(vm); }
+            foreach (var vm in completed) { DownloadCleaner.CleanupCookieFile(vm.Task); _downloads.Remove(vm); }
             HasCompletedDownloads = _downloads.Any(d => d.Task.Status == DownloadStatus.Completed);
             UpdateActiveCount();
             AppLogger.Log("[QUEUE] Completed tasks successfully purged from collection.");
-        }
-
-        private static void CleanupCookieFile(DownloadTask task)
-        {
-            if (!string.IsNullOrEmpty(task.CookieFilePath) && File.Exists(task.CookieFilePath)) try { File.Delete(task.CookieFilePath); } catch { }
         }
 
         private void UpdateActiveCount()
@@ -640,7 +388,7 @@ namespace YTDLPHost.ViewModels
         {
             AppLogger.Log("[SYSTEM] Application termination sequence invoked.");
             AppLogger.Shutdown();
-            foreach (var vm in _downloads) CleanupCookieFile(vm.Task);
+            foreach (var vm in _downloads) DownloadCleaner.CleanupCookieFile(vm.Task);
             _queue.CancelAll();
             _lifetime.Shutdown();
         }
@@ -649,11 +397,10 @@ namespace YTDLPHost.ViewModels
         {
             if (_disposed) return;
             _disposed = true;
-            _saveHistoryCts?.Cancel();
-            _saveHistoryCts?.Dispose(); 
+            _history.Dispose(); // writes a save that is still waiting
             AppLogger.Shutdown();
             _queue.Dispose();
-            foreach (var vm in _downloads) CleanupCookieFile(vm.Task);
+            foreach (var vm in _downloads) DownloadCleaner.CleanupCookieFile(vm.Task);
             _tray.Dispose();
         }
     }

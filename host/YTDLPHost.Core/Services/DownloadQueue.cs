@@ -334,6 +334,43 @@ namespace YTDLPHost.Services
         }
 
         /// <summary>
+        /// Applies saved settings to running downloads. A speed-limit change restarts every running download so the new limit
+        /// takes effect; a lowered concurrency limit puts the excess (the last ones in the list) back in the queue. Only items
+        /// that really have a runner are touched (never the setup card). Calls <see cref="Trigger"/> at the end.
+        /// </summary>
+        public async Task ApplySettingsAsync(bool speedChanged, bool maxChanged, int newMaxConcurrent)
+        {
+            var toSuspend = new List<DownloadItemViewModel>();
+
+            _ui.Invoke(() =>
+            {
+                var running = _items
+                    .Where(d => d.Task.Status == DownloadStatus.Downloading && _active.ContainsKey(d.Id))
+                    .ToList();
+
+                if (speedChanged)
+                {
+                    AppLogger.Log("[SETTINGS] Speed limit modified. Suspending active tasks to apply new throttle rules...");
+                    toSuspend = running;
+                }
+                else if (maxChanged && _active.Count > newMaxConcurrent)
+                {
+                    AppLogger.Log("[SETTINGS] Max concurrent slots reduced. Suspending excess tasks...");
+                    int excess = _active.Count - newMaxConcurrent;
+                    running.Reverse();
+                    toSuspend = running.Take(excess).ToList();
+                }
+            });
+
+            foreach (var vm in toSuspend)
+            {
+                await SuspendToQueueAsync(vm).ConfigureAwait(false);
+            }
+
+            Trigger();
+        }
+
+        /// <summary>
         /// Asks every running download to stop (application exit) and waits for all of them together, at most 10 s,
         /// so N slow kills cost the slowest one and not their sum. Registrations stay until each runner ends.
         /// </summary>

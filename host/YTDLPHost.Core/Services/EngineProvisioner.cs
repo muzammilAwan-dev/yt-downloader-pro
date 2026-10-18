@@ -33,7 +33,7 @@ namespace YTDLPHost.Services
     /// Finds, downloads and updates yt-dlp, ffmpeg and deno. Extracted unchanged from MainViewModel
     /// (Phase 1.5a); it has no UI dependencies, so it is unit-tested with a fake HTTP handler.
     /// </summary>
-    public sealed class EngineProvisioner
+    public sealed class EngineProvisioner : IEngineProvisioner
     {
         private readonly IAppPaths _paths;
         private readonly HttpClient _http;

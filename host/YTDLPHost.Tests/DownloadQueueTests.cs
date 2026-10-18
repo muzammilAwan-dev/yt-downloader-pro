@@ -257,6 +257,79 @@ public class DownloadQueueTests
     }
 
     [Fact]
+    public async Task A_speed_change_restarts_every_running_download()
+    {
+        using var h = new QueueHarness(max: 2);
+        var a = h.Add(Cmd(1));
+        var b = h.Add(Cmd(2));
+        h.Queue.Trigger();
+        await WaitFor(() => h.RunnerCount == 2, "two runners");
+
+        await h.Queue.ApplySettingsAsync(speedChanged: true, maxChanged: false, newMaxConcurrent: 2);
+
+        Assert.True(h.Runner(0).WasCancelled);
+        Assert.True(h.Runner(1).WasCancelled);
+        await WaitFor(() => h.RunnerCount == 4, "both downloads restarted");
+        await WaitFor(() => a.Task.Status == DownloadStatus.Downloading && b.Task.Status == DownloadStatus.Downloading, "both downloading again");
+    }
+
+    [Fact]
+    public async Task A_lower_limit_puts_only_the_excess_back_starting_from_the_end_of_the_list()
+    {
+        using var h = new QueueHarness(max: 3);
+        var a = h.Add(Cmd(1));
+        var b = h.Add(Cmd(2));
+        var c = h.Add(Cmd(3));
+        h.Queue.Trigger();
+        await WaitFor(() => h.RunnerCount == 3, "three runners");
+
+        h.Max = 1;
+        await h.Queue.ApplySettingsAsync(speedChanged: false, maxChanged: true, newMaxConcurrent: 1);
+        await Settle();
+
+        Assert.False(h.Runner(0).WasCancelled);
+        Assert.True(h.Runner(1).WasCancelled);
+        Assert.True(h.Runner(2).WasCancelled);
+        Assert.Equal(DownloadStatus.Downloading, a.Task.Status);
+        Assert.Equal(DownloadStatus.Queued, b.Task.Status);
+        Assert.Equal(DownloadStatus.Queued, c.Task.Status);
+        Assert.Equal(3, h.RunnerCount); // nothing restarts while the only slot is taken
+    }
+
+    [Fact]
+    public async Task Unchanged_settings_leave_running_downloads_alone()
+    {
+        using var h = new QueueHarness(max: 2);
+        h.Add(Cmd(1));
+        h.Queue.Trigger();
+        await WaitFor(() => h.RunnerCount == 1, "runner");
+
+        await h.Queue.ApplySettingsAsync(speedChanged: false, maxChanged: false, newMaxConcurrent: 2);
+        await Settle();
+
+        Assert.False(h.Runner(0).WasCancelled);
+        Assert.Equal(1, h.RunnerCount);
+    }
+
+    [Fact]
+    public async Task An_item_without_a_runner_such_as_the_setup_card_is_never_suspended()
+    {
+        using var h = new QueueHarness(max: 2);
+        var card = new DownloadItemViewModel(new DownloadTask { Title = "Initial System Setup", Status = DownloadStatus.Downloading });
+        h.Ui.Invoke(() => h.Items.Add(card));
+        var a = h.Add(Cmd(1));
+        h.Queue.Trigger();
+        await WaitFor(() => h.RunnerCount == 1, "runner for the real download");
+
+        await h.Queue.ApplySettingsAsync(speedChanged: true, maxChanged: false, newMaxConcurrent: 2);
+
+        Assert.Equal(DownloadStatus.Downloading, card.Task.Status);
+        Assert.True(h.Runner(0).WasCancelled);
+        await WaitFor(() => h.RunnerCount == 2, "real download restarted");
+        Assert.Equal(DownloadStatus.Downloading, a.Task.Status);
+    }
+
+    [Fact]
     public async Task Dispose_disposes_the_running_runners()
     {
         var h = new QueueHarness(max: 1);

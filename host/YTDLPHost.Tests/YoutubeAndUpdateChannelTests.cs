@@ -91,7 +91,7 @@ public class YoutubeAndUpdateChannelTests
     [InlineData("ERROR: HTTP Error 429: Too Many Requests", false)]
     public void The_bot_check_message_is_recognised_even_with_a_garbled_apostrophe(string errorText, bool expected)
     {
-        Assert.Equal(expected, YtDlpRunner.IsBotCheckError(errorText));
+        Assert.Equal(expected, FailureMessage.IsBotCheckError(errorText));
     }
 
     // ---------------- update channel ----------------

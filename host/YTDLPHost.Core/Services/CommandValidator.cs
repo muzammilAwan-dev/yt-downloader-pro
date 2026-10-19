@@ -61,7 +61,7 @@ namespace YTDLPHost.Services
             // tokenizer below and the real parser disagree. The extension never produces this sequence.
             if (command.Contains("\\\"")) { reason = "escaped quote in command"; return false; }
 
-            var tokens = Tokenize(command);
+            var tokens = CommandTokenizer.Tokenize(command);
             if (tokens == null || tokens.Count == 0) { reason = "unbalanced quotes"; return false; }
 
             var exe = tokens[0];
@@ -105,36 +105,6 @@ namespace YTDLPHost.Services
 
             if (urlCount == 0) { reason = "no link in command"; return false; }
             return true;
-        }
-
-        private static List<string>? Tokenize(string command)
-        {
-            var tokens = new List<string>();
-            var current = new StringBuilder();
-            bool inQuotes = false;
-            bool hasToken = false;
-
-            foreach (var ch in command)
-            {
-                if (ch == '"')
-                {
-                    inQuotes = !inQuotes;
-                    hasToken = true;
-                }
-                else if ((ch == ' ' || ch == '\t') && !inQuotes)
-                {
-                    if (hasToken) { tokens.Add(current.ToString()); current.Clear(); hasToken = false; }
-                }
-                else
-                {
-                    current.Append(ch);
-                    hasToken = true;
-                }
-            }
-
-            if (inQuotes) return null;
-            if (hasToken) tokens.Add(current.ToString());
-            return tokens;
         }
 
         private static bool IsPathAllowed(string path, string[] allowedExtensions)

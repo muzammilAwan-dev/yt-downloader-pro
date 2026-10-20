@@ -23,6 +23,58 @@ public class YtDlpOutputParserTests
         return task;
     }
 
+    // ---------------- "already on disk" detection (a skipped download must not look like a real one) ----------------
+
+    private static YtDlpRunner RunnerAfter(params string[] lines)
+    {
+        var runner = new YtDlpRunner();
+        var task = new DownloadTask { CurrentPhase = "Starting..." };
+        foreach (var line in lines) runner.HandleOutputCore(line, task);
+        return runner;
+    }
+
+    [Fact]
+    public void A_download_that_only_found_its_file_already_on_disk_is_flagged()
+    {
+        // The shape of a crop that reused the name of the full download: nothing but "has already been downloaded" and sidecar work.
+        var runner = RunnerAfter(
+            "[info] abc: Downloading 1 time ranges: 0.0-60.0",
+            "[info] Writing video thumbnail 45 to: " + Dir + "/Title_360p.webp",
+            "[download] " + Dir + "/Title_360p.mp4 has already been downloaded",
+            "[EmbedThumbnail] mutagen: Adding thumbnail to \"" + Dir + "/Title_360p.mp4\"");
+
+        Assert.True(runner.OnlyAlreadyOnDisk);
+    }
+
+    [Fact]
+    public void A_download_that_wrote_a_new_file_is_not_flagged_even_if_a_leftover_stream_existed()
+    {
+        var runner = RunnerAfter(
+            "[download] Destination: " + Dir + "/Title.f137.mp4",
+            "[download] " + Dir + "/Title.f251.webm has already been downloaded");
+
+        Assert.False(runner.OnlyAlreadyOnDisk);
+    }
+
+    [Fact]
+    public void A_merge_means_something_new_was_made()
+    {
+        var runner = RunnerAfter(
+            "[download] " + Dir + "/Title.f251.webm has already been downloaded",
+            "[Merger] Merging formats into \"" + Dir + "/Title.mp4\"");
+
+        Assert.False(runner.OnlyAlreadyOnDisk);
+    }
+
+    [Fact]
+    public void A_plain_download_and_a_bulk_job_are_never_flagged()
+    {
+        Assert.False(RunnerAfter("[download] Destination: " + Dir + "/Title.mp4").OnlyAlreadyOnDisk);
+        Assert.False(RunnerAfter(
+            "[download] Downloading item 1 of 3",
+            "[download] " + Dir + "/One.mp4 has already been downloaded").OnlyAlreadyOnDisk); // bulk jobs have their own summary
+    }
+
     [Fact]
     public void Progress_line_fills_percent_speed_eta_and_size()
     {

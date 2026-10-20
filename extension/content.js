@@ -971,11 +971,6 @@
         cropperCmd = `--download-sections "*${startSec}-${endSec}" ${SITE.cropKeyframeCuts === false ? '' : '--force-keyframes-at-cuts '}`;
     }
 
-    // A clip must not share its file name with the full video (or with another clip): yt-dlp would find the existing file,
-    // report "has already been downloaded" and skip the download. The time range goes into the name, before the resolution label.
-    const clipPart = (t) => String(t).replace(/[^0-9A-Za-z]+/g, '-').replace(/^-+|-+$/g, '');
-    const clipTag = cropperCmd ? `_clip_${clipPart(sTime || '00:00:00')}_to_${clipPart(eTime || 'end')}` : '';
-
     const subCmd = (wantsSubs && resolution !== 'audio' && SITE.features.subtitles)
         ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*" --sleep-subtitles 5 '
         : '';
@@ -999,9 +994,13 @@
 
     const compatFlag = (prefs.compatMode === true && SITE.features.compatMode) ? '-S "vcodec:h264,res,acodec:m4a"' : '';
 
+    // A clip, a SponsorBlock-cut copy or an H.264 re-encode must not share a file name with the plain download, or yt-dlp skips it
+    // as "already downloaded". The tag goes before the resolution label (the host reads the label from the end of the name).
+    const nameTag = ytdlpNameTag({ cropped: !!cropperCmd, cropStart: sTime, cropEnd: eTime, sponsor: !!sponsorFlag, compat: !!compatFlag && resolution !== 'audio' });
+
     const outTemplate = wantsPlaylist && SITE.features.playlist
-      ? `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d_%(title)s${clipTag}_${resLabel}.${fmt.ext}"`
-      : `-o "${saveDir}%(title)s${uniqueSuffix(videoUrl)}${clipTag}_${resLabel}.${fmt.ext}"`;
+      ? `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d_%(title)s${nameTag}_${resLabel}.${fmt.ext}"`
+      : `-o "${saveDir}%(title)s${uniqueSuffix(videoUrl)}${nameTag}_${resLabel}.${fmt.ext}"`;
 
     const command = ['yt-dlp', '-f', `"${fmt.f}"`, compatFlag, fmt.opt, `-N ${speed}`, cropperCmd, subCmd, plCmd, sponsorFlag, '--restrict-filenames', metaFlag, thumbFlag, '--no-warnings', '--progress', outTemplate, `"${videoUrl}"`].filter(Boolean).join(' ');
 
@@ -1013,9 +1012,7 @@
   // Sites whose captions repeat (TikTok) get the video id in the filename so two videos never overwrite/skip each other.
   // The id is written out literally and "%(title)s" stays untouched, because the host builds its placeholder title from that exact token.
   function uniqueSuffix(url) {
-    if (!SITE.uniqueFilenames) return '';
-    const m = /\/video\/(\d{17,20})/.exec(url || '');
-    return `_${m ? m[1] : '%(id)s'}`;
+    return ytdlpUniqueSuffix(SITE, url);
   }
 
   function slugForArchive(url) {

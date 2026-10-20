@@ -106,6 +106,14 @@ namespace YTDLPHost.Services
         private int _itemIndex;               // X
         private bool _itemHasMedia;           // current item produced/located a real media file
         private bool _itemAlready;            // ... and it was already on disk
+        private bool _freshMedia;             // this run wrote a media file (a "Destination:" line, a merge, an audio extraction)
+
+        /// <summary>
+        /// True when a single download finished only because yt-dlp found the target file already on disk ("has already been
+        /// downloaded") and wrote nothing new. Shown as a note instead of a plain "Finished Successfully", so a skipped download
+        /// (e.g. the same name used by a different clip) can no longer pass for a real one.
+        /// </summary>
+        internal bool OnlyAlreadyOnDisk => _bulkTotal == 0 && _itemAlready && !_freshMedia;
         private bool _itemError;              // yt-dlp printed "ERROR:" while on the current item
         private bool _itemDrm;                // ... and it was a DRM error
         private int _savedItems, _skippedItems, _failedItems, _drmItems;
@@ -134,7 +142,7 @@ namespace YTDLPHost.Services
             _bulkTotal = 0; _itemIndex = 0;
             _itemHasMedia = _itemAlready = _itemError = _itemDrm = false;
             _savedItems = _skippedItems = _failedItems = _drmItems = 0;
-            _lastErrorLine = ""; _lastGoodTitle = "";
+            _lastErrorLine = ""; _lastGoodTitle = ""; _freshMedia = false;
             _sectionSeconds = 0; _lastStatsLog = DateTime.MinValue; _loggedFfmpegStart = false;
             _isYoutube = false; _usedCookies = false; _cookiesLoggedIn = false; _quality = YoutubeQualityGuard.Disabled;
 
@@ -277,6 +285,7 @@ namespace YTDLPHost.Services
                     task.Speed = "";
                     task.Eta = "";
                     string resultNote = _failedItems > 0 || _skippedItems > 0 ? bulkNote : "";
+                    if (OnlyAlreadyOnDisk) resultNote = "file already existed, nothing new downloaded";
                     if (_quality.Note.Length > 0) resultNote = resultNote.Length == 0 ? _quality.Note : $"{resultNote}; {_quality.Note}";
                     task.ResultNote = resultNote;
                     task.AppendLog("");
@@ -382,6 +391,13 @@ namespace YTDLPHost.Services
                 }
             }
 
+            // A merge, audio extraction or remux only happens when this run produced a new file.
+            if (data.Contains("[Merger]", StringComparison.OrdinalIgnoreCase) || data.Contains("[ExtractAudio]", StringComparison.OrdinalIgnoreCase) ||
+                data.Contains("[VideoRemuxer]", StringComparison.OrdinalIgnoreCase) || data.Contains("[VideoConvertor]", StringComparison.OrdinalIgnoreCase))
+            {
+                _freshMedia = true;
+            }
+
             if (data.Contains("has already been recorded in the archive", StringComparison.OrdinalIgnoreCase) ||
                 data.Contains("does not pass filter", StringComparison.OrdinalIgnoreCase))
             {
@@ -432,6 +448,7 @@ namespace YTDLPHost.Services
                             {
                                 _itemHasMedia = true;
                                 if (alreadyDownloadedMatch.Success && !fileTrackMatch.Success) _itemAlready = true;
+                                else _freshMedia = true;
                             }
                         }
                         

@@ -592,16 +592,49 @@ function ytdlpSelectCookies(site, cookies) {
   return out;
 }
 
+/**
+ * Pieces of the output file name that keep DIFFERENT results from sharing a name. yt-dlp skips a download when the target file
+ * already exists ("has already been downloaded"), so a clip, a SponsorBlock-cut copy or an H.264 re-encode must never reuse the
+ * name of the plain download. Plain downloads get an empty tag, so normal file names do not change.
+ * Used by BOTH command builders (content.js and popup.js) so they cannot drift apart again.
+ *
+ * @param {{cropped?: boolean, cropStart?: string, cropEnd?: string, sponsor?: boolean, compat?: boolean}} opts
+ * @returns {string} e.g. "_clip_00-00-00_to_01-00_nosponsors"; "" when nothing special applies
+ */
+function ytdlpNameTag(opts) {
+  const o = opts || {};
+  const part = (t) => String(t).replace(/[^0-9A-Za-z]+/g, '-').replace(/^-+|-+$/g, '');
+  let tag = '';
+  if (o.cropped) tag += `_clip_${part(o.cropStart || '00:00:00')}_to_${part(o.cropEnd || 'end')}`;
+  if (o.sponsor) tag += '_nosponsors';
+  if (o.compat) tag += '_h264';
+  return tag;
+}
+
+/**
+ * Sites whose captions repeat (TikTok) get the video id in the file name so two videos never overwrite/skip each other.
+ * The id is written out literally and "%(title)s" stays untouched, because the host builds its placeholder title from that token.
+ */
+function ytdlpUniqueSuffix(site, url) {
+  if (!site || !site.uniqueFilenames) return '';
+  const m = /\/video\/(\d{17,20})/.exec(url || '');
+  return `_${m ? m[1] : '%(id)s'}`;
+}
+
 // Expose to both window (content script / popup) and self (service worker) scopes.
 if (typeof window !== 'undefined') {
   window.YTDLP_SITES = YTDLP_SITES;
   window.getSiteForUrl = getSiteForUrl;
   window.getAllSites = getAllSites;
   window.ytdlpSelectCookies = ytdlpSelectCookies;
+  window.ytdlpNameTag = ytdlpNameTag;
+  window.ytdlpUniqueSuffix = ytdlpUniqueSuffix;
 }
 if (typeof self !== 'undefined') {
   self.YTDLP_SITES = YTDLP_SITES;
   self.getSiteForUrl = getSiteForUrl;
   self.getAllSites = getAllSites;
   self.ytdlpSelectCookies = ytdlpSelectCookies;
+  self.ytdlpNameTag = ytdlpNameTag;
+  self.ytdlpUniqueSuffix = ytdlpUniqueSuffix;
 }

@@ -971,6 +971,11 @@
         cropperCmd = `--download-sections "*${startSec}-${endSec}" ${SITE.cropKeyframeCuts === false ? '' : '--force-keyframes-at-cuts '}`;
     }
 
+    // A clip must not share its file name with the full video (or with another clip): yt-dlp would find the existing file,
+    // report "has already been downloaded" and skip the download. The time range goes into the name, before the resolution label.
+    const clipPart = (t) => String(t).replace(/[^0-9A-Za-z]+/g, '-').replace(/^-+|-+$/g, '');
+    const clipTag = cropperCmd ? `_clip_${clipPart(sTime || '00:00:00')}_to_${clipPart(eTime || 'end')}` : '';
+
     const subCmd = (wantsSubs && resolution !== 'audio' && SITE.features.subtitles)
         ? '--write-subs --write-auto-subs --embed-subs --sub-langs "en.*" --sleep-subtitles 5 '
         : '';
@@ -995,8 +1000,8 @@
     const compatFlag = (prefs.compatMode === true && SITE.features.compatMode) ? '-S "vcodec:h264,res,acodec:m4a"' : '';
 
     const outTemplate = wantsPlaylist && SITE.features.playlist
-      ? `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d_%(title)s_${resLabel}.${fmt.ext}"`
-      : `-o "${saveDir}%(title)s${uniqueSuffix(videoUrl)}_${resLabel}.${fmt.ext}"`;
+      ? `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d_%(title)s${clipTag}_${resLabel}.${fmt.ext}"`
+      : `-o "${saveDir}%(title)s${uniqueSuffix(videoUrl)}${clipTag}_${resLabel}.${fmt.ext}"`;
 
     const command = ['yt-dlp', '-f', `"${fmt.f}"`, compatFlag, fmt.opt, `-N ${speed}`, cropperCmd, subCmd, plCmd, sponsorFlag, '--restrict-filenames', metaFlag, thumbFlag, '--no-warnings', '--progress', outTemplate, `"${videoUrl}"`].filter(Boolean).join(' ');
 

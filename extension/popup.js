@@ -365,7 +365,6 @@
     saveDir = saveDir.replace(/\\/g, '\\\\');
 
     const formatConfig = buildFormatConfig(settings.resolution, settings.audioFormat);
-    const outputTemplate = buildOutputTemplate(saveDir, settings.isPlaylist, formatConfig.extension, settings.resolution);
 
     let cropperOptions = '';
     const startT = elements.startTime.value.trim();
@@ -400,6 +399,10 @@
 
     const compatFlag = (elements.compatMode.checked && site.features.compatMode) ? '-S "vcodec:h264,res,acodec:m4a"' : '';
 
+    // Same rule as content.js: a clip / SponsorBlock-cut / H.264 copy must not share a file name with the plain download.
+    const nameTag = ytdlpNameTag({ cropped: !!cropperOptions, cropStart: startT, cropEnd: endT, sponsor: !!sponsorFlag, compat: !!compatFlag && settings.resolution !== 'audio' });
+    const outputTemplate = buildOutputTemplate(saveDir, settings.isPlaylist, formatConfig.extension, settings.resolution, ytdlpUniqueSuffix(site, videoUrl), nameTag);
+
     return [
       'yt-dlp',
       '-f', `"${formatConfig.formatString}"`,
@@ -431,9 +434,11 @@
     return { formatString: `bv*[height<=${res}]+ba/b[height<=${res}]/bv*+ba/b`, mediaOptions: '--merge-output-format mp4', extension: 'mp4' };
   }
 
-  function buildOutputTemplate(dir, isPl, ext, res) {
+  function buildOutputTemplate(dir, isPl, ext, res, uniqueSuffix, nameTag) {
     const resLabel = res === 'audio' ? 'Audio' : `${res}p`;
-    return isPl ? `-o "${dir}%(playlist_title)s/%(playlist_index)03d_%(title)s_${resLabel}.${ext}"` : `-o "${dir}%(title)s_${resLabel}.${ext}"`;
+    return isPl
+      ? `-o "${dir}%(playlist_title)s/%(playlist_index)03d_%(title)s${nameTag}_${resLabel}.${ext}"`
+      : `-o "${dir}%(title)s${uniqueSuffix}${nameTag}_${resLabel}.${ext}"`;
   }
 
   async function executeCommand(command) {

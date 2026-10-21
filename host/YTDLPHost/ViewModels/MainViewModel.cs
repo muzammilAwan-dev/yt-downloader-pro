@@ -21,7 +21,6 @@ namespace YTDLPHost.ViewModels
         private static readonly HttpClient _httpClient = CreateConfiguredHttpClient();
 
         private readonly ObservableCollection<DownloadItemViewModel> _downloads = new();
-        private readonly object _duplicateLock = new(); 
         
         public AppSettings Settings { get; }
 
@@ -70,7 +69,7 @@ namespace YTDLPHost.ViewModels
         private readonly HistorySaver _history;
         private readonly EngineSetup _setup;
         private readonly EngineProvisioner _engine;
-        private readonly CommandIngest _ingest;
+        private readonly DownloadIntake _intake;
         private readonly DownloadQueue _queue;
 
         public MainViewModel(PlatformServices platform)
@@ -83,7 +82,6 @@ namespace YTDLPHost.ViewModels
             _notifier = platform.Notifier;
             _opener = new DownloadOpener(platform.Shell);
             _engine = new EngineProvisioner(AppPaths.Current, _httpClient);
-            _ingest = new CommandIngest(AppPaths.Current);
 
             // Scheduling lives in DownloadQueue (Core). The limit is read from the saved settings each time, as before.
             _queue = new DownloadQueue(_downloads, _ui, () => new YtDlpRunner(), () => AppSettings.Load().MaxConcurrentDownloads);
@@ -93,6 +91,7 @@ namespace YTDLPHost.ViewModels
             _queue.Drained += () => StatusText = "All downloads complete";
 
             _history = new HistorySaver(_ui, () => _downloads.Select(d => d.Task).ToList());
+            _intake = new DownloadIntake(new CommandIngest(AppPaths.Current), _downloads, _ui, _clipboard, AttachTaskObserver);
             _setup = new EngineSetup(_engine, _queue, _downloads, _ui, _clipboard, text => StatusText = text);
 
             InitializeCrashReporting();
@@ -223,60 +222,21 @@ namespace YTDLPHost.ViewModels
 
             try
             {
-                // Decoding and validation live in CommandIngest (the payload is untrusted input).
-                var parsed = _ingest.Parse(rawUrl);
+                // Decoding, validation, duplicate check, cookie file and task creation live in DownloadIntake (the payload is untrusted input).
+                var result = _intake.Submit(rawUrl, vm =>
+                {
+                    HasDownloads = true;
+                    StatusText = $"Added: {vm.DisplayTitle}";
+                });
 
-                if (parsed.Status == IngestStatus.Ignored) return;
-
-                if (parsed.Status == IngestStatus.Blocked)
+                if (result.Status == IntakeStatus.Blocked)
                 {
                     StatusText = "Security Error: Blocked potentially malicious payload.";
-                    _dialogs.Show("YT Downloader Pro - Security Alert", $"A download command was blocked for your security.\n\nReason: {parsed.BlockReason}", DialogKind.Warning);
+                    _dialogs.Show("YT Downloader Pro - Security Alert", $"A download command was blocked for your security.\n\nReason: {result.BlockReason}", DialogKind.Warning);
                     return;
                 }
 
-                var payload = parsed.Payload!;
-                string command = payload.Command;
-
-                lock (_duplicateLock)
-                {
-                    bool isDuplicate = false;
-                    _ui.Invoke(() =>
-                    {
-                        isDuplicate = _downloads.Any(d =>
-                            d.Task.Command == command &&
-                            (d.Task.Status == DownloadStatus.Queued || d.Task.Status == DownloadStatus.Downloading));
-                    });
-
-                    if (isDuplicate)
-                    {
-                        AppLogger.Log("[QUEUE] Exact duplicate command detected in queue. Ignoring ghost echo.");
-                        return;
-                    }
-
-                    var prepared = _ingest.Prepare(payload);
-
-                    var task = new DownloadTask
-                    {
-                        UrlPayload = payload.UrlPayload,
-                        Command = prepared.Command,
-                        CookiePayload = prepared.CookieContent ?? "",
-                        CookieFilePath = prepared.CookieFilePath,
-                        Resolution = CommandInfo.ExtractResolution(prepared.Command),
-                        Title = CommandInfo.ExtractTitleHint(prepared.Command),
-                        Status = DownloadStatus.Queued
-                    };
-
-                    var vm = new DownloadItemViewModel(task, _clipboard);
-                    AttachTaskObserver(vm);
-
-                    _ui.Invoke(() =>
-                    {
-                        _downloads.Add(vm);
-                        HasDownloads = true;
-                        StatusText = $"Added: {vm.DisplayTitle}";
-                    });
-                }
+                if (result.Status != IntakeStatus.Added) return;
 
                 UpdateActiveCount();
                 AppLogger.Log($"[QUEUE] Download task assigned to queue.");

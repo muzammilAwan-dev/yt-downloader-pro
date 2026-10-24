@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, cross-platform]
     paths:
       - 'host/**'
       - 'extension/**'
@@ -19,12 +19,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Version-check script self-test
+        run: python3 -m unittest discover -s tools -p "test_*.py"
       - name: Extension, host and installer versions must match
         run: python3 tools/check_versions.py
 
   test:
-    # The tests link the portable host sources into a plain net8.0 project, so they
-    # run on every target OS. Windows + Linux now; add macos-14 once Phase 3 lands.
+    # The tests reference the portable YTDLPHost.Core project (no WPF), so they run on every
+    # target OS. Windows + Linux now; add macos-14 once Phase 3 lands.
     strategy:
       fail-fast: false
       matrix:

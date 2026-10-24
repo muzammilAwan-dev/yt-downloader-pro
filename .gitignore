@@ -9,6 +9,9 @@ installer/Output/
 *.bat
 *.pem
 *.py
+# ...but the repo tooling is Python and must be tracked (the version check was silently never committed)
+!tools/*.py
+__pycache__/
 
 # Visual Studio / Rider
 .vs/

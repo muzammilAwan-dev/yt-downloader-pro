@@ -42,6 +42,8 @@ namespace YTDLPHost.Native
     /// <param name="Quality">"audio", "custom", or a video height as plain digits ("1080").</param>
     /// <param name="Custom">Raw yt-dlp flags, only with Quality "custom"; they still go through the host's flag allowlist.</param>
     /// <param name="Job">"video" (one URL or playlist) or "channel" (profile / uploads job, needs an ArchiveName).</param>
+    /// <param name="CropKeyframeCuts">Re-encode at the cut points (--force-keyframes-at-cuts). The extension sends false for sites that stream HLS (Twitch).</param>
+    /// <param name="UniqueFilename">Put the video id into the file name (sites whose captions repeat, such as TikTok).</param>
     public sealed record DownloadOptions(
         string Quality,
         string AudioFormat,
@@ -56,7 +58,9 @@ namespace YTDLPHost.Native
         int ConcurrentFragments,
         string? Custom,
         string Job,
-        string? ArchiveName);
+        string? ArchiveName,
+        bool CropKeyframeCuts,
+        bool UniqueFilename);
 
     public sealed record DownloadRequest(string Id, IReadOnlyList<string> Urls, DownloadOptions Options, DownloadAuth? Auth) : NativeRequest(Id);
 

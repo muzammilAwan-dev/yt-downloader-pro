@@ -63,6 +63,30 @@ public class NativeRequestParserTests
         Assert.Null(o.Custom);
         Assert.Equal("video", o.Job);
         Assert.Null(o.ArchiveName);
+        Assert.True(o.CropKeyframeCuts);
+        Assert.False(o.UniqueFilename);
+    }
+
+    [Fact]
+    public void The_two_site_flags_are_read()
+    {
+        var o = Accepted(Download("\"quality\":\"1080\",\"cropKeyframeCuts\":false,\"uniqueFilename\":true")).Options;
+
+        Assert.False(o.CropKeyframeCuts);
+        Assert.True(o.UniqueFilename);
+    }
+
+    [Theory]
+    [InlineData("\"quality\":\"custom\",\"custom\":\"-f b\"")]
+    [InlineData("\"quality\":\"1080\",\"subs\":true")]
+    [InlineData("\"quality\":\"1080\",\"sponsorBlock\":true")]
+    [InlineData("\"quality\":\"1080\",\"playlist\":true")]
+    [InlineData("\"quality\":\"1080\",\"trim\":{\"start\":\"1\"}")]
+    public void A_channel_job_refuses_single_video_options(string options)
+    {
+        var json = Download(options + ",\"job\":\"channel\",\"archiveName\":\"some_channel\"");
+
+        Assert.Equal(NativeErrorCode.BadField, Refused(json).Code);
     }
 
     [Fact]
@@ -240,6 +264,14 @@ public class NativeRequestParserTests
     public void Anything_but_a_plain_http_or_https_url_is_refused(string url)
     {
         var json = $"{{\"v\":1,\"id\":\"d1\",\"type\":\"download\",\"urls\":[\"{url}\"],\"options\":{{\"quality\":\"1080\"}}}}";
+
+        Assert.Equal("urls[0]", Refused(json).Field);
+    }
+
+    [Fact]
+    public void A_double_quote_inside_a_url_is_refused()
+    {
+        var json = "{\"v\":1,\"id\":\"d1\",\"type\":\"download\",\"urls\":[\"https://example.com/a\\\"b\"],\"options\":{\"quality\":\"1080\"}}";
 
         Assert.Equal("urls[0]", Refused(json).Field);
     }

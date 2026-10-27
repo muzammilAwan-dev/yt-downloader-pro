@@ -48,7 +48,7 @@ JSON `null` counts as "absent". Maximum JSON nesting depth: 8.
 
 | Field | Rule |
 |---|---|
-| `urls` | required array, 1-500 entries, each an absolute `http`/`https` URL of 1-2048 characters without spaces or control characters (so a value can never look like an option) |
+| `urls` | required array, 1-500 entries, each an absolute `http`/`https` URL of 1-2048 characters without spaces, control characters or double quotes (so a value can never look like an option). A video job makes one download per URL; a channel job is ONE download: the first URL is the page, the rest are direct item links |
 | `options.quality` | required: `"audio"`, `"custom"`, or a height as digits from 144 to 4320 (`"0720"` is normalised to `"720"`) |
 | `options.audioFormat` | `mp3` (default), `m4a`, `aac`, `opus`, `vorbis`, `flac`, `wav` |
 | `options.subs`, `compat`, `sponsorBlock`, `embedMetadata`, `playlist` | booleans, default `false` |
@@ -57,11 +57,31 @@ JSON `null` counts as "absent". Maximum JSON nesting depth: 8.
 | `options.trim.start` / `end` | times such as `90`, `1:30`, `01:15:30.5`; both empty = no trim |
 | `options.concurrentFragments` | whole number 1-16, default 4 |
 | `options.custom` | raw yt-dlp flags, **required with** `quality: "custom"` and **only** then, max 4096 characters, no control characters. The host still checks them with its flag allowlist before use |
+| `options.cropKeyframeCuts` | boolean, default `true`: re-encode at the cut points (`--force-keyframes-at-cuts`). The extension sends `false` for sites that stream HLS (Twitch) |
+| `options.uniqueFilename` | boolean, default `false`: put the video id in the file name (TikTok-style repeated captions) |
 | `options.job` | `video` (default) or `channel`; a channel job needs `archiveName` (1-80 characters from `A-Z a-z 0-9 . _ -`), other jobs must not have one |
 | `auth.cookies` | Netscape cookie text, at most 2 MB, no NUL characters |
 | `auth.userAgent` | printable ASCII, at most 512 characters |
 
-The extension never sends a **save folder**: the folder is a setting of the host app (to be added in step 2.2).
+A channel job refuses `subs`, `sponsorBlock`, `playlist`, `trim` and `quality: "custom"`.
+
+The extension never sends a **save folder**: it is the host setting `DownloadFolder` in `settings.json` (empty = `~/Downloads/YTDownloaderPro`). Until Phase 3 replaces the path validator, a custom folder must start with a drive letter (`D:\Videos`) or `~`; Unix-style absolute paths are refused.
+
+## Effective choices (the extension's duty)
+
+The options in a request are the choices AFTER per-site gating, because the host knows nothing about individual sites. For example
+`subs` = the user's tick AND the site supports subtitles AND not audio; `playlist` = tick AND site supports playlists; `embedMetadata` =
+setting AND site supports it; `embedThumbnail` = setting (not false) AND site supports it; `sponsorBlock` and `compat` likewise;
+`cropKeyframeCuts` = site flag; `uniqueFilename` = site flag; `trim` only when a start or end time was entered.
+`tools/generate-native-golden.js` holds these derivations next to the extension's current command-building code and is the reference
+for the future `native.js`.
+
+## From request to yt-dlp arguments (step 2.2)
+
+`DownloadRequestMapper.Map` builds the yt-dlp arguments, in the same order and with the same flags the extension builds today (29 golden
+cases generated from the extension's own code prove it). The result also carries a quoted `Command` string that round-trips through
+`CommandTokenizer`; every command is checked by `CommandValidator` before it is returned, so a mapping bug fails closed. `%` in the
+folder is doubled so it can never start a yt-dlp template field.
 
 ## Host -> browser
 

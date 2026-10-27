@@ -101,6 +101,7 @@ namespace YTDLPHost.Native
             if (item.ValueKind != JsonValueKind.String) throw Wrong(field, "a string");
             string url = item.GetString()!;
             if (url.Length == 0 || url.Length > NativeProtocol.MaxUrlLength) throw Bad(field, $"must be 1-{NativeProtocol.MaxUrlLength} characters long");
+            if (url.Contains('"')) throw Bad(field, "must not contain a double quote (write it as %22)");
             foreach (char c in url)
             {
                 if (char.IsControl(c) || char.IsWhiteSpace(c)) throw Bad(field, "must not contain spaces or control characters");
@@ -115,7 +116,8 @@ namespace YTDLPHost.Native
         private static DownloadOptions ParseOptions(Obj o)
         {
             o.RejectUnknown("quality", "audioFormat", "subs", "compat", "sponsorBlock", "embedMetadata", "embedThumbnail",
-                            "playlist", "playlistItems", "trim", "concurrentFragments", "custom", "job", "archiveName");
+                            "playlist", "playlistItems", "trim", "concurrentFragments", "custom", "job", "archiveName",
+                            "cropKeyframeCuts", "uniqueFilename");
 
             string quality = o.RequiredString("quality", 8);
             if (quality != "audio" && quality != "custom")
@@ -128,6 +130,8 @@ namespace YTDLPHost.Native
             string audioFormat = o.OptionalString("audioFormat", 8) ?? "mp3";
             if (!AudioFormats.Contains(audioFormat)) throw Bad("options.audioFormat", "is not a supported audio format");
 
+            bool subs = o.OptionalBool("subs", false);
+            bool sponsorBlock = o.OptionalBool("sponsorBlock", false);
             bool playlist = o.OptionalBool("playlist", false);
             string? playlistItems = EmptyToNull(o.OptionalString("playlistItems", 200));
             if (playlistItems != null)
@@ -159,11 +163,22 @@ namespace YTDLPHost.Native
                 throw Bad("options.archiveName", "is only allowed for a channel job");
             }
 
+            if (job == "channel")
+            {
+                // A channel job is a plain "everything from this page" download; these single-video options do not apply to it.
+                if (quality == "custom") throw Bad("options.quality", "'custom' cannot be used for a channel job");
+                if (subs) throw Bad("options.subs", "is not used by channel jobs");
+                if (sponsorBlock) throw Bad("options.sponsorBlock", "is not used by channel jobs");
+                if (playlist) throw Bad("options.playlist", "is not used by channel jobs");
+                if (trim != null) throw Bad("options.trim", "is not used by channel jobs");
+            }
+
             return new DownloadOptions(
                 quality, audioFormat,
-                o.OptionalBool("subs", false), o.OptionalBool("compat", false), o.OptionalBool("sponsorBlock", false),
+                subs, o.OptionalBool("compat", false), sponsorBlock,
                 o.OptionalBool("embedMetadata", false), o.OptionalBool("embedThumbnail", true),
-                playlist, playlistItems, trim, fragments, custom, job, archiveName);
+                playlist, playlistItems, trim, fragments, custom, job, archiveName,
+                o.OptionalBool("cropKeyframeCuts", true), o.OptionalBool("uniqueFilename", false));
         }
 
         private static TrimRange? ParseTrim(Obj t)

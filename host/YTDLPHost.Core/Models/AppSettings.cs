@@ -20,6 +20,12 @@ namespace YTDLPHost.Models
         // which is right: the upstream defaults are retuned in every release. Only set this as a temporary hotfix.
         public string YoutubePlayerClients { get; set; } = "";
 
+        /// <summary>
+        /// Where downloads from the browser are saved (Native Messaging path, Phase 2). Empty = ~/Downloads/YTDownloaderPro.
+        /// The extension no longer sends a folder: a web-facing component should not choose where files are written.
+        /// </summary>
+        public string DownloadFolder { get; set; } = "";
+
         private static string SettingsPath => Path.Combine(AppPaths.Current.DataDir, "settings.json");
 
         public static AppSettings Load()

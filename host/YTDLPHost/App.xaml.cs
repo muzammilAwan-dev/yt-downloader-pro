@@ -6,6 +6,8 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using YTDLPHost.Models;
+using YTDLPHost.Native;
 using YTDLPHost.Services;
 using YTDLPHost.Wpf;
 using YTDLPHost.ViewModels;
@@ -18,6 +20,7 @@ namespace YTDLPHost
         private MainViewModel? _mainViewModel;
         private MainWindow? _mainWindow;
         private FileSystemWatcher? _payloadWatcher;
+        private NativePipeServer? _nativeServer;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -91,6 +94,14 @@ namespace YTDLPHost
             _mainViewModel = new MainViewModel(WpfPlatform.Create());
             
             _mainViewModel.RequestShowWindow += OnRequestShowWindow;
+
+            // Native Messaging (Phase 2.3): the shim of the browser extension connects here. The ytdlp:// path above keeps working.
+            _nativeServer = new NativePipeServer(
+                NativePipe.NameForCurrentUser(),
+                _mainViewModel.NativeSink,
+                () => new MapperSettings(AppSettings.Load().DownloadFolder),
+                System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0");
+            _nativeServer.Start();
 
             _mainWindow = new MainWindow { DataContext = _mainViewModel };
             _mainWindow.Closing += OnMainWindowClosing;
@@ -172,6 +183,7 @@ namespace YTDLPHost
         protected override void OnExit(ExitEventArgs e)
         {
             _payloadWatcher?.Dispose();
+            _nativeServer?.Dispose();
             _mainViewModel?.Dispose();
             _singleInstanceManager?.Dispose();
             base.OnExit(e);

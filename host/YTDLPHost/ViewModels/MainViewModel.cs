@@ -12,6 +12,7 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using YTDLPHost.Models;
+using YTDLPHost.Native;
 using YTDLPHost.Services;
 
 namespace YTDLPHost.ViewModels
@@ -23,6 +24,9 @@ namespace YTDLPHost.ViewModels
         private readonly ObservableCollection<DownloadItemViewModel> _downloads = new();
         
         public AppSettings Settings { get; }
+
+        /// <summary>Where browser requests from the Native Messaging pipe enter the download list (Phase 2.3).</summary>
+        public INativeDownloadSink NativeSink { get; }
 
         private bool _disposed;
 
@@ -93,6 +97,23 @@ namespace YTDLPHost.ViewModels
             _history = new HistorySaver(_ui, () => _downloads.Select(d => d.Task).ToList());
             _intake = new DownloadIntake(new CommandIngest(AppPaths.Current), _downloads, _ui, _clipboard, AttachTaskObserver);
             _setup = new EngineSetup(_engine, _queue, _downloads, _ui, _clipboard, text => StatusText = text);
+
+            // Browser requests arriving over the Native Messaging pipe: same intake and queue as ProcessUrl, same status text.
+            NativeSink = new NativeDownloadSink(
+                _intake, _downloads, _ui,
+                onAdded: vm =>
+                {
+                    HasDownloads = true;
+                    StatusText = $"Added: {vm.DisplayTitle}";
+                },
+                afterAdd: () =>
+                {
+                    UpdateActiveCount();
+                    TriggerQueueProcessing();
+                },
+                unavailable: () => _setup.HasFailed
+                    ? "YT Downloader Pro cannot start downloads because its first-time setup failed. Check the internet connection and restart the app."
+                    : null);
 
             InitializeCrashReporting();
             AppLogger.Log("[VM] Initializing MainViewModel...");

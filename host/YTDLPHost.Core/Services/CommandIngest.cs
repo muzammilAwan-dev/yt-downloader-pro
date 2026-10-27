@@ -120,6 +120,54 @@ namespace YTDLPHost.Services
             return new PreparedCommand(command, cookieContent, cookieFilePath ?? string.Empty);
         }
 
+        /// <summary>
+        /// Native Messaging path (Phase 2.3): the command arrives already built by DownloadRequestMapper and the User-Agent is plain text,
+        /// not base64. Same rules as <see cref="Prepare"/>: never for YouTube, strict character check, and the COMPLETE command is validated
+        /// again; if either check fails the User-Agent is skipped and the command is returned unchanged. Pure (no files), so the duplicate
+        /// check can use the result before anything is written. <see cref="Prepare"/> is deliberately left as it was.
+        /// </summary>
+        public string WithUserAgent(string command, string? userAgent)
+        {
+            if (string.IsNullOrWhiteSpace(userAgent) || command.Contains("--user-agent") || YtDlpRunner.IsYoutubeCommand(command)) return command;
+
+            string candidate = command + $" --user-agent \"{userAgent}\"";
+            if (IsSafeUserAgent(userAgent) && CommandValidator.TryValidate(candidate, out _))
+            {
+                AppLogger.Log("[COOKIES] Injected native browser User-Agent to match cookies.");
+                return candidate;
+            }
+
+            AppLogger.Log("[SECURITY] Ignored unsafe User-Agent supplied in request.");
+            return command;
+        }
+
+        /// <summary>Native path: writes the session cookies (plain Netscape text) to a temp file. The command passes through unchanged.</summary>
+        public PreparedCommand PrepareNative(string command, string? cookies)
+        {
+            string? cookieContent = null;
+            string? cookieFilePath = null;
+
+            if (!string.IsNullOrWhiteSpace(cookies))
+            {
+                try
+                {
+                    cookieContent = cookies.TrimStart('\uFEFF');
+
+                    Directory.CreateDirectory(_paths.TempDir);
+                    var cookieFile = Path.Combine(_paths.TempDir, $"ytdlp_cookies_{Guid.NewGuid()}.txt");
+                    File.WriteAllText(cookieFile, cookieContent, new UTF8Encoding(false));
+                    cookieFilePath = cookieFile;
+                    AppLogger.Log("[COOKIES] Session cookies provisioned to local temporary storage.");
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Log($"[COOKIES ERROR] Cookie file could not be written: {ex.Message}");
+                }
+            }
+
+            return new PreparedCommand(command, cookieContent, cookieFilePath ?? string.Empty);
+        }
+
         /// <summary>Printable ASCII only, no quote or backslash, bounded length. Real browser UAs fit easily.</summary>
         internal static bool IsSafeUserAgent(string ua)
         {

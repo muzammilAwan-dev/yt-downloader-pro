@@ -6,7 +6,7 @@ namespace YTDLPHost.Services
 {
     public enum IntakeStatus { Ignored, Blocked, Duplicate, Added }
 
-    /// <param name="Item">The new list item when <see cref="Status"/> is Added, otherwise null.</param>
+    /// <param name="Item">The new list item when <see cref="Status"/> is Added; for <see cref="DownloadIntake.SubmitNative"/> also the existing item when the status is Duplicate; otherwise null.</param>
     /// <param name="BlockReason">The validator's reason when <see cref="Status"/> is Blocked, otherwise null.</param>
     public sealed record IntakeResult(IntakeStatus Status, DownloadItemViewModel? Item = null, string? BlockReason = null);
 
@@ -74,6 +74,67 @@ namespace YTDLPHost.Services
                 var task = new DownloadTask
                 {
                     UrlPayload = payload.UrlPayload,
+                    Command = prepared.Command,
+                    CookiePayload = prepared.CookieContent ?? "",
+                    CookieFilePath = prepared.CookieFilePath,
+                    Resolution = CommandInfo.ExtractResolution(prepared.Command),
+                    Title = CommandInfo.ExtractTitleHint(prepared.Command),
+                    Status = DownloadStatus.Queued
+                };
+
+                var vm = new DownloadItemViewModel(task, _clipboard);
+                _attach?.Invoke(vm);
+
+                _ui.Invoke(() =>
+                {
+                    _downloads.Add(vm);
+                    onAdded?.Invoke(vm);
+                });
+
+                return new IntakeResult(IntakeStatus.Added, vm);
+            }
+        }
+
+        /// <summary>
+        /// The Native Messaging twin of <see cref="Submit"/> (Phase 2.3): the command was built by DownloadRequestMapper, the cookies and
+        /// User-Agent are plain text. Same behavior otherwise: the command is validated again, the duplicate check runs BEFORE any cookie
+        /// file is written, and check plus add happen under the same lock. One difference on purpose: for a duplicate, the result carries the
+        /// item that is already downloading it (<see cref="IntakeResult.Item"/>), so the browser can follow that item's progress.
+        /// Call it on the UI thread (see <see cref="Native.NativeDownloadSink"/>): the lock is held while this waits for that thread.
+        /// </summary>
+        public IntakeResult SubmitNative(string command, string? cookies, string? userAgent, Action<DownloadItemViewModel>? onAdded = null)
+        {
+            if (string.IsNullOrWhiteSpace(command)) return new IntakeResult(IntakeStatus.Ignored);
+            if (!CommandValidator.TryValidate(command, out var reason))
+            {
+                AppLogger.Log($"[SECURITY] Blocked native command: {reason}");
+                return new IntakeResult(IntakeStatus.Blocked, BlockReason: reason);
+            }
+
+            // Compared in the same form the stored tasks have (User-Agent already appended), so repeated cookie flows are detected too.
+            string finalCommand = _ingest.WithUserAgent(command, userAgent);
+
+            lock (_gate)
+            {
+                DownloadItemViewModel? existing = null;
+                _ui.Invoke(() =>
+                {
+                    existing = _downloads.FirstOrDefault(d =>
+                        d.Task.Command == finalCommand &&
+                        (d.Task.Status == DownloadStatus.Queued || d.Task.Status == DownloadStatus.Downloading));
+                });
+
+                if (existing != null)
+                {
+                    AppLogger.Log("[QUEUE] Exact duplicate native command detected in queue. Following the existing download.");
+                    return new IntakeResult(IntakeStatus.Duplicate, existing);
+                }
+
+                var prepared = _ingest.PrepareNative(finalCommand, cookies);
+
+                var task = new DownloadTask
+                {
+                    UrlPayload = "",
                     Command = prepared.Command,
                     CookiePayload = prepared.CookieContent ?? "",
                     CookieFilePath = prepared.CookieFilePath,

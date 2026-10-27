@@ -1,7 +1,7 @@
 # Browser <-> host message protocol (version 1)
 
-Status: contract and framing implemented in `host/YTDLPHost.Core/Native/` and unit-tested (Phase 2, step 2.1). The shim, the
-app-side server and the extension client are later steps; nothing in the running app uses this yet.
+Status: contract and framing implemented in `host/YTDLPHost.Core/Native/` and unit-tested (Phase 2, step 2.1); request -> yt-dlp
+arguments in step 2.2; the app-side pipe server in step 2.3 (see "App side" below). The shim and the extension client are later steps.
 
 ## Transport (verified against the Chrome Native Messaging docs)
 
@@ -95,6 +95,28 @@ folder is doubled so it can never start a yt-dlp template field.
 | `error` | `reason` (cut to 300 characters) |
 
 All carry `"v":1` and the request `id`, and are far below Chrome's 1 MB limit.
+
+## App side (step 2.3)
+
+The running app listens on a **named pipe** `YTDLPHost_Native_<user>` (`NativePipe.NameForCurrentUser()`; letters, digits, `_ - .` of the
+Windows user name, at most 32). The pipe is created with `PipeOptions.CurrentUserOnly`, so only the same user (account AND elevation level on
+Windows) can connect; the shim must open it with the same option (`NativePipe.ClientOptions`). It carries the **same length-prefixed JSON
+frames** as the browser's stdio, so the shim only copies frames in both directions after checking the caller's origin.
+
+- Up to 8 shims at once. A broken frame (truncated, or larger than 8 MB) closes that connection.
+- `hello` is answered at once. A `download` is parsed, mapped (`DownloadRequestMapper`, folder from `settings.json`), and queued through the
+  same intake and queue as a `ytdlp://` link (the command is validated again; cookies go to a temp file, never into the command; the
+  browser's User-Agent is added only for non-YouTube sites and only if it passes the character check). Then `accepted`.
+- A request the mapper refuses gets `rejected` (`bad_field`). If the app cannot take downloads at all (first-time setup failed) the
+  browser gets `error` instead of `accepted`.
+- **One request, one final message.** A video job with several URLs makes several downloads; `progress` is their average (`phase` reads
+  "2/5 finished"), and the end is ONE `done` (every download finished; `note` only for a single download), ONE `done` with a note
+  such as "3 finished, 1 failed: reason" (some failed), or ONE `error` (all failed: "2 of 2 downloads failed: reason").
+- Sending the same download again while it is queued or running does not add a second item: the browser follows the existing one.
+- `progress` is sent when something changed, polled every 500 ms. A paused download keeps reporting `phase: "Paused"`. A download that was
+  cancelled or removed in the app ends with `error`.
+- Closing the connection stops the reporting only; **downloads belong to the app** and carry on.
+- The app does not bring its window to the front for a browser download (the old `ytdlp://` path did).
 
 ## Notes for later steps
 

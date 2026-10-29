@@ -95,6 +95,20 @@ namespace YTDLPHost
                 System.Windows.MessageBox.Show(this, "Protocol handler unregistered.", "YT Downloader Pro", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             };
 
+            var updateEngineItem = new MenuItem
+            {
+                Header = "Update engine (yt-dlp)...",
+                Style = itemStyle,
+                ToolTip = new TextBlock { Text = EngineUpdater.TroubleshootingHint, TextWrapping = TextWrapping.Wrap, MaxWidth = 320 }
+            };
+            updateEngineItem.Click += (s, args) =>
+            {
+                if (DataContext is MainViewModel vm)
+                {
+                    vm.UpdateEngineCommand.Execute(null);
+                }
+            };
+
             var exitItem = new MenuItem { Header = "Exit", Style = itemStyle };
             exitItem.Click += (s, args) =>
             {
@@ -106,6 +120,8 @@ namespace YTDLPHost
 
             menu.Items.Add(registerItem);
             menu.Items.Add(unregisterItem);
+            menu.Items.Add(new Separator { Style = (Style)FindResource("DarkMenuSeparator") });
+            menu.Items.Add(updateEngineItem);
             menu.Items.Add(new Separator { Style = (Style)FindResource("DarkMenuSeparator") });
             menu.Items.Add(exitItem);
 

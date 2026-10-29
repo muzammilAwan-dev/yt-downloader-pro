@@ -42,6 +42,11 @@ namespace YTDLPHost.ViewModels
         private bool _isDependenciesReady;
         private bool _hasDependencyError;
 
+        // Engine (yt-dlp) updates: at launch, once a day while the app stays open, and on demand from the settings menu.
+        private EngineUpdater? _engineUpdater;
+        private CancellationTokenSource? _engineUpdateCts;
+        private volatile bool _engineUpdating;
+
         [ObservableProperty] private bool _isWindowVisible = true;
         [ObservableProperty] private string _statusText = "Ready";
         [ObservableProperty] private int _activeDownloadCount = 0;
@@ -64,6 +69,7 @@ namespace YTDLPHost.ViewModels
         public IRelayCommand ExitCommand { get; }
         public IRelayCommand MinimizeToTrayCommand { get; }
         public IRelayCommand SaveSettingsCommand { get; }
+        public IAsyncRelayCommand UpdateEngineCommand { get; }
 
         public event EventHandler? RequestShowWindow;
         public event EventHandler<DownloadItemViewModel>? RequestScrollToItem;
@@ -98,6 +104,7 @@ namespace YTDLPHost.ViewModels
             ClearCompletedCommand = new RelayCommand(ClearCompleted);
             ShowWindowCommand = new RelayCommand(() => RequestShowWindow?.Invoke(this, EventArgs.Empty));
             ExitCommand = new RelayCommand(ExitApplication);
+            UpdateEngineCommand = new AsyncRelayCommand(UpdateEngineManuallyAsync);
             
             SaveSettingsCommand = new RelayCommand(async () => 
             {
@@ -326,7 +333,7 @@ namespace YTDLPHost.ViewModels
                 {
                     AppLogger.Log("[DEPENDENCIES] Core dependencies located securely.");
                     _isDependenciesReady = true;
-                    _ = Task.Run(() => UpdateYtDlp(ytdlpPath, engineDir));
+                    StartEngineUpdates(ytdlpPath, engineDir);
                     TriggerQueueProcessing(); 
                     return;
                 }
@@ -456,7 +463,7 @@ namespace YTDLPHost.ViewModels
                 });
 
                 _isDependenciesReady = true;
-                _ = Task.Run(() => UpdateYtDlp(ytdlpPath, engineDir));
+                StartEngineUpdates(ytdlpPath, engineDir);
                 TriggerQueueProcessing();
             }
             catch (Exception ex)
@@ -486,57 +493,98 @@ namespace YTDLPHost.ViewModels
             return channel is "stable" or "nightly" or "master" ? channel : "nightly";
         }
 
-        private void UpdateYtDlp(string ytdlpPath, string engineDir)
+        private void StartEngineUpdates(string ytdlpPath, string engineDir)
         {
+            if (_engineUpdater != null) return;
+
+            _engineUpdater = new EngineUpdater(ytdlpPath, engineDir, GetUpdateChannel);
+            _engineUpdateCts = new CancellationTokenSource();
+            var token = _engineUpdateCts.Token;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    // Launch check: runs beside the queue as before (a few seconds, no waiting for it), then the daily re-check.
+                    await _engineUpdater.UpdateAsync(token);
+                    await EngineUpdateLoopAsync(token);
+                }
+                catch (OperationCanceledException) { }
+                catch (Exception ex)
+                {
+                    AppLogger.Log($"[DEPENDENCIES ERROR] Engine update scheduler stopped: {ex.Message}");
+                }
+            });
+        }
+
+        /// <summary>The app is often left running in the tray for days, so a check at launch alone would miss YouTube fixes.</summary>
+        private async Task EngineUpdateLoopAsync(CancellationToken token)
+        {
+            var delay = EngineUpdater.CheckInterval;
+            while (!token.IsCancellationRequested && !_disposed)
+            {
+                await Task.Delay(delay, token);
+                var result = await RunEngineUpdateIfIdleAsync(token);
+                delay = result == null ? EngineUpdater.BusyRetryInterval : EngineUpdater.CheckInterval;
+            }
+        }
+
+        /// <summary>
+        /// Runs one update while no download is active; returns null (nothing was done) when one is, or when another update or the
+        /// first-time setup is in progress. The queue is held back first and the running downloads are checked second, so a download
+        /// cannot slip in between the check and the start of the update.
+        /// </summary>
+        private async Task<EngineUpdateResult?> RunEngineUpdateIfIdleAsync(CancellationToken token)
+        {
+            if (_engineUpdater == null || !_isDependenciesReady || _engineUpdating) return null;
+
+            _engineUpdating = true;
             try
             {
-                var psi = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = ytdlpPath,
-                    Arguments = $"--update-to {GetUpdateChannel()}",
-                    CreateNoWindow = true,
-                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    WorkingDirectory = engineDir
-                };
-
-                psi.Environment.Remove("WT_SESSION");
-                psi.Environment.Remove("WT_PROFILE_ID");
-
-                using var proc = System.Diagnostics.Process.Start(psi);
-                if (proc != null)
-                {
-                    // FIX: RedirectStandardInput is never set to true above, so calling
-                    // proc.StandardInput used to throw InvalidOperationException here on
-                    // every run, get swallowed by the catch block below, and silently
-                    // skip the yt-dlp self-update check every single time.
-                    var outputTask = proc.StandardOutput.ReadToEndAsync();
-                    
-                    if (proc.WaitForExit(30000))
-                    {
-                        string output = outputTask.Result;
-                        if (output.Contains("up to date", StringComparison.OrdinalIgnoreCase))
-                        {
-                            AppLogger.Log("[DEPENDENCIES] yt-dlp is synchronized with the latest release.");
-                        }
-                        else if (output.Contains("Updated yt-dlp", StringComparison.OrdinalIgnoreCase))
-                        {
-                            AppLogger.Log("[DEPENDENCIES] yt-dlp successfully patched to the latest version.");
-                        }
-                    }
-                    else
-                    {
-                        proc.Kill(); 
-                        AppLogger.Log("[DEPENDENCIES ERROR] Background update process hung and was terminated.");
-                    }
-                }
+                if (!_activeRunners.IsEmpty) return null;
+                return await _engineUpdater.UpdateAsync(token);
             }
-            catch (Exception ex)
+            finally
             {
-                AppLogger.Log($"[DEPENDENCIES ERROR] Execution of the update sub-process failed: {ex.Message}");
+                _engineUpdating = false;
+                TriggerQueueProcessing();
             }
+        }
+
+        private async Task UpdateEngineManuallyAsync()
+        {
+            const string title = "YT Downloader Pro";
+
+            if (_engineUpdater == null || !_isDependenciesReady)
+            {
+                System.Windows.MessageBox.Show("The engine is still being set up. Try again in a moment.", title,
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                return;
+            }
+
+            string previousStatus = StatusText;
+            StatusText = "Updating engine...";
+            EngineUpdateResult? result;
+            try
+            {
+                result = await RunEngineUpdateIfIdleAsync(CancellationToken.None);
+            }
+            finally
+            {
+                StatusText = previousStatus;
+            }
+
+            if (result == null)
+            {
+                System.Windows.MessageBox.Show(
+                    "Downloads are running, and the update replaces the engine file. Please try again when they have finished." +
+                    Environment.NewLine + Environment.NewLine + EngineUpdater.TroubleshootingHint,
+                    title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                return;
+            }
+
+            System.Windows.MessageBox.Show(result.ToDialogText(), title, System.Windows.MessageBoxButton.OK,
+                result.Status == EngineUpdateStatus.Failed ? System.Windows.MessageBoxImage.Warning : System.Windows.MessageBoxImage.Information);
         }
 
         private string _lastBlockReason = string.Empty;
@@ -735,7 +783,8 @@ namespace YTDLPHost.ViewModels
                 {
                     _queueNeedsRestart = false; 
 
-                    if (!_isDependenciesReady) break;
+                    // Not while the engine is being set up, and not while an engine update is replacing the yt-dlp file.
+                    if (!_isDependenciesReady || _engineUpdating) break;
 
                     var savedSettings = AppSettings.Load();
                     int maxAllowed = savedSettings.MaxConcurrentDownloads;
@@ -1153,6 +1202,8 @@ namespace YTDLPHost.ViewModels
             _disposed = true;
             _saveHistoryCts?.Cancel();
             _saveHistoryCts?.Dispose(); 
+            _engineUpdateCts?.Cancel();
+            _engineUpdateCts?.Dispose();
             AppLogger.Shutdown();
             foreach (var runner in _activeRunners.Values) runner.Dispose();
             foreach (var vm in _downloads) CleanupCookieFile(vm.Task);

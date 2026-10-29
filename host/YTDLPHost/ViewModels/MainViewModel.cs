@@ -52,6 +52,7 @@ namespace YTDLPHost.ViewModels
         public IRelayCommand ExitCommand { get; }
         public IRelayCommand MinimizeToTrayCommand { get; }
         public IRelayCommand SaveSettingsCommand { get; }
+        public IAsyncRelayCommand UpdateEngineCommand { get; }
 
         public event EventHandler? RequestShowWindow;
         public event EventHandler<DownloadItemViewModel>? RequestScrollToItem;
@@ -75,6 +76,7 @@ namespace YTDLPHost.ViewModels
         private readonly EngineProvisioner _engine;
         private readonly DownloadIntake _intake;
         private readonly DownloadQueue _queue;
+        private readonly EngineUpdateScheduler _updateScheduler;
 
         public MainViewModel(PlatformServices platform)
         {
@@ -93,6 +95,11 @@ namespace YTDLPHost.ViewModels
             _queue.ItemChanged += _ => UpdateActiveCount();
             _queue.ItemCompleted += OnQueueItemCompleted;
             _queue.Drained += () => StatusText = "All downloads complete";
+
+            // Engine (yt-dlp) updates: at launch, once a day while the app stays open, and on demand from the settings menu.
+            // The queue is held while an update replaces the engine file, so no download runs under it.
+            _updateScheduler = new EngineUpdateScheduler(_queue, _engine.CreateUpdater().UpdateAsync);
+            _engine.BackgroundUpdateStarter = _updateScheduler.Start;
 
             _history = new HistorySaver(_ui, () => _downloads.Select(d => d.Task).ToList());
             _intake = new DownloadIntake(new CommandIngest(AppPaths.Current), _downloads, _ui, _clipboard, AttachTaskObserver);
@@ -140,6 +147,7 @@ namespace YTDLPHost.ViewModels
             ExitCommand = new RelayCommand(ExitApplication);
             
             SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
+            UpdateEngineCommand = new AsyncRelayCommand(UpdateEngineManuallyAsync);
             
             MinimizeToTrayCommand = new RelayCommand(() => 
             {
@@ -374,10 +382,39 @@ namespace YTDLPHost.ViewModels
             _lifetime.Shutdown();
         }
 
+        private async Task UpdateEngineManuallyAsync()
+        {
+            const string title = "YT Downloader Pro";
+
+            string previousStatus = StatusText;
+            StatusText = "Updating engine...";
+            EngineUpdateResult? result;
+            try
+            {
+                result = await _updateScheduler.RunIfIdleAsync();
+            }
+            finally
+            {
+                StatusText = previousStatus;
+            }
+
+            if (result == null)
+            {
+                _dialogs.Show(title,
+                    "Downloads are running (or the engine is still being set up), and the update replaces the engine file. Please try again when they have finished." +
+                    Environment.NewLine + Environment.NewLine + EngineUpdater.TroubleshootingHint,
+                    DialogKind.Info);
+                return;
+            }
+
+            _dialogs.Show(title, result.ToDialogText(), result.Status == EngineUpdateStatus.Failed ? DialogKind.Warning : DialogKind.Info);
+        }
+
         public void Dispose()
         {
             if (_disposed) return;
             _disposed = true;
+            _updateScheduler.Dispose();
             _history.Dispose(); // writes a save that is still waiting
             AppLogger.Shutdown();
             _queue.Dispose();

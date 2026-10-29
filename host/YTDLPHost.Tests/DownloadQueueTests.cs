@@ -31,6 +31,56 @@ public class DownloadQueueTests
 
     private static Task Settle() => Task.Delay(150);
 
+    // ---------------------------------------------------------------- engine update hold (IEngineUpdateGate)
+
+    [Fact]
+    public async Task A_hold_is_refused_until_the_engine_is_ready()
+    {
+        using var h = new QueueHarness(max: 1, ready: false);
+
+        Assert.False(h.Queue.TryHoldIfIdle());
+
+        h.Queue.MarkEngineReady();
+        Assert.True(h.Queue.TryHoldIfIdle());
+        h.Queue.Release();
+        await Settle();
+    }
+
+    [Fact]
+    public async Task A_hold_is_refused_while_a_download_runs_and_granted_after_it_ends()
+    {
+        using var h = new QueueHarness(max: 1);
+        h.Add(Cmd(1));
+        h.Queue.Trigger();
+        await WaitFor(() => h.RunnerCount == 1, "runner");
+
+        Assert.False(h.Queue.TryHoldIfIdle());
+
+        h.Runner(0).Finish();
+        await WaitFor(() => h.Queue.ActiveCount == 0, "slot freed");
+        Assert.True(h.Queue.TryHoldIfIdle());
+        h.Queue.Release();
+    }
+
+    [Fact]
+    public async Task A_held_queue_starts_nothing_until_it_is_released()
+    {
+        using var h = new QueueHarness(max: 2);
+        Assert.True(h.Queue.TryHoldIfIdle());
+        var a = h.Add(Cmd(1));
+
+        h.Queue.Trigger();
+        await Settle();
+        Assert.Equal(0, h.RunnerCount);
+        Assert.Equal(DownloadStatus.Queued, a.Task.Status);
+
+        h.Queue.Release();
+
+        await WaitFor(() => h.RunnerCount == 1, "runner after the release");
+        await WaitFor(() => h.Queue.ActiveCount == 1, "slot in use");
+        Assert.False(h.Queue.TryHoldIfIdle()); // and it is busy again
+    }
+
     // ---------------------------------------------------------------- tests
 
     [Fact]

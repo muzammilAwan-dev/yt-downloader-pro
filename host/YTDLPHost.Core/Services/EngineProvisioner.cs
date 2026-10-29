@@ -139,8 +139,17 @@ namespace YTDLPHost.Services
             }
         }
 
-        /// <summary>Fire-and-forget "yt-dlp --update-to &lt;channel&gt;" so the engine stays current without blocking startup.</summary>
-        public void StartBackgroundUpdate() => _ = Task.Run(UpdateYtDlp);
+        /// <summary>
+        /// Set by the app: starts the engine update checks (at launch, then daily). Called once the engine is installed and the queue may run.
+        /// Nothing happens while it is unset (tests).
+        /// </summary>
+        public Action? BackgroundUpdateStarter { get; set; }
+
+        public void StartBackgroundUpdate() => BackgroundUpdateStarter?.Invoke();
+
+        /// <summary>The updater for this engine folder; it reads the release channel from the saved settings on every run.</summary>
+        public EngineUpdater CreateUpdater() =>
+            new EngineUpdater(YtDlpPath, EngineDir, () => NormalizeUpdateChannel(AppSettings.Load().UpdateChannel));
 
         private async Task<byte[]> DownloadFileWithRetryAsync(string url, int maxRetries = 3)
         {
@@ -166,55 +175,6 @@ namespace YTDLPHost.Services
         {
             var channel = (raw ?? "").Trim().ToLowerInvariant();
             return channel is "stable" or "nightly" or "master" ? channel : "nightly";
-        }
-
-        private void UpdateYtDlp()
-        {
-            try
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = YtDlpPath,
-                    Arguments = $"--update-to {NormalizeUpdateChannel(AppSettings.Load().UpdateChannel)}",
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    WorkingDirectory = EngineDir
-                };
-
-                psi.Environment.Remove("WT_SESSION");
-                psi.Environment.Remove("WT_PROFILE_ID");
-
-                using var proc = Process.Start(psi);
-                if (proc != null)
-                {
-                    var outputTask = proc.StandardOutput.ReadToEndAsync();
-
-                    if (proc.WaitForExit(30000))
-                    {
-                        string output = outputTask.Result;
-                        if (output.Contains("up to date", StringComparison.OrdinalIgnoreCase))
-                        {
-                            AppLogger.Log("[DEPENDENCIES] yt-dlp is synchronized with the latest release.");
-                        }
-                        else if (output.Contains("Updated yt-dlp", StringComparison.OrdinalIgnoreCase))
-                        {
-                            AppLogger.Log("[DEPENDENCIES] yt-dlp successfully patched to the latest version.");
-                        }
-                    }
-                    else
-                    {
-                        proc.Kill();
-                        AppLogger.Log("[DEPENDENCIES ERROR] Background update process hung and was terminated.");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                AppLogger.Log($"[DEPENDENCIES ERROR] Execution of the update sub-process failed: {ex.Message}");
-            }
         }
     }
 }

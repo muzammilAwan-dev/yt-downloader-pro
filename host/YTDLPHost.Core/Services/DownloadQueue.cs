@@ -18,7 +18,7 @@ namespace YTDLPHost.Services
     ///  * Awaits here use ConfigureAwait(false) on purpose: nothing after an await needs the UI context
     ///    because all UI work goes through the dispatcher.
     /// </summary>
-    public sealed class DownloadQueue : IDisposable
+    public sealed class DownloadQueue : IDisposable, IEngineUpdateGate
     {
         public const string PhaseQueued = "Queued";
         public const string PhaseStarting = "Starting...";
@@ -37,6 +37,7 @@ namespace YTDLPHost.Services
         private int _running;     // a scheduling loop is active
         private int _dirty;       // something changed since the loop last looked
         private int _engineReady; // yt-dlp/ffmpeg are installed, so downloads may start
+        private int _held;        // an engine update is replacing yt-dlp: start nothing new until it is done
         private int _disposed;
 
         /// <summary>An item was just switched to Downloading (UI thread, inside the selection step).</summary>
@@ -77,6 +78,28 @@ namespace YTDLPHost.Services
         /// <summary>Allows downloads to start. Call <see cref="Trigger"/> afterwards (or wait for the next one).</summary>
         public void MarkEngineReady() => Interlocked.Exchange(ref _engineReady, 1);
 
+        /// <summary>
+        /// Used by the engine update (see <see cref="EngineUpdateScheduler"/>): holds the queue so no new download starts, and returns true
+        /// only if nothing is running right now. Refused (false, nothing changed) when a download is running, when the engine is not
+        /// ready yet, or when it is already held. Hold first, check second: that order is what keeps a download from slipping in.
+        /// </summary>
+        public bool TryHoldIfIdle()
+        {
+            if (IsDisposed || Volatile.Read(ref _engineReady) == 0) return false;
+            if (Interlocked.CompareExchange(ref _held, 1, 0) != 0) return false;
+            if (_active.Count == 0) return true;
+
+            Release();
+            return false;
+        }
+
+        /// <summary>Ends the hold from <see cref="TryHoldIfIdle"/> and wakes the queue.</summary>
+        public void Release()
+        {
+            Interlocked.Exchange(ref _held, 0);
+            Trigger();
+        }
+
         /// <summary>Asks the queue to look for work. Cheap, thread-safe, and safe to call as often as you like.</summary>
         public void Trigger()
         {
@@ -98,12 +121,12 @@ namespace YTDLPHost.Services
                 while (!IsDisposed)
                 {
                     Interlocked.Exchange(ref _dirty, 0);
-                    if (Volatile.Read(ref _engineReady) == 0) break;
+                    if (Volatile.Read(ref _engineReady) == 0 || Volatile.Read(ref _held) == 1) break;
 
                     int max = ReadMaxConcurrent();
                     bool startedAny = false;
 
-                    while (_active.Count < max && !IsDisposed)
+                    while (_active.Count < max && !IsDisposed && Volatile.Read(ref _held) == 0)
                     {
                         var next = SelectAndMarkNext();
                         if (next == null) break;

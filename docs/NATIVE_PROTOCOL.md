@@ -118,6 +118,25 @@ frames** as the browser's stdio, so the shim only copies frames in both directio
 - Closing the connection stops the reporting only; **downloads belong to the app** and carry on.
 - The app does not bring its window to the front for a browser download (the old `ytdlp://` path did).
 
+## Shim (step 2.4)
+
+`host/YTDLPHost.Shim` builds `ytdlp-shim.exe`, the program the browser starts (one process per `connectNative` port). It never reads the JSON.
+
+1. **Who started me.** The first argument must be exactly one of the origins listed in `allowed-origins.txt` next to the exe (one per line,
+   `#` comments allowed, trailing slash included, for example `chrome-extension://<id>/`). Anything else: exit code 2, nothing is
+   forwarded. This is the second lock behind the manifest's `allowed_origins`. Chrome on Windows may add `--parent-window=...` after the
+   origin; it is ignored. Firefox passes different arguments (manifest path and extension id) and is not supported yet.
+   The installer or the app writes `allowed-origins.txt` together with the host manifest (step 2.6). Without the file nothing starts.
+2. **Find or start the app.** Connects to the pipe `NativePipe.NameForCurrentUser()` with `NativePipe.ClientOptions` (same user only). If
+   nobody listens, it starts `YTDLPHost.exe` from its own folder and retries for up to 20 s. A pipe that exists but belongs to another user or
+   elevation level is not retried (exit code 4; the app probably runs as administrator).
+3. **Copy frames both ways** until either side ends, enforcing the size limits (8 MB from the browser, 1 MB to the browser). A broken frame ends the
+   bridge; the browser sees the port disconnect, and the extension treats that as "host unavailable".
+4. **stdout is only for frames.** `Console.Out` is replaced by a null writer; everything else goes to `%LOCALAPPDATA%\YTDownloaderProEngine\shim.log`
+   (trimmed at 200 KB).
+
+Exit codes: 0 normal end, 2 caller not allowed, 3 app unreachable or could not be started, 4 app refused the connection.
+
 ## Notes for later steps
 
 - Step 2.2 maps a validated `DownloadRequest` to a yt-dlp argument list (reusing `YtDlpCommandBuilder`), with golden tests against

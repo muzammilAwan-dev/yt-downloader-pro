@@ -22,4 +22,9 @@
     <ProjectReference Include="..\YTDLPHost.Core\YTDLPHost.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The shim is an exe (and Native AOT), so its logic is compiled in here instead of referenced; Program.cs stays out. -->
+    <Compile Include="..\YTDLPHost.Shim\ShimBridge.cs" Link="Shim\ShimBridge.cs" />
+  </ItemGroup>
+
 </Project>

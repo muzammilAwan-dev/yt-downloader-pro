@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The Native Messaging host the browser starts (step 2.4). It only checks WHO started it, finds or starts the app, and copies
+    length-prefixed frames between the browser (stdin/stdout) and the app (named pipe). It never reads the JSON.
+
+    Published as Native AOT by default: a small exe that starts in tens of milliseconds and needs no .NET runtime. That needs the
+    C++ build tools (Visual Studio "Desktop development with C++"). Without them, publish the same code as a self-contained single file:
+        dotnet publish host/YTDLPHost.Shim -c Release -r win-x64 -p:PublishAot=false -p:PublishSingleFile=true --self-contained
+    Only NativeFrame.cs and NativePipe.cs are shared with the app (plain stream and pipe code). Do NOT reference YTDLPHost.Core: its
+    JSON code uses reflection, which Native AOT does not like.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>ytdlp-shim</AssemblyName>
+    <RootNamespace>YTDLPHost.Shim</RootNamespace>
+    <PublishAot Condition="'$(PublishAot)' == ''">true</PublishAot>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\YTDLPHost.Core\Native\NativeFrame.cs" Link="Shared\NativeFrame.cs" />
+    <Compile Include="..\YTDLPHost.Core\Native\NativePipe.cs" Link="Shared\NativePipe.cs" />
+  </ItemGroup>
+
+</Project>

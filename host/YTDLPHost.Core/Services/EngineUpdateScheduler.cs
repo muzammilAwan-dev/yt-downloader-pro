@@ -85,7 +85,7 @@ namespace YTDLPHost.Services
         }
 
         /// <summary>A failing update must never end the daily loop; cancellation still does.</summary>
-        private static async Task<T?> GuardedAsync<T>(Func<Task<T>> action) where T : class
+        private static async Task<T?> GuardedAsync<T>(Func<Task<T>> action)
         {
             try
             {
@@ -98,7 +98,7 @@ namespace YTDLPHost.Services
             catch (Exception ex)
             {
                 AppLogger.Log($"[DEPENDENCIES ERROR] Scheduled engine update failed: {ex.Message}");
-                return null;
+                return default;
             }
         }
 

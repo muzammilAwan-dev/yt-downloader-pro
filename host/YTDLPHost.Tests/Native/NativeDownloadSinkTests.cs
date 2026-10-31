@@ -8,12 +8,27 @@ using YTDLPHost.ViewModels;
 
 namespace YTDLPHost.Tests.Native;
 
-/// <summary>Phase 2, step 2.3: browser requests enter the real intake and list. Uses the sandboxed AppPaths from TestEnvironment.</summary>
+/// <summary>Phase 2, step 2.3: browser requests enter the real intake and list. Cookie files go to a private temp folder per test.</summary>
 public class NativeDownloadSinkTests : IDisposable
 {
     private const string Vimeo = "https://vimeo.com/123456789";
     private const string YouTube = "https://www.youtube.com/watch?v=abcdefghijk";
 
+    // Own folder per test: the global AppPaths.Current is swapped by AppPathsTests while other test classes run, so using it here raced with that test.
+    private sealed class TestPaths : IAppPaths
+    {
+        private readonly string _root;
+        public TestPaths(string root) => _root = root;
+        public string HomeDir => Path.Combine(_root, "home");
+        public string DownloadsDir => Path.Combine(HomeDir, "Downloads");
+        public string EngineDir => Path.Combine(_root, "engine");
+        public string DataDir => Path.Combine(_root, "data");
+        public string LogsDir => Path.Combine(_root, "logs");
+        public string PayloadsDir => Path.Combine(_root, "payloads");
+        public string TempDir => Path.Combine(_root, "tmp");
+    }
+
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "ytdlp-sink-tests-" + Guid.NewGuid().ToString("N"));
     private readonly ObservableCollection<DownloadItemViewModel> _list = new();
     private readonly List<string> _added = new();
     private int _afterAdd;
@@ -22,7 +37,7 @@ public class NativeDownloadSinkTests : IDisposable
     private NativeDownloadSink Sink()
     {
         var ui = new InlineUiDispatcher();
-        var intake = new DownloadIntake(new CommandIngest(AppPaths.Current), _list, ui);
+        var intake = new DownloadIntake(new CommandIngest(new TestPaths(_root)), _list, ui);
         return new NativeDownloadSink(intake, _list, ui, vm => _added.Add(vm.Task.Command), () => _afterAdd++, () => _unavailable);
     }
 
@@ -42,10 +57,7 @@ public class NativeDownloadSinkTests : IDisposable
 
     public void Dispose()
     {
-        foreach (var item in _list)
-        {
-            try { if (item.Task.CookieFilePath.Length > 0 && File.Exists(item.Task.CookieFilePath)) File.Delete(item.Task.CookieFilePath); } catch { /* best effort */ }
-        }
+        try { if (Directory.Exists(_root)) Directory.Delete(_root, true); } catch { /* best effort */ }
     }
 
     [Fact]

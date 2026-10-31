@@ -74,3 +74,28 @@ jobs:
         with:
           name: YTDLPHost-Release
           path: ./publish/YTDLPHost.exe
+
+  shim:
+    # Step 2.4: the Native Messaging shim, published as Native AOT. The C++ build tools are preinstalled on windows-latest.
+    # Nothing depends on this job yet; it proves the AOT publish works and shows the exe size.
+    needs: [test]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish shim (Native AOT)
+        run: dotnet publish host/YTDLPHost.Shim/YTDLPHost.Shim.csproj --configuration Release --runtime win-x64 --output ./shim-publish
+
+      - name: Show size
+        run: Get-ChildItem ./shim-publish | Select-Object Name, Length
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ytdlp-shim-win-x64
+          path: ./shim-publish/ytdlp-shim.exe

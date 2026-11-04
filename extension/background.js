@@ -8,40 +8,64 @@
  * @version 6.2.1
  */
 
-importScripts('sites.js');
+importScripts('sites.js', 'native.js');
 
-function getCookiesForSite(siteId, sendResponse) {
+/** The site's session cookies as Netscape cookie-file text, or "" when there are none. */
+async function buildCookieText(siteId) {
   const site = self.YTDLP_SITES[siteId] || self.YTDLP_SITES.youtube;
 
-  chrome.cookies.getAll({ domain: site.cookieDomain }, (cookies) => {
-    if (!cookies || cookies.length === 0) {
-      sendResponse("");
-      return;
-    }
+  const cookies = await chrome.cookies.getAll({ domain: site.cookieDomain });
+  if (!cookies || cookies.length === 0) return "";
 
-    const filteredCookies = self.ytdlpSelectCookies(site, cookies);
-    if (filteredCookies.length === 0) {
-      sendResponse("");
-      return;
-    }
+  const filteredCookies = self.ytdlpSelectCookies(site, cookies);
+  if (filteredCookies.length === 0) return "";
 
-    let netscapeFormat = "# Netscape HTTP Cookie File\n";
-    netscapeFormat += "# http://curl.haxx.se/rfc/cookie_spec.html\n";
-    netscapeFormat += "# This is a generated file!  Do not edit.\n\n";
+  let netscapeFormat = "# Netscape HTTP Cookie File\n";
+  netscapeFormat += "# http://curl.haxx.se/rfc/cookie_spec.html\n";
+  netscapeFormat += "# This is a generated file!  Do not edit.\n\n";
 
-    filteredCookies.forEach(c => {
-      const domain = c.domain;
-      const includeSubdomains = domain.startsWith('.') ? 'TRUE' : 'FALSE';
-      const path = c.path;
-      const secure = c.secure ? 'TRUE' : 'FALSE';
-      const expiry = c.expirationDate ? Math.floor(c.expirationDate) : Math.floor(Date.now() / 1000) + (3600 * 24 * 30);
+  filteredCookies.forEach(c => {
+    const domain = c.domain;
+    const includeSubdomains = domain.startsWith('.') ? 'TRUE' : 'FALSE';
+    const path = c.path;
+    const secure = c.secure ? 'TRUE' : 'FALSE';
+    const expiry = c.expirationDate ? Math.floor(c.expirationDate) : Math.floor(Date.now() / 1000) + (3600 * 24 * 30);
 
-      netscapeFormat += `${domain}\t${includeSubdomains}\t${path}\t${secure}\t${expiry}\t${c.name}\t${c.value}\n`;
-    });
-
-    const encodedPayload = btoa(unescape(encodeURIComponent(netscapeFormat)));
-    sendResponse(encodedPayload);
+    netscapeFormat += `${domain}\t${includeSubdomains}\t${path}\t${secure}\t${expiry}\t${c.name}\t${c.value}\n`;
   });
+
+  return netscapeFormat;
+}
+
+/** Legacy ytdlp:// path: the same text, base64 encoded to travel inside the link. */
+function getCookiesForSite(siteId, sendResponse) {
+  buildCookieText(siteId).then(
+    (text) => sendResponse(text ? btoa(unescape(encodeURIComponent(text))) : ""),
+    () => sendResponse("")
+  );
+}
+
+/**
+ * Native Messaging path (step 2.5): hands a download to the app through native.js. Cookies travel as plain text inside the request (never
+ * on a command line, never base64); the User-Agent only with cookies, and only if the host's rule (printable ASCII, up to 512) holds.
+ * Resolves like YtdlpNative.sendDownload: { ok } or { ok:false, unavailable | rejected | failed, reason }.
+ */
+const NATIVE_USER_AGENT_RULE = /^[\x20-\x7E]{1,512}$/;
+
+async function handleNativeDownload(request, sender) {
+  try {
+    const auth = {};
+    if (request.wantsCookies) {
+      const text = await buildCookieText(request.site);
+      if (text) {
+        auth.cookies = text;
+        if (NATIVE_USER_AGENT_RULE.test(request.userAgent || '')) auth.userAgent = request.userAgent;
+      }
+    }
+    return await self.YtdlpNative.sendDownload({ urls: request.urls, options: request.options, auth }, sender.tab ? sender.tab.id : undefined);
+  } catch (e) {
+    return { ok: false, unavailable: true, reason: String((e && e.message) || e) };
+  }
 }
 
 async function listSites() {
@@ -164,6 +188,16 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "get_cookies") {
     getCookiesForSite(request.site, sendResponse);
+    return true;
+  }
+
+  if (request.action === "native_download") {
+    handleNativeDownload(request, sender).then(sendResponse);
+    return true;
+  }
+
+  if (request.action === "native_status") {
+    self.YtdlpNative.hello().then(sendResponse);
     return true;
   }
 

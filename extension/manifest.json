@@ -5,6 +5,7 @@
   "description": "Premium multi-site downloader with native yt-dlp integration. Works automatically on YouTube, Twitter/X, Instagram, TikTok, Facebook, Reddit, Twitch, Vimeo, and SoundCloud - toggle any site off in Settings if you don't want it there.",
   "author": "muzammilAwan-dev",
   "homepage_url": "https://github.com/muzammilAwan-dev/yt-downloader-pro",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxs8SPUGEds+QbyDygMQB4lnC6/0WNn8pA0uDqLaZolWrAll0pNfgd9liucGZT16neqasHtavcKtFN7l+5pAz93FsciAoNY8UPKcbqoIJ5KTEz1iMLib/VHy57y1JPThRjADcN1CzJXC8ufANwxTFSUJv3h0dGa/iScmZTyO6n7IgDI+/1UED4J0HG1z6PdyiVgBKKqlE+33sm0rU/MA0ON7vGA3izW2lPErrit/oEUsQz2WQtkZuMuUL7nvnGJyuP5CiSvv+0iuatYS8XxQJwC/P3VqltMoMMnrdCV/YUmS32bUNOluLYftVVxl6hgpR9TyYmzyZoclXf18Ry1G3MQIDAQAB",
 
   "action": {
     "default_popup": "popup.html",
@@ -29,7 +30,8 @@
     "storage",
     "notifications",
     "cookies",
-    "downloads"
+    "downloads",
+    "nativeMessaging"
   ],
 
   "host_permissions": [

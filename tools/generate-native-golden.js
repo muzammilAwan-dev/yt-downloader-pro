@@ -5,6 +5,8 @@ const vm = require('vm'), fs = require('fs');
 const sandbox = { self: {} }; vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(process.argv[2] + '/extension/sites.js', 'utf8'), sandbox);
 const ytdlpNameTag = sandbox.self.ytdlpNameTag, ytdlpUniqueSuffix = sandbox.self.ytdlpUniqueSuffix;
+// The native options come from the REAL extension functions (sites.js), not from a copy: a drift there breaks the golden tests.
+const ytdlpNativeVideoOptions = sandbox.self.ytdlpNativeVideoOptions, ytdlpNativeChannelOptions = sandbox.self.ytdlpNativeChannelOptions;
 
 const ALL = { subtitles: true, playlist: true, metadata: true, thumbnail: true, sponsorBlock: true, compatMode: true };
 const sites = {
@@ -54,15 +56,8 @@ function legacySingle(c) {            // === content.js launchDownload (statemen
     ? `-o "${saveDir}%(playlist_title)s/%(playlist_index)03d_%(title)s${nameTag}_${resLabel}.${fmt.ext}"`
     : `-o "${saveDir}%(title)s${ytdlpUniqueSuffix(SITE, videoUrl)}${nameTag}_${resLabel}.${fmt.ext}"`;
   const command = ['yt-dlp', '-f', `"${fmt.f}"`, compatFlag, fmt.opt, `-N ${speed}`, cropperCmd, subCmd, plCmd, sponsorFlag, '--restrict-filenames', metaFlag, thumbFlag, '--no-warnings', '--progress', outTemplate, `"${videoUrl}"`].filter(Boolean).join(' ');
-  // what the future native client sends: the EFFECTIVE choices after the site gating above
-  const options = {
-    quality: resolution, audioFormat: audioFmt,
-    subs: !!subCmd, compat: !!compatFlag, sponsorBlock: !!sponsorFlag, embedMetadata: !!metaFlag, embedThumbnail: prefs.flagThumbnail !== false && SITE.features.thumbnail,
-    playlist: wantsPlaylist && SITE.features.playlist, concurrentFragments: parseInt(speed, 10),
-    cropKeyframeCuts: SITE.cropKeyframeCuts !== false, uniqueFilename: !!SITE.uniqueFilenames,
-  };
-  if (options.playlist && playlistItems) options.playlistItems = playlistItems;
-  if (cropperCmd) options.trim = { start: sTime, end: eTime };
+  // what the native client sends: the EFFECTIVE choices after the site gating, from the extension's own function
+  const options = ytdlpNativeVideoOptions(SITE, { resolution, wantsSubs, wantsPlaylist, playlistItems, isCropped, sTime, eTime, prefs });
   return { command, options, url: videoUrl };
 }
 
@@ -85,8 +80,7 @@ function legacyChannel(c) {           // === content.js handleChannelDownload (s
     '--restrict-filenames', metaFlag, thumbFlag, '--no-warnings', '--progress',
     `-o "${saveDir}%(channel,uploader)s/${nameTemplate}_${resLabel}.${fmt.ext}"`].filter(Boolean).join(' ');
   const command = [base, `"${channelUrl}"`, ...itemUrls.map((u) => `"${u}"`)].join(' ');
-  const options = { quality: resolution, audioFormat: audioFmt, compat: !!compatFlag, embedMetadata: !!metaFlag, embedThumbnail: prefs.flagThumbnail !== false,
-    concurrentFragments: parseInt(speed, 10), uniqueFilename: !!SITE.uniqueFilenames, job: 'channel', archiveName: slug };
+  const options = ytdlpNativeChannelOptions(SITE, { resolution, prefs, archiveName: slug });
   return { command, options, urls: [channelUrl, ...itemUrls] };
 }
 

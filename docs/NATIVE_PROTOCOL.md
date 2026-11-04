@@ -137,6 +137,26 @@ frames** as the browser's stdio, so the shim only copies frames in both directio
 
 Exit codes: 0 normal end, 2 caller not allowed, 3 app unreachable or could not be started, 4 app refused the connection.
 
+## Extension (step 2.5)
+
+- **Extension id** `onlglcidnadbeilfhbahjodnhonhiieb`, fixed by the `key` field in `extension/manifest.json` (so it is the same on every machine
+  and for every "Load unpacked" folder). Its origin, `chrome-extension://onlglcidnadbeilfhbahjodnhonhiieb/`, is the one line of
+  `allowed-origins.txt` and the `allowed_origins` entry of the host manifest. A copy published on the Chrome Web Store gets the store's own id
+  (or the id of the public key shown in the developer dashboard): add that origin as a second line then. The private key of the generated pair
+  was discarded; it is not needed for unpacked use.
+- **Flow.** `content.js` / `popup.js` build the same download as before PLUS a request for the app (`ytdlpNativeVideoOptions` /
+  `ytdlpNativeChannelOptions` in `sites.js`, the functions `tools/generate-native-golden.js` runs; they send the *effective choices*). They
+  send `native_download` to `background.js`, which adds cookies as plain text (not base64) and hands the request to `native.js`
+  (`connectNative` to `com.ytdlppro.host`, one shared port). `native.js` resolves each request to one result: accepted; unavailable (no host
+  registered, shim or app unreachable, silent for 30 s); rejected; or failed.
+- **Fallback.** unavailable or rejected: the SAME download goes out as a `ytdlp://` link exactly as before (one-release migration, step 2.7).
+  failed (the app answered `error` before accepting, for example its first-time setup failed): the reason is shown and nothing is sent twice.
+- **Stays on the `ytdlp://` path for now:** a custom command (`quality: custom`), and any download while the extension's "save path" option
+  is filled in (the app uses its own `DownloadFolder` setting; moving that option into the app is the rest of step 2.5).
+- **Results.** After `accepted`, an `error` from the app becomes an error toast in the tab (or a browser notification when the popup started it).
+  `progress` and `done` are not shown in the extension: the app has its own window and completion toast.
+- Until the host is registered (step 2.6; for testing `tools/register-native-host-dev.ps1`, which writes the Chrome, Edge and Brave keys under `HKCU`), every download simply falls back to `ytdlp://`.
+
 ## Notes for later steps
 
 - Step 2.2 maps a validated `DownloadRequest` to a yt-dlp argument list (reusing `YtDlpCommandBuilder`), with golden tests against

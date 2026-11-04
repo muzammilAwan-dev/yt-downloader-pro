@@ -47,7 +47,16 @@ for ($i = 0; $i -lt $Runs; $i++) {
     $in.Flush()
 
     $replyHeader = Read-Exactly $p.StandardOutput.BaseStream 4
-    if ($null -eq $replyHeader) { Write-Error "No reply. Is the app running? See %LOCALAPPDATA%\YTDownloaderProEngine\shim.log"; $p.Kill(); break }
+    if ($null -eq $replyHeader) {
+        $p.WaitForExit(3000) | Out-Null
+        $code = if ($p.HasExited) { $p.ExitCode } else { "still running" }
+        Write-Host "No reply from the shim (exit code: $code). Codes: 2 = caller not allowed, 3 = app not reachable or could not be started, 4 = pipe belongs to another user/elevation."
+        $log = Join-Path $env:LOCALAPPDATA "YTDownloaderProEngine\shim.log"
+        if (Test-Path $log) { Write-Host "Last lines of ${log}:"; Get-Content $log -Tail 6 | ForEach-Object { Write-Host "  $_" } }
+        else { Write-Host "No shim.log was written: the shim probably did not start at all." }
+        if (-not $p.HasExited) { $p.Kill() }
+        break
+    }
     $body = Read-Exactly $p.StandardOutput.BaseStream ([int][BitConverter]::ToUInt32($replyHeader, 0))
     $watch.Stop()
 

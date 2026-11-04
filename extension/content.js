@@ -358,6 +358,10 @@
 
   // The toolbar popup asks "what would the floating button download right now?" so both entry points always agree.
   chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
+    if (req && req.action === 'native_event') { // how a download sent through Native Messaging ended (see native.js)
+      if (req.event === 'error') showToast(`Download failed: ${req.reason || 'unknown error'}`, 'error');
+      return;
+    }
     if (!req || req.action !== 'get_active_target') return;
     (async () => {
       try {
@@ -1004,7 +1008,17 @@
 
     const command = ['yt-dlp', '-f', `"${fmt.f}"`, compatFlag, fmt.opt, `-N ${speed}`, cropperCmd, subCmd, plCmd, sponsorFlag, '--restrict-filenames', metaFlag, thumbFlag, '--no-warnings', '--progress', outTemplate, `"${videoUrl}"`].filter(Boolean).join(' ');
 
-    await executeFinalCommand(command, wantsCookies);
+    // Native Messaging first (step 2.5). A save folder chosen in the extension is only honored by the ytdlp:// path for now: the app
+    // uses its own download-folder setting, so with a folder set here the link path keeps doing exactly what it did.
+    const native = (prefs.savePath && prefs.savePath.trim()) ? null : {
+        urls: [videoUrl],
+        options: ytdlpNativeVideoOptions(SITE, {
+            resolution, wantsSubs, wantsPlaylist, isCropped, sTime, eTime, prefs,
+            playlistItems: playlistItems ? sanitizePlaylistItems(playlistItems) : ''
+        })
+    };
+
+    await executeFinalCommand(command, wantsCookies, native);
   }
 
   // --- Channel / profile bulk download ---
@@ -1021,6 +1035,9 @@
 
   /** Max characters of yt-dlp command we are willing to push through one ytdlp:// link (see handleChannelDownload). */
   const CHANNEL_COMMAND_BUDGET = 6000;
+
+  /** Max item links in a native channel job: the protocol allows 500 URLs, and one of them is the channel page itself. */
+  const NATIVE_CHANNEL_MAX_ITEMS = 499;
 
   /**
    * Profile pages lazy-load: only the items scrolled into view exist in the DOM. Scroll to the bottom until the count of items stops
@@ -1111,9 +1128,17 @@
       const command = [base, `"${channelUrl}"`, ...included.map((u) => `"${u}"`)].join(' ');
       ytdlpLog('info', 'content', 'Channel download requested', { site: SITE.id, resolution, channelUrl, loadAll: !!prefs.channelLoadAll, itemsFound: itemUrls.length, itemsIncluded: included.length, commandChars: command.length });
 
-      await executeFinalCommand(command, false);
-      showToast(itemUrls.length > included.length
-        ? `Channel download started! (${included.length} of ${itemUrls.length} loaded videos added as a backup - run again later to continue.)`
+      // Native path: no link-length budget, so far more of the loaded item links can go along (the protocol allows 500 URLs in all).
+      const nativeItems = itemUrls.filter((u) => u.length <= 2048).slice(0, NATIVE_CHANNEL_MAX_ITEMS);
+      const native = (prefs.savePath && prefs.savePath.trim()) ? null : {
+        urls: [channelUrl, ...nativeItems],
+        options: ytdlpNativeChannelOptions(SITE, { resolution, prefs, archiveName: slugForArchive(channelUrl) })
+      };
+
+      const sent = await executeFinalCommand(command, false, native);
+      const addedCount = sent.native ? nativeItems.length : included.length;
+      showToast(itemUrls.length > addedCount
+        ? `Channel download started! (${addedCount} of ${itemUrls.length} loaded videos added as a backup - run again later to continue.)`
         : 'Channel download started! Check the application.');
     } catch (error) {
       ytdlpLog('error', 'content', 'Channel download failed to start', { site: SITE.id, error: String(error && error.message || error) });
@@ -1121,7 +1146,26 @@
     }
   }
 
-  async function executeFinalCommand(command, wantsCookies) {
+  /**
+   * Hands a download to the app. With `native` ({urls, options}) it goes through Native Messaging first (no browser prompt, errors come back
+   * as a toast); if the host is not installed, not reachable, or refuses the request, the SAME download goes out as a ytdlp:// link as before.
+   * Returns { native: true } when the app took it through Native Messaging.
+   */
+  async function executeFinalCommand(command, wantsCookies, native) {
+      if (native) {
+          let result = null;
+          try {
+              result = await chrome.runtime.sendMessage({
+                  action: 'native_download', site: SITE.id, urls: native.urls, options: native.options,
+                  wantsCookies: !!(wantsCookies || SITE.alwaysCookies), userAgent: navigator.userAgent
+              });
+          } catch (e) { /* background asleep or unreachable: fall back below */ }
+
+          if (result && result.ok) return { native: true };
+          if (result && result.failed) throw new Error(result.reason || 'The app could not start the download.');
+          ytdlpLog('warn', 'content', 'Native host not used; falling back to ytdlp://', { reason: result && result.reason, rejected: !!(result && result.rejected) });
+      }
+
       let encoded = btoa(unescape(encodeURIComponent(command)));
       if (wantsCookies || SITE.alwaysCookies) { // alwaysCookies: the site's downloads don't work anonymously (Vimeo)
           const cookies = await new Promise((resolve, reject) => {
@@ -1143,6 +1187,7 @@
       document.body.appendChild(iframe);
 
       setTimeout(() => iframe.remove(), 4000);
+      return { native: false };
   }
 
   function showToast(msg, type = 'success') {

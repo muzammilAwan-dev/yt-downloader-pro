@@ -621,6 +621,54 @@ function ytdlpUniqueSuffix(site, url) {
   return `_${m ? m[1] : '%(id)s'}`;
 }
 
+/**
+ * The EFFECTIVE choices a native download request carries (docs/NATIVE_PROTOCOL.md, "Effective choices"): the user's choices AFTER the
+ * per-site gating the legacy command builders apply, because the host knows nothing about individual sites. Pure. tools/generate-native-golden.js
+ * runs THIS function, so the golden tests prove it matches the commands the extension builds today.
+ *
+ * @param {object} site  a YTDLP_SITES entry (features, cropKeyframeCuts, uniqueFilenames)
+ * @param {{resolution:string, wantsSubs?:boolean, wantsPlaylist?:boolean, playlistItems?:string, isCropped?:boolean, sTime?:string, eTime?:string,
+ *          prefs?:{audioFormat?:string, flagMetadata?:boolean, flagThumbnail?:boolean, flagSponsor?:boolean, compatMode?:boolean, concurrentDownloads?:string}}} c
+ */
+function ytdlpNativeVideoOptions(site, c) {
+  const prefs = c.prefs || {};
+  const f = site.features || {};
+  const res = c.resolution;
+  const options = {
+    quality: res,
+    audioFormat: prefs.audioFormat || 'mp3',
+    subs: !!(c.wantsSubs && res !== 'audio' && f.subtitles),
+    compat: !!(prefs.compatMode === true && f.compatMode),
+    sponsorBlock: !!(prefs.flagSponsor === true && f.sponsorBlock),
+    embedMetadata: !!(prefs.flagMetadata === true && f.metadata),
+    embedThumbnail: prefs.flagThumbnail !== false && !!f.thumbnail,
+    playlist: !!(c.wantsPlaylist && f.playlist),
+    concurrentFragments: parseInt(prefs.concurrentDownloads || '4', 10),
+    cropKeyframeCuts: site.cropKeyframeCuts !== false,
+    uniqueFilename: !!site.uniqueFilenames,
+  };
+  if (options.playlist && c.playlistItems) options.playlistItems = c.playlistItems;
+  if (c.isCropped && (c.sTime || c.eTime)) options.trim = { start: c.sTime || '', end: c.eTime || '' };
+  return options;
+}
+
+/** Same idea for a channel / profile job (no subtitles, SponsorBlock, playlist or trim there). `c.archiveName` is the slug of the channel page. */
+function ytdlpNativeChannelOptions(site, c) {
+  const prefs = c.prefs || {};
+  const f = site.features || {};
+  return {
+    quality: c.resolution,
+    audioFormat: prefs.audioFormat || 'mp3',
+    compat: !!(prefs.compatMode === true && f.compatMode),
+    embedMetadata: prefs.flagMetadata === true,
+    embedThumbnail: prefs.flagThumbnail !== false,
+    concurrentFragments: parseInt(prefs.concurrentDownloads || '4', 10),
+    uniqueFilename: !!site.uniqueFilenames,
+    job: 'channel',
+    archiveName: c.archiveName,
+  };
+}
+
 // Expose to both window (content script / popup) and self (service worker) scopes.
 if (typeof window !== 'undefined') {
   window.YTDLP_SITES = YTDLP_SITES;
@@ -629,6 +677,8 @@ if (typeof window !== 'undefined') {
   window.ytdlpSelectCookies = ytdlpSelectCookies;
   window.ytdlpNameTag = ytdlpNameTag;
   window.ytdlpUniqueSuffix = ytdlpUniqueSuffix;
+  window.ytdlpNativeVideoOptions = ytdlpNativeVideoOptions;
+  window.ytdlpNativeChannelOptions = ytdlpNativeChannelOptions;
 }
 if (typeof self !== 'undefined') {
   self.YTDLP_SITES = YTDLP_SITES;
@@ -637,4 +687,6 @@ if (typeof self !== 'undefined') {
   self.ytdlpSelectCookies = ytdlpSelectCookies;
   self.ytdlpNameTag = ytdlpNameTag;
   self.ytdlpUniqueSuffix = ytdlpUniqueSuffix;
+  self.ytdlpNativeVideoOptions = ytdlpNativeVideoOptions;
+  self.ytdlpNativeChannelOptions = ytdlpNativeChannelOptions;
 }

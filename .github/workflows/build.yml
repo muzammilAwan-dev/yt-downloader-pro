@@ -24,6 +24,21 @@ jobs:
       - name: Extension, host and installer versions must match
         run: python3 tools/check_versions.py
 
+  extension:
+    # Step 2.5: the extension's Native Messaging client, and proof that the native request options it builds are the ones the C# tests check.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Native client tests (fake chrome object)
+        run: node --test tools/test-native-client.js
+      - name: Golden cases must match what the extension code produces
+        run: |
+          node tools/generate-native-golden.js . /tmp/GoldenCases.cs
+          diff /tmp/GoldenCases.cs host/YTDLPHost.Tests/Native/GoldenCases.cs
+
   test:
     # The tests reference the portable YTDLPHost.Core project (no WPF), so they run on every
     # target OS. Windows + Linux now; add macos-14 once Phase 3 lands.
@@ -76,8 +91,8 @@ jobs:
           path: ./publish/YTDLPHost.exe
 
   shim:
-    # Step 2.4: the Native Messaging shim, published as Native AOT. The C++ build tools are preinstalled on windows-latest.
-    # Nothing depends on this job yet; it proves the AOT publish works and shows the exe size.
+    # Step 2.4: the Native Messaging shim, published the way it ships (self-contained single file; median start-to-reply 109 ms on the owner's PC).
+    # Nothing depends on this job yet; it proves the publish works and shows the exe size.
     needs: [test]
     runs-on: windows-latest
     steps:
@@ -88,7 +103,7 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Publish shim (Native AOT)
+      - name: Publish shim (self-contained single file)
         run: dotnet publish host/YTDLPHost.Shim/YTDLPHost.Shim.csproj --configuration Release --runtime win-x64 --output ./shim-publish
 
       - name: Show size

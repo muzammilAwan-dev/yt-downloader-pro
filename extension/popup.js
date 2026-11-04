@@ -310,7 +310,7 @@
         throw new Error('Reload the page, then open a video and try again.');
       }
 
-      await executeCommand(buildYtDlpCommand(targetUrl));
+      const sent = await executeCommand(buildYtDlpCommand(targetUrl), buildNativeRequest(targetUrl));
 
       // AUTO-UNCHECK FIX: Silently reset highly-situational toggles
       elements.cookiesToggle.checked = false;
@@ -326,7 +326,9 @@
           useCrop: false
       });
 
-      showStatus('Download started! If Chrome asks to open YT Downloader Pro, click Open - the app will close this popup automatically.', 'success');
+      showStatus(sent.native
+        ? 'Download sent to YT Downloader Pro. Check the application.'
+        : 'Download started! If Chrome asks to open YT Downloader Pro, click Open - the app will close this popup automatically.', 'success');
       // FIX: this used to auto-close the popup after 2s. Closing the popup
       // window can tear down Chrome's pending "Open App?" confirmation
       // before the user has a chance to click it, silently cancelling the
@@ -441,7 +443,55 @@
       : `-o "${dir}%(title)s${uniqueSuffix}${nameTag}_${resLabel}.${ext}"`;
   }
 
-  async function executeCommand(command) {
+  /**
+   * The Native Messaging twin of buildYtDlpCommand (step 2.5): the same choices as a request for the app, or null when only the ytdlp://
+   * link can do it (a custom command, or a save folder chosen in the extension - the app uses its own download-folder setting).
+   */
+  function buildNativeRequest(videoUrl) {
+    if (elements.customCommand.value.trim() !== '' || elements.resolution.value === 'custom') return null;
+    if (elements.savePath.value.trim()) return null;
+
+    const startT = elements.startTime.value.trim();
+    const endT = elements.endTime.value.trim();
+    const rawItems = elements.playlistItems.value.trim();
+    const cleanItems = rawItems.toLowerCase().replace(/\s+(to|through)\s+/g, '-').replace(/[^0-9,\-]/g, '').replace(/,+/g, ',').replace(/(^,)|(,$)/g, '');
+
+    return {
+      urls: [videoUrl],
+      options: ytdlpNativeVideoOptions(currentSite, {
+        resolution: elements.resolution.value,
+        wantsSubs: elements.subsToggle.checked,
+        wantsPlaylist: elements.playlistToggle.checked,
+        playlistItems: cleanItems,
+        isCropped: !!(startT || endT), sTime: startT, eTime: endT,
+        prefs: {
+          audioFormat: elements.audioFormat.value,
+          flagMetadata: elements.flagMetadata.checked,
+          flagThumbnail: elements.flagThumbnail.checked,
+          flagSponsor: elements.flagSponsor.checked,
+          compatMode: elements.compatMode.checked,
+          concurrentDownloads: elements.concurrentDownloads.value || '4'
+        }
+      })
+    };
+  }
+
+  /** Hands the download to the app: Native Messaging first when `native` is given, then the ytdlp:// link as before. Returns { native } . */
+  async function executeCommand(command, native) {
+    if (native) {
+      let result = null;
+      try {
+        result = await chrome.runtime.sendMessage({
+          action: 'native_download', site: currentSite?.id, urls: native.urls, options: native.options,
+          wantsCookies: !!(elements.cookiesToggle.checked || (currentSite && currentSite.alwaysCookies)), userAgent: navigator.userAgent
+        });
+      } catch (e) { /* background asleep or unreachable: fall back below */ }
+
+      if (result && result.ok) return { native: true };
+      if (result && result.failed) throw new Error(result.reason || 'The app could not start the download.');
+      ytdlpLog('warn', 'popup', 'Native host not used; falling back to ytdlp://', { reason: result && result.reason, rejected: !!(result && result.rejected) });
+    }
+
     let encodedCommand = btoa(unescape(encodeURIComponent(command)));
     if (elements.cookiesToggle.checked || (currentSite && currentSite.alwaysCookies)) {
         const cookieBase64 = await new Promise((resolve, reject) => {
@@ -463,6 +513,7 @@
     document.body.appendChild(iframe);
 
     setTimeout(() => iframe.remove(), 4000);
+    return { native: false };
   }
 
   // --- Supported Sites manager ---

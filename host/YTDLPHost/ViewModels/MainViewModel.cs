@@ -77,6 +77,7 @@ namespace YTDLPHost.ViewModels
         private readonly DownloadIntake _intake;
         private readonly DownloadQueue _queue;
         private readonly EngineUpdateScheduler _updateScheduler;
+        private int _nativeBatchCount; // new downloads added by the browser request being processed (UI thread only)
 
         public MainViewModel(PlatformServices platform)
         {
@@ -112,11 +113,16 @@ namespace YTDLPHost.ViewModels
                 {
                     HasDownloads = true;
                     StatusText = $"Added: {vm.DisplayTitle}";
+                    _nativeBatchCount++; // both callbacks run on the UI thread inside one dispatcher call
                 },
                 afterAdd: () =>
                 {
                     UpdateActiveCount();
                     TriggerQueueProcessing();
+
+                    int added = _nativeBatchCount;
+                    _nativeBatchCount = 0;
+                    AnnounceNativeDownloads(added);
                 },
                 unavailable: () => _setup.HasFailed
                     ? "YT Downloader Pro cannot start downloads because its first-time setup failed. Check the internet connection and restart the app."
@@ -380,6 +386,30 @@ namespace YTDLPHost.ViewModels
             foreach (var vm in _downloads) DownloadCleaner.CleanupCookieFile(vm.Task);
             _queue.CancelAll();
             _lifetime.Shutdown();
+        }
+
+        /// <summary>Whether a browser download brings the window to the front (settings menu); read fresh so a change applies at once.</summary>
+        public bool ShowWindowOnNativeDownload => AppSettings.Load().ShowWindowOnNativeDownload;
+
+        public void SetShowWindowOnNativeDownload(bool value)
+        {
+            Settings.ShowWindowOnNativeDownload = value;
+            Settings.Save();
+            OnPropertyChanged(nameof(ShowWindowOnNativeDownload));
+        }
+
+        /// <summary>The browser page says "sent to YT Downloader Pro"; this is what the app does itself (see NativeAnnouncePolicy).</summary>
+        private void AnnounceNativeDownloads(int added)
+        {
+            switch (NativeAnnouncePolicy.Decide(added, IsWindowVisible, ShowWindowOnNativeDownload))
+            {
+                case NativeAnnouncement.ShowWindow:
+                    RequestShowWindow?.Invoke(this, EventArgs.Empty);
+                    break;
+                case NativeAnnouncement.Notify:
+                    _notifier.NotifyDownloadStarted(added);
+                    break;
+            }
         }
 
         private async Task UpdateEngineManuallyAsync()

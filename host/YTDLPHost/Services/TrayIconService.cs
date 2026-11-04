@@ -182,6 +182,25 @@ namespace YTDLPHost.Services
             }
         }
 
+        /// <summary>A download from the browser started while the window is hidden: same channel as the completion toast.</summary>
+        public void NotifyDownloadStarted(int count)
+        {
+            string text = count == 1 ? "A download from your browser was added." : $"{count} downloads from your browser were added.";
+            try
+            {
+                new ToastContentBuilder()
+                    .AddText("Download started")
+                    .AddText(text)
+                    .AddAttributionText("YT Downloader Pro")
+                    .AddArgument("action", "show")
+                    .Show();
+            }
+            catch
+            {
+                ShowBalloon("Download started", text, ToolTipIcon.Info);
+            }
+        }
+
         /// <summary>
         /// Toggles the visibility of the tray icon.
         /// </summary>

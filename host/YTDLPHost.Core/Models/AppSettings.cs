@@ -26,6 +26,12 @@ namespace YTDLPHost.Models
         /// </summary>
         public string DownloadFolder { get; set; } = "";
 
+        /// <summary>
+        /// When a download arrives from the browser (Native Messaging) and the app is not on screen: false (default) = a short tray
+        /// notification, true = bring the window to the front as the old ytdlp:// link path did. Toggled in the settings (gear) menu.
+        /// </summary>
+        public bool ShowWindowOnNativeDownload { get; set; } = false;
+
         private static string SettingsPath => Path.Combine(AppPaths.Current.DataDir, "settings.json");
 
         public static AppSettings Load()

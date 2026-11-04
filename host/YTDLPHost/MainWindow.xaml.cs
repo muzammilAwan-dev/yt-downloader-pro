@@ -109,6 +109,25 @@ namespace YTDLPHost
                 }
             };
 
+            bool showOnBrowserDownload = (DataContext as MainViewModel)?.ShowWindowOnNativeDownload ?? false;
+            var showWindowItem = new MenuItem
+            {
+                Header = showOnBrowserDownload ? "Browser downloads: show this window (on)" : "Browser downloads: notify only (off)",
+                Style = itemStyle,
+                ToolTip = new TextBlock
+                {
+                    Text = "Choose what happens when a download starts from the browser while this window is hidden: a short notification (default) or bringing this window to the front. Click to switch.",
+                    TextWrapping = TextWrapping.Wrap, MaxWidth = 320
+                }
+            };
+            showWindowItem.Click += (s, args) =>
+            {
+                if (DataContext is MainViewModel vm)
+                {
+                    vm.SetShowWindowOnNativeDownload(!vm.ShowWindowOnNativeDownload);
+                }
+            };
+
             var exitItem = new MenuItem { Header = "Exit", Style = itemStyle };
             exitItem.Click += (s, args) =>
             {
@@ -122,6 +141,7 @@ namespace YTDLPHost
             menu.Items.Add(unregisterItem);
             menu.Items.Add(new Separator { Style = (Style)FindResource("DarkMenuSeparator") });
             menu.Items.Add(updateEngineItem);
+            menu.Items.Add(showWindowItem);
             menu.Items.Add(new Separator { Style = (Style)FindResource("DarkMenuSeparator") });
             menu.Items.Add(exitItem);
 

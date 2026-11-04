@@ -894,7 +894,7 @@
         feedUrl = await pendingFeedPromise;
         if (!feedUrl) throw new Error(unresolvedMessage());
       }
-      await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems, isCropped, sTime, eTime, feedUrl);
+      const sent = await launchDownload(resolution, wantsSubs, wantsPlaylist, wantsCookies, wantsItems, isCropped, sTime, eTime, feedUrl);
 
       // AUTO-UNCHECK FIX: Visually clear situational checkboxes
       const cookiesToggle = document.getElementById('float-cookies');
@@ -926,7 +926,8 @@
           useCrop: false
       });
 
-      showToast('Download started! Check the application.');
+      // Through Native Messaging the app does not pop up (that was a side effect of Chrome opening it for the ytdlp:// link).
+      showToast(sent && sent.native ? 'Sent to YT Downloader Pro.' : 'Download started! Check the application.');
     } catch (error) {
       showToast(`Error: ${error.message}`, 'error');
     }
@@ -940,8 +941,7 @@
         const rawCustom = prefs.customCommand ? prefs.customCommand.trim() : '';
         let finalCustom = rawCustom ? rawCustom : 'yt-dlp';
         if (!finalCustom.includes(videoUrl)) finalCustom += ` "${videoUrl}"`;
-        await executeFinalCommand(finalCustom, wantsCookies);
-        return;
+        return await executeFinalCommand(finalCustom, wantsCookies);
     }
 
     let saveDir = prefs.savePath ? prefs.savePath.trim().replace(/[/\\]$/, '') + '\\' : '~/Downloads/YTDownloaderPro/';
@@ -1018,7 +1018,7 @@
         })
     };
 
-    await executeFinalCommand(command, wantsCookies, native);
+    return await executeFinalCommand(command, wantsCookies, native);
   }
 
   // --- Channel / profile bulk download ---

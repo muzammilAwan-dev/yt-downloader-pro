@@ -41,6 +41,9 @@ namespace YTDLPHost.Services
         event EventHandler? Activated;
 
         void NotifyDownloadComplete(string fileName);
+
+        /// <summary>A download (or several) arrived from the browser while the window is hidden in the tray.</summary>
+        void NotifyDownloadStarted(int count);
     }
 
     /// <summary>

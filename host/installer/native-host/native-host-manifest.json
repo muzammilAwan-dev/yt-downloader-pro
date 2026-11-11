@@ -1,0 +1,9 @@
+{
+  "name": "com.ytdlppro.host",
+  "description": "YT Downloader Pro",
+  "path": "ytdlp-shim.exe",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://onlglcidnadbeilfhbahjodnhonhiieb/"
+  ]
+}

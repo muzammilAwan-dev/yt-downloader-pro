@@ -126,7 +126,7 @@ frames** as the browser's stdio, so the shim only copies frames in both directio
    `#` comments allowed, trailing slash included, for example `chrome-extension://<id>/`). Anything else: exit code 2, nothing is
    forwarded. This is the second lock behind the manifest's `allowed_origins`. Chrome on Windows may add `--parent-window=...` after the
    origin; it is ignored. Firefox passes different arguments (manifest path and extension id) and is not supported yet.
-   The installer or the app writes `allowed-origins.txt` together with the host manifest (step 2.6). Without the file nothing starts.
+   The installer ships `allowed-origins.txt` and the host manifest into the app folder (`host/installer/native-host/`, step 2.6; see "Registration" below). Without the file nothing starts.
 2. **Find or start the app.** Connects to the pipe `NativePipe.NameForCurrentUser()` with `NativePipe.ClientOptions` (same user only). If
    nobody listens, it starts `YTDLPHost.exe` from its own folder and retries for up to 20 s. A pipe that exists but belongs to another user or
    elevation level is not retried (exit code 4; the app probably runs as administrator).
@@ -155,7 +155,20 @@ Exit codes: 0 normal end, 2 caller not allowed, 3 app unreachable or could not b
   is filled in (the app uses its own `DownloadFolder` setting; moving that option into the app is the rest of step 2.5).
 - **Results.** After `accepted`, an `error` from the app becomes an error toast in the tab (or a browser notification when the popup started it).
   `progress` and `done` are not shown in the extension: the app has its own window and completion toast.
-- Until the host is registered (step 2.6; for testing `tools/register-native-host-dev.ps1`, which writes the Chrome, Edge and Brave keys under `HKCU`), every download simply falls back to `ytdlp://`.
+- Until the host is registered (see "Registration" below), every download simply falls back to `ytdlp://`.
+
+## Registration (step 2.6)
+
+- **Installer** (`host/installer/setup.iss`): copies `ytdlp-shim.exe`, `native-host-manifest.json` and `allowed-origins.txt` into the app folder, and writes the default value
+  `{app}\native-host-manifest.json` under `HKCU\Software\Google\Chrome`, `...\Microsoft\Edge` and `...\BraveSoftware\Brave-Browser` `\NativeMessagingHosts\com.ytdlppro.host`
+  (removed again on uninstall). The two shipped files live in `host/installer/native-host/`. The manifest's `path` is the relative `ytdlp-shim.exe`: on Windows
+  Chrome, Edge and Brave resolve a relative path against the manifest's own folder, so the file needs no install-time editing.
+- **App** (`NativeHostRegistration.EnsureRegistered`, called once per start by the primary instance): when the shim, the manifest and the origins file are all next to
+  `YTDLPHost.exe`, any of the three keys that is missing or points elsewhere is rewritten to this install's manifest. It covers a Windows user other than the one who ran
+  the installer and an app folder that was moved. Without those files next to the exe (a development run) it does nothing, so the registration of
+  `tools/register-native-host-dev.ps1` stays in place. The log lines start with `[NATIVE HOST]` in `host_debug.log`.
+- **Pinned id.** `NativeHostFilesTests` derives the extension id from the `key` in `extension/manifest.json` and fails if the shipped manifest or origins file names another one.
+- **Not yet:** Firefox (needs `allowed_extensions` and a different manifest, Phase 6), macOS and Linux locations (Phase 3).
 
 ## Notes for later steps
 

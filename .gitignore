@@ -24,3 +24,6 @@ __pycache__/
 # OS junk
 .DS_Store
 Thumbs.db
+
+# Local publish folder of the shim (dev registration, see tools/register-native-host-dev.ps1)
+shim-publish/

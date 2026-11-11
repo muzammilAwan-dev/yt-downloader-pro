@@ -1,4 +1,4 @@
-# DEV helper for steps 2.5/2.6 (the installer will do this properly in step 2.6): registers the shim as the Native Messaging host
+# DEV helper for runs from a build folder (the installer registers the host since step 2.6): registers the shim as the Native Messaging host
 # "com.ytdlppro.host" for the CURRENT USER in Chrome, Edge and Brave, so the extension can talk to the running app.
 #   .\tools\register-native-host-dev.ps1 -Shim .\shim-publish\ytdlp-shim.exe       register
 #   .\tools\register-native-host-dev.ps1 -Remove                                   unregister

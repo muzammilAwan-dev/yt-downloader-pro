@@ -114,3 +114,34 @@ jobs:
         with:
           name: ytdlp-shim-win-x64
           path: ./shim-publish/ytdlp-shim.exe
+
+  installer:
+    # Step 2.6: builds the real setup.exe from the two published exes. This is also the only place setup.iss is ever compiled.
+    needs: [build, shim]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: YTDLPHost-Release
+          path: host/installer/publish
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ytdlp-shim-win-x64
+          path: host/installer/publish
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Compile installer
+        run: |
+          Get-ChildItem host/installer/publish | Select-Object Name, Length
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" host/installer/setup.iss
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: YTDownloaderPro-Setup
+          path: host/installer/Output/*.exe

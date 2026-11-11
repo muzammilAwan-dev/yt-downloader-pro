@@ -90,6 +90,7 @@ namespace YTDLPHost
             }
 
             AppLogger.Log("[BOOT] Primary instance established. Initializing UI components.");
+            RegisterNativeHost();
             _singleInstanceManager.UrlReceived += OnUrlReceived;
             _mainViewModel = new MainViewModel(WpfPlatform.Create());
             
@@ -117,6 +118,21 @@ namespace YTDLPHost
             if (!string.IsNullOrEmpty(urlArg) && urlArg.StartsWith("ytdlp://"))
             {
                 _mainViewModel.ProcessUrl(urlArg);
+            }
+        }
+
+        /// <summary>Step 2.6: keeps the browsers' Native Messaging registration pointing at this install. Cheap, idempotent, never fatal.</summary>
+        private static void RegisterNativeHost()
+        {
+            try
+            {
+                string appDir = Path.GetDirectoryName(Environment.ProcessPath) ?? "";
+                foreach (var line in NativeHostRegistration.EnsureRegistered(appDir, new WindowsNativeHostRegistry(), File.Exists))
+                    AppLogger.Log("[NATIVE HOST] " + line);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Log("[NATIVE HOST] Registration check failed: " + ex.Message);
             }
         }
 

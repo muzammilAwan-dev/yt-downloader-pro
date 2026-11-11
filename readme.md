@@ -78,7 +78,7 @@ The extension adds its download button on these sites. Downloading itself is don
 ### 1. Install the native host
 
 1. Go to [Releases](../../releases/latest) and download `YTDownloaderPro_Setup.exe`.
-2. Run it. This installs the WPF host to `C:\Program Files\YT Downloader Pro` and registers the `ytdlp://` protocol.
+2. Run it. This installs the WPF host to `C:\Program Files\YT Downloader Pro`, registers the `ytdlp://` protocol and links the host to Chrome, Edge and Brave (Native Messaging).
 3. On first launch, the host silently fetches `yt-dlp`, `ffmpeg`, and `deno` into `%LOCALAPPDATA%\YTDownloaderProEngine`.
 
 ### 2. Install the browser extension
@@ -128,7 +128,7 @@ Because this extension talks to the native host and reads session cookies, it mu
 
 ## 🗑️ Uninstallation
 
-Settings → Apps → Installed Apps → uninstall **YT Downloader Pro**. This removes the host binaries, unregisters the protocol handler, and wipes the dynamic `%LOCALAPPDATA%` engine/payload folders. Remove the browser extension separately from your browser's extensions page (`chrome://extensions/`, `edge://extensions/`, etc.).
+Settings → Apps → Installed Apps → uninstall **YT Downloader Pro**. This removes the host binaries, unregisters the protocol handler and the browser link, and wipes the dynamic `%LOCALAPPDATA%` engine/payload folders. Remove the browser extension separately from your browser's extensions page (`chrome://extensions/`, `edge://extensions/`, etc.).
 
 ## 🛠️ Building from source
 

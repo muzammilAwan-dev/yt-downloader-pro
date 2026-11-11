@@ -34,6 +34,13 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "publish\YTDLPHost.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Assets\icon.ico"; DestDir: "{app}\Assets"; Flags: ignoreversion
 
+; --- BROWSER LINK (Native Messaging, step 2.6) ---
+; The shim must sit next to YTDLPHost.exe: it reads allowed-origins.txt from its own folder and starts the app from there.
+; The manifest's "path" is relative ("ytdlp-shim.exe"): Chrome, Edge and Brave resolve it against the manifest's own folder on Windows.
+Source: "publish\ytdlp-shim.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "native-host\native-host-manifest.json"; DestDir: "{app}"; Flags: ignoreversion
+Source: "native-host\allowed-origins.txt"; DestDir: "{app}"; Flags: ignoreversion
+
 [Icons]
 ; --- SHORTCUTS ---
 Name: "{autoprograms}\YT Downloader Pro"; Filename: "{app}\YTDLPHost.exe"
@@ -55,6 +62,13 @@ Root: HKLM; Subkey: "Software\Classes\ytdlp\shell\open\command"; ValueType: stri
 Root: HKCU; Subkey: "Software\Classes\ytdlp"; ValueType: string; ValueName: ""; ValueData: "URL:YT Downloader Protocol"; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\ytdlp"; ValueType: string; ValueName: "URL Protocol"; ValueData: ""; Flags: uninsdeletekey
 Root: HKCU; Subkey: "Software\Classes\ytdlp\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\YTDLPHost.exe"" ""%1"""; Flags: uninsdeletekey
+
+; --- NATIVE MESSAGING HOST (current user, HKCU) ---
+; The default value of each key is the manifest path. YTDLPHost.exe repairs these at every start (NativeHostRegistration), which also
+; covers a Windows user other than the one who ran this installer; uninsdeletekey removes the ones written here on uninstall.
+Root: HKCU; Subkey: "Software\Google\Chrome\NativeMessagingHosts\com.ytdlppro.host"; ValueType: string; ValueName: ""; ValueData: "{app}\native-host-manifest.json"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Microsoft\Edge\NativeMessagingHosts\com.ytdlppro.host"; ValueType: string; ValueName: ""; ValueData: "{app}\native-host-manifest.json"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\BraveSoftware\Brave-Browser\NativeMessagingHosts\com.ytdlppro.host"; ValueType: string; ValueName: ""; ValueData: "{app}\native-host-manifest.json"; Flags: uninsdeletekey
 
 [UninstallDelete]
 ; --- CLEANUP DYNAMIC FILES ---

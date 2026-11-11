@@ -158,13 +158,21 @@ public class DownloadRequestMapperTests
     }
 
     [Fact]
-    public void KnownGap_a_unix_folder_is_refused_until_phase_3()
+    public void A_unix_folder_is_accepted()
     {
-        // CommandValidator only understands "C:\..." and "~" (see its own KnownGap test). When Phase 3 replaces it with
-        // allowed-roots validation, flip this to expect success for "/home/me/Videos".
         var result = DownloadRequestMapper.Map(Request("\"quality\":\"1080\""), new MapperSettings("/home/me/Videos"));
 
+        Assert.True(result.Ok, result.Error);
+        Assert.Contains("/home/me/Videos/", result.Downloads[0].Command);
+    }
+
+    [Fact]
+    public void A_unix_system_folder_is_refused()
+    {
+        var result = DownloadRequestMapper.Map(Request("\"quality\":\"1080\""), new MapperSettings("/etc"));
+
         Assert.False(result.Ok);
+        Assert.Contains("refused by the command checker", result.Error);
     }
 
     // ---------------------------------------------------------------- custom commands

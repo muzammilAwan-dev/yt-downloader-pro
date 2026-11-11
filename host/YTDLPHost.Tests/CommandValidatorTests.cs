@@ -107,15 +107,31 @@ public class CommandValidatorTests
         Assert.Contains("option not allowed", reason);
     }
 
-    // ---------- documents a known gap that Phase 3 must close ----------
+    // ---------- Unix absolute output paths ----------
 
-    [Fact]
-    public void KnownGap_UnixAbsolutePaths_AreRejectedToday()
+    [Theory]
+    [InlineData("yt-dlp -o '/home/me/Downloads/%(title)s.mp4' 'https://a.com'")]
+    [InlineData("yt-dlp -o '/Users/me/Movies/%(title)s.mp4' 'https://a.com'")]
+    [InlineData("yt-dlp -o '/mnt/data/videos/%(title)s.mkv' 'https://a.com'")]
+    [InlineData("yt-dlp --download-archive '/home/me/archive.txt' 'https://a.com'")]
+    public void Accepts_unix_absolute_output_paths(string command)
     {
-        // The validator only understands "C:\..." and "~". On macOS/Linux every "/home/..." output
-        // path is rejected. Phase 3 replaces this with allowed-roots validation; when it lands,
-        // flip this assertion (and add the symlink-escape and traversal cases per OS).
-        Assert.False(Ok("yt-dlp -o '/home/me/Downloads/%(title)s.mp4' 'https://a.com'", out var reason));
-        Assert.Contains("output path or file type not allowed", reason);
+        Assert.True(Ok(command, out var reason), reason);
+    }
+
+    [Theory]
+    [InlineData("yt-dlp -o '/etc/x.mp4' 'https://a.com'")]
+    [InlineData("yt-dlp -o '/usr/local/x.mp4' 'https://a.com'")]
+    [InlineData("yt-dlp -o '/bin/x.mp4' 'https://a.com'")]
+    [InlineData("yt-dlp -o '/root/x.mp4' 'https://a.com'")]
+    [InlineData("yt-dlp -o '/System/x.mp4' 'https://a.com'")]
+    [InlineData("yt-dlp -o '/home/me/../../etc/x.mp4' 'https://a.com'")]
+    [InlineData("yt-dlp -o '/home/me/.ssh/x.mp4' 'https://a.com'")]
+    [InlineData("yt-dlp -o '/home/me/noextension' 'https://a.com'")]
+    [InlineData("yt-dlp -o '/home/me/x.sh' 'https://a.com'")]
+    [InlineData("yt-dlp -o '//server/share/x.mp4' 'https://a.com'")]
+    public void Rejects_unsafe_unix_output_paths(string command)
+    {
+        Assert.False(Ok(command, out _));
     }
 }

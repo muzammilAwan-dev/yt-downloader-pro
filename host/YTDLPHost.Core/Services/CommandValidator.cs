@@ -45,7 +45,14 @@ namespace YTDLPHost.Services
         private static readonly string[] BlockedPathFragments =
         {
             @"\windows\", @"\system32", @"\program files", @"\programdata", @"\start menu", @"\startup",
-            @"\appdata\roaming\microsoft", "ytdownloaderproengine"
+            @"\appdata\roaming\microsoft", "ytdownloaderproengine", @"\.ssh\"
+        };
+
+        // Unix system roots an output path may never start with (backslash form, after normalization).
+        private static readonly string[] BlockedUnixRoots =
+        {
+            @"\etc", @"\bin", @"\sbin", @"\usr", @"\lib", @"\proc", @"\sys",
+            @"\boot", @"\dev", @"\root", @"\system", @"\library"
         };
 
         private static readonly Regex UrlRegex = new(@"^https?://\S+$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -113,9 +120,18 @@ namespace YTDLPHost.Services
 
             if (Array.IndexOf(normalized.Split('\\'), "..") >= 0) return false;
             if (normalized.StartsWith(@"\\", StringComparison.Ordinal)) return false; // UNC / network paths
-            if (!DriveRegex.IsMatch(normalized) && !normalized.StartsWith("~", StringComparison.Ordinal)) return false;
+            // UNC (\\) was rejected above, so a single leading slash here is a Unix absolute path.
+            bool unixRooted = normalized.StartsWith('\\');
+            if (!DriveRegex.IsMatch(normalized) && !unixRooted && !normalized.StartsWith("~", StringComparison.Ordinal)) return false;
 
             var withTrailing = normalized + "\\";
+            if (unixRooted)
+            {
+                foreach (var root in BlockedUnixRoots)
+                {
+                    if (withTrailing.StartsWith(root + "\\", StringComparison.Ordinal)) return false;
+                }
+            }
             foreach (var fragment in BlockedPathFragments)
             {
                 if (withTrailing.Contains(fragment, StringComparison.Ordinal)) return false;

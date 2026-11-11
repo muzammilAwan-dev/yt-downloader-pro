@@ -76,6 +76,17 @@ namespace YTDLPHost
         /// <summary>
         /// Opens the settings context menu for protocol registration management.
         /// </summary>
+        private void OnBrowseDownloadFolderClick(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not MainViewModel vm) return;
+
+            var dialog = new Microsoft.Win32.OpenFolderDialog { Title = "Choose where downloads from the browser are saved" };
+            string current = vm.Settings.DownloadFolder;
+            if (!string.IsNullOrWhiteSpace(current) && System.IO.Directory.Exists(current)) dialog.InitialDirectory = current;
+
+            if (dialog.ShowDialog(this) == true) vm.SetDownloadFolderText(dialog.FolderName);
+        }
+
         private void OnSettingsClick(object sender, RoutedEventArgs e)
         {
             var menu = new ContextMenu { Style = (Style)FindResource("DarkContextMenu") };

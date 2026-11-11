@@ -197,6 +197,10 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Max tasks" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
@@ -222,6 +226,19 @@
                 </StackPanel>
 
                 <Button Grid.Column="1" Style="{StaticResource ActionButtonStyle}" Content="Clear completed" Command="{Binding ClearCompletedCommand}" Height="28" Padding="12,0" VerticalAlignment="Center" Visibility="{Binding HasCompletedDownloads, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Browser downloads folder" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
+                    <TextBox Grid.Column="1" Text="{Binding Settings.DownloadFolder}" Height="28" Padding="8,0" VerticalContentAlignment="Center" FontSize="12"
+                             Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" CaretBrush="{StaticResource TextPrimaryBrush}"
+                             ToolTip="Where downloads started from the browser are saved. Leave empty for the default (Downloads\YTDownloaderPro). Click Apply to save."/>
+                    <Button Grid.Column="2" Style="{StaticResource ActionButtonStyle}" Content="Browse..." Click="OnBrowseDownloadFolderClick" Height="28" Padding="12,0" Margin="8,0,0,0"/>
+                </Grid>
             </Grid>
         </Border>
 

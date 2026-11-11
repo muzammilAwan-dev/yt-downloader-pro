@@ -233,6 +233,17 @@ namespace YTDLPHost.ViewModels
 
             Settings.SpeedLimit = speed;
 
+            if (!SettingsRules.TryNormalizeDownloadFolder(Settings.DownloadFolder, out var folder, out var folderError))
+            {
+                _dialogs.Show("YT Downloader Pro - Settings Error", folderError, DialogKind.Warning);
+
+                Settings.DownloadFolder = AppSettings.Load().DownloadFolder;
+                OnPropertyChanged(nameof(Settings));
+                return;
+            }
+
+            Settings.DownloadFolder = folder;
+
             var oldSettings = AppSettings.Load();
             bool speedChanged = oldSettings.SpeedLimit != Settings.SpeedLimit;
             bool maxChanged = oldSettings.MaxConcurrentDownloads != Settings.MaxConcurrentDownloads;
@@ -386,6 +397,13 @@ namespace YTDLPHost.ViewModels
             foreach (var vm in _downloads) DownloadCleaner.CleanupCookieFile(vm.Task);
             _queue.CancelAll();
             _lifetime.Shutdown();
+        }
+
+        /// <summary>Fills the folder box from the Browse button; it is saved with Apply, like the other limits.</summary>
+        public void SetDownloadFolderText(string folder)
+        {
+            Settings.DownloadFolder = folder;
+            OnPropertyChanged(nameof(Settings));
         }
 
         /// <summary>Whether a browser download brings the window to the front (settings menu); read fresh so a change applies at once.</summary>

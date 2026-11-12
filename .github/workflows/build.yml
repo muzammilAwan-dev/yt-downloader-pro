@@ -152,7 +152,9 @@ jobs:
           Get-ChildItem host/installer/publish | Select-Object Name, Length
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" host/installer/setup.iss
 
+      # The setup is ~90 MB, so it is only kept when asked for: Actions tab > CI > Run workflow. Every push still compiles it above.
       - name: Upload Artifact
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: YTDownloaderPro-Setup

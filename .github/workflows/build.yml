@@ -14,6 +14,11 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+# A newer push to the same branch cancels the run that is still going: fewer runs, fewer artifacts.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   version-check:
     runs-on: ubuntu-latest
@@ -89,6 +94,8 @@ jobs:
         with:
           name: YTDLPHost-Release
           path: ./publish/YTDLPHost.exe
+          retention-days: 1   # only the installer job needs it, within this run
+          if-no-files-found: error
 
   shim:
     # Step 2.4: the Native Messaging shim, published the way it ships (self-contained single file; median start-to-reply 109 ms on the owner's PC).
@@ -114,11 +121,16 @@ jobs:
         with:
           name: ytdlp-shim-win-x64
           path: ./shim-publish/ytdlp-shim.exe
+          retention-days: 1   # only the installer job needs it, within this run
+          if-no-files-found: error
 
   installer:
     # Step 2.6: builds the real setup.exe from the two published exes. This is also the only place setup.iss is ever compiled.
     needs: [build, shim]
     runs-on: windows-latest
+    permissions:
+      contents: read
+      actions: write   # to delete the intermediate artifacts at the end
     steps:
       - uses: actions/checkout@v4
 
@@ -145,3 +157,18 @@ jobs:
         with:
           name: YTDownloaderPro-Setup
           path: host/installer/Output/*.exe
+          retention-days: 7
+          if-no-files-found: error
+
+      # Both exes are inside the setup now, so their artifacts can go at once instead of waiting for retention-days.
+      # Only runs when everything above passed (a failed run keeps them for a day to look at); never fails the build.
+      - name: Delete the intermediate artifacts
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for name in YTDLPHost-Release ytdlp-shim-win-x64; do
+            id=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" --jq ".artifacts[] | select(.name == \"$name\") | .id")
+            if [ -n "$id" ]; then gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id"; fi
+          done

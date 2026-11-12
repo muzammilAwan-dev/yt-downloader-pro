@@ -669,6 +669,23 @@ function ytdlpNativeChannelOptions(site, c) {
   };
 }
 
+/**
+ * Step 2.7: what the page or the popup does with the answer of "native_download" (see native.js for the result shapes).
+ * `legacyFallback` is the user's setting "fall back to the old browser link" (default on in this release, planned to go away in the next one).
+ *   { action: 'done' }                  the app took the download
+ *   { action: 'fallback' }              send the same download as a ytdlp:// link, as before
+ *   { action: 'error', message }        show the message and send nothing
+ * "failed" (the app answered and could not take it) never falls back: a second path would only repeat the failure. A missing answer
+ * (the background script was asleep) counts as "unavailable".
+ */
+function ytdlpNativeOutcome(result, legacyFallback) {
+  if (result && result.ok) return { action: 'done' };
+  if (result && result.failed) return { action: 'error', message: result.reason || 'The app could not start the download.' };
+  if (legacyFallback) return { action: 'fallback' };
+  if (result && result.rejected) return { action: 'error', message: 'YT Downloader Pro refused this download' + (result.reason ? ': ' + result.reason : '.') };
+  return { action: 'error', message: 'YT Downloader Pro is not reachable. Start it once, or reinstall it so the browser link is registered.' };
+}
+
 // Expose to both window (content script / popup) and self (service worker) scopes.
 if (typeof window !== 'undefined') {
   window.YTDLP_SITES = YTDLP_SITES;
@@ -679,6 +696,7 @@ if (typeof window !== 'undefined') {
   window.ytdlpUniqueSuffix = ytdlpUniqueSuffix;
   window.ytdlpNativeVideoOptions = ytdlpNativeVideoOptions;
   window.ytdlpNativeChannelOptions = ytdlpNativeChannelOptions;
+  window.ytdlpNativeOutcome = ytdlpNativeOutcome;
 }
 if (typeof self !== 'undefined') {
   self.YTDLP_SITES = YTDLP_SITES;
@@ -689,4 +707,5 @@ if (typeof self !== 'undefined') {
   self.ytdlpUniqueSuffix = ytdlpUniqueSuffix;
   self.ytdlpNativeVideoOptions = ytdlpNativeVideoOptions;
   self.ytdlpNativeChannelOptions = ytdlpNativeChannelOptions;
+  self.ytdlpNativeOutcome = ytdlpNativeOutcome;
 }

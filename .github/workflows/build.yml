@@ -33,7 +33,7 @@ jobs:
         with:
           node-version: '20'
       - name: Native client tests (fake chrome object)
-        run: node --test tools/test-native-client.js
+        run: node --test tools/test-native-client.js tools/test-native-outcome.js
       - name: Golden cases must match what the extension code produces
         run: |
           node tools/generate-native-golden.js . /tmp/GoldenCases.cs

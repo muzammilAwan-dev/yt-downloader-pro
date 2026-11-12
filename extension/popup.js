@@ -33,6 +33,7 @@
     flagThumbnail: document.getElementById('flagThumbnail'),
     flagSponsor: document.getElementById('flagSponsor'),
     compatMode: document.getElementById('compatMode'),
+    legacyFallback: document.getElementById('legacyFallback'),
     customCommand: document.getElementById('customCommand'),
     concurrentDownloads: document.getElementById('concurrentDownloads'),
     buttonVisibility: document.getElementById('buttonVisibility'),
@@ -87,7 +88,7 @@
       const prefs = await chrome.storage.sync.get([
         'savePath', 'resolution', 'audioFormat', 'embedSubs', 'downloadPlaylist',
         'playlistItems', 'useCookies', 'concurrentDownloads', 'buttonVisibility',
-        'flagMetadata', 'flagThumbnail', 'flagSponsor', 'compatMode'
+        'flagMetadata', 'flagThumbnail', 'flagSponsor', 'compatMode', 'legacyFallback'
       ]);
 
       if (prefs.savePath) elements.savePath.value = prefs.savePath;
@@ -102,6 +103,7 @@
       elements.flagThumbnail.checked = prefs.flagThumbnail !== false;
       elements.flagSponsor.checked = prefs.flagSponsor === true;
       elements.compatMode.checked = prefs.compatMode === true;
+      elements.legacyFallback.checked = prefs.legacyFallback !== false;
 
       elements.concurrentDownloads.value = prefs.concurrentDownloads || "4";
       elements.buttonVisibility.value = prefs.buttonVisibility || "fade";
@@ -131,7 +133,8 @@
         flagMetadata: elements.flagMetadata.checked,
         flagThumbnail: elements.flagThumbnail.checked,
         flagSponsor: elements.flagSponsor.checked,
-        compatMode: elements.compatMode.checked
+        compatMode: elements.compatMode.checked,
+        legacyFallback: elements.legacyFallback.checked
       });
     } catch (error) { }
   }
@@ -161,7 +164,7 @@
       savePreferences();
     });
 
-    [elements.savePath, elements.audioFormat, elements.subsToggle, elements.playlistItems, elements.cookiesToggle, elements.concurrentDownloads, elements.buttonVisibility, elements.flagMetadata, elements.flagThumbnail, elements.flagSponsor, elements.compatMode]
+    [elements.savePath, elements.audioFormat, elements.subsToggle, elements.playlistItems, elements.cookiesToggle, elements.concurrentDownloads, elements.buttonVisibility, elements.flagMetadata, elements.flagThumbnail, elements.flagSponsor, elements.compatMode, elements.legacyFallback]
       .forEach(el => el.addEventListener('change', savePreferences));
 
     elements.exportLogsBtn.addEventListener('click', async () => {
@@ -487,8 +490,11 @@
         });
       } catch (e) { /* background asleep or unreachable: fall back below */ }
 
-      if (result && result.ok) return { native: true };
-      if (result && result.failed) throw new Error(result.reason || 'The app could not start the download.');
+      let legacyFallback = true;
+      try { legacyFallback = (await chrome.storage.sync.get('legacyFallback')).legacyFallback !== false; } catch (e) { /* keep the default */ }
+      const outcome = ytdlpNativeOutcome(result, legacyFallback);
+      if (outcome.action === 'done') return { native: true };
+      if (outcome.action === 'error') throw new Error(outcome.message);
       ytdlpLog('warn', 'popup', 'Native host not used; falling back to ytdlp://', { reason: result && result.reason, rejected: !!(result && result.rejected) });
     }
 

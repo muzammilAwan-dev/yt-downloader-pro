@@ -1161,8 +1161,11 @@
               });
           } catch (e) { /* background asleep or unreachable: fall back below */ }
 
-          if (result && result.ok) return { native: true };
-          if (result && result.failed) throw new Error(result.reason || 'The app could not start the download.');
+          let legacyFallback = true;
+          try { legacyFallback = (await chrome.storage.sync.get('legacyFallback')).legacyFallback !== false; } catch (e) { /* keep the default */ }
+          const outcome = ytdlpNativeOutcome(result, legacyFallback);
+          if (outcome.action === 'done') return { native: true };
+          if (outcome.action === 'error') throw new Error(outcome.message);
           ytdlpLog('warn', 'content', 'Native host not used; falling back to ytdlp://', { reason: result && result.reason, rejected: !!(result && result.rejected) });
       }
 

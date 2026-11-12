@@ -149,8 +149,11 @@ Exit codes: 0 normal end, 2 caller not allowed, 3 app unreachable or could not b
   send `native_download` to `background.js`, which adds cookies as plain text (not base64) and hands the request to `native.js`
   (`connectNative` to `com.ytdlppro.host`, one shared port). `native.js` resolves each request to one result: accepted; unavailable (no host
   registered, shim or app unreachable, silent for 30 s); rejected; or failed.
-- **Fallback.** unavailable or rejected: the SAME download goes out as a `ytdlp://` link exactly as before (one-release migration, step 2.7).
-  failed (the app answered `error` before accepting, for example its first-time setup failed): the reason is shown and nothing is sent twice.
+- **Fallback (step 2.7).** `ytdlpNativeOutcome` in `sites.js` decides, for `content.js` and `popup.js` alike. The extension setting `legacyFallback`
+  (popup settings, "App connection"; default on in this release) controls what happens when the app did not take the download:
+  unavailable, rejected or no answer: with the setting on, the SAME download goes out as a `ytdlp://` link exactly as before; with it off, the user gets an
+  error ("not reachable" / "refused: reason") and nothing is sent. failed (the app answered `error` before accepting, for example its first-time setup
+  failed): the reason is shown and nothing is sent twice, whatever the setting. Plan: the next release turns the default off, the one after removes the link path.
 - **Stays on the `ytdlp://` path for now:** a custom command (`quality: custom`), and any download while the extension's "save path" option
   is filled in (the app uses its own `DownloadFolder` setting; moving that option into the app is the rest of step 2.5).
 - **Results.** After `accepted`, an `error` from the app becomes an error toast in the tab (or a browser notification when the popup started it).

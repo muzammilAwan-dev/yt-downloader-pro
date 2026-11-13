@@ -134,4 +134,42 @@ public class CommandValidatorTests
     {
         Assert.False(Ok(command, out _));
     }
+
+    // ---------- path policy (step 3.2) ----------
+
+    [Theory]
+    [InlineData(@"yt-dlp -o 'C:\Windows.\a.mp4' 'https://a.com'")]
+    [InlineData(@"yt-dlp -o 'C:\Windows \a.mp4' 'https://a.com'")]
+    [InlineData(@"yt-dlp -o 'C:\PROGRA~1\a.mp4' 'https://a.com'")]
+    [InlineData(@"yt-dlp -o 'C:\Users\me\.\..\a.mp4' 'https://a.com'")]
+    [InlineData("yt-dlp -o '~other/a.mp4' 'https://a.com'")]
+    public void Rejects_path_tricks_that_a_text_blocklist_would_miss(string command)
+    {
+        Assert.False(Ok(command, out _));
+    }
+
+    [Fact]
+    public void Rejects_an_output_folder_that_is_a_link_into_a_system_folder()
+    {
+        var policy = new PathPolicy("/home/me", path => path == "/home/me/Videos/link" ? "/etc" : null);
+
+        Assert.False(CommandValidator.TryValidate(Q("yt-dlp -o '/home/me/Videos/link/%(title)s.mp4' 'https://a.com'"), policy, out _));
+    }
+
+    [Fact]
+    public void Accepts_the_same_command_when_the_link_leads_somewhere_harmless()
+    {
+        var policy = new PathPolicy("/home/me", path => path == "/home/me/Videos/link" ? "/mnt/media" : null);
+
+        Assert.True(CommandValidator.TryValidate(Q("yt-dlp -o '/home/me/Videos/link/%(title)s.mp4' 'https://a.com'"), policy, out var reason), reason);
+    }
+
+    [Fact]
+    public void Expands_the_tilde_with_the_policy_home_and_still_wants_a_media_extension()
+    {
+        var policy = new PathPolicy("/home/me", _ => null);
+
+        Assert.True(CommandValidator.TryValidate(Q("yt-dlp -o '~/Downloads/%(title)s.mp4' 'https://a.com'"), policy, out var reason), reason);
+        Assert.False(CommandValidator.TryValidate(Q("yt-dlp -o '~/Downloads/%(title)s.sh' 'https://a.com'"), policy, out _));
+    }
 }

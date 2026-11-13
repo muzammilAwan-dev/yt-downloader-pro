@@ -41,24 +41,12 @@ namespace YTDLPHost.Services
 
         private static readonly string[] ArchiveExtensions = { ".txt" };
 
-        // Lower-case fragments (backslash separated) that output paths may never contain.
-        private static readonly string[] BlockedPathFragments =
-        {
-            @"\windows\", @"\system32", @"\program files", @"\programdata", @"\start menu", @"\startup",
-            @"\appdata\roaming\microsoft", "ytdownloaderproengine", @"\.ssh\"
-        };
-
-        // Unix system roots an output path may never start with (backslash form, after normalization).
-        private static readonly string[] BlockedUnixRoots =
-        {
-            @"\etc", @"\bin", @"\sbin", @"\usr", @"\lib", @"\proc", @"\sys",
-            @"\boot", @"\dev", @"\root", @"\system", @"\library"
-        };
-
         private static readonly Regex UrlRegex = new(@"^https?://\S+$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static readonly Regex DriveRegex = new(@"^[a-z]:\\", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        public static bool TryValidate(string command, out string reason)
+        public static bool TryValidate(string command, out string reason) => TryValidate(command, PathPolicy.CreateDefault(), out reason);
+
+        /// <param name="paths">Which output and archive paths are acceptable (symbolic links included); see <see cref="PathPolicy"/>.</param>
+        public static bool TryValidate(string command, PathPolicy paths, out string reason)
         {
             reason = string.Empty;
 
@@ -95,8 +83,8 @@ namespace YTDLPHost.Services
 
                         if (value.StartsWith("--", StringComparison.Ordinal)) { reason = $"invalid value for {arg}"; return false; }
 
-                        if (arg == "-o" && !IsPathAllowed(value, MediaExtensions)) { reason = "output path or file type not allowed"; return false; }
-                        if (arg == "--download-archive" && !IsPathAllowed(value, ArchiveExtensions)) { reason = "archive path not allowed"; return false; }
+                        if (arg == "-o" && !IsPathAllowed(paths, value, MediaExtensions)) { reason = "output path or file type not allowed"; return false; }
+                        if (arg == "--download-archive" && !IsPathAllowed(paths, value, ArchiveExtensions)) { reason = "archive path not allowed"; return false; }
                         continue;
                     }
 
@@ -114,32 +102,11 @@ namespace YTDLPHost.Services
             return true;
         }
 
-        private static bool IsPathAllowed(string path, string[] allowedExtensions)
+        private static bool IsPathAllowed(PathPolicy paths, string path, string[] allowedExtensions)
         {
-            var normalized = path.Replace('/', '\\').ToLowerInvariant();
-
-            if (Array.IndexOf(normalized.Split('\\'), "..") >= 0) return false;
-            if (normalized.StartsWith(@"\\", StringComparison.Ordinal)) return false; // UNC / network paths
-            // UNC (\\) was rejected above, so a single leading slash here is a Unix absolute path.
-            bool unixRooted = normalized.StartsWith('\\');
-            if (!DriveRegex.IsMatch(normalized) && !unixRooted && !normalized.StartsWith("~", StringComparison.Ordinal)) return false;
-
-            var withTrailing = normalized + "\\";
-            if (unixRooted)
-            {
-                foreach (var root in BlockedUnixRoots)
-                {
-                    if (withTrailing.StartsWith(root + "\\", StringComparison.Ordinal)) return false;
-                }
-            }
-            foreach (var fragment in BlockedPathFragments)
-            {
-                if (withTrailing.Contains(fragment, StringComparison.Ordinal)) return false;
-            }
-
             foreach (var ext in allowedExtensions)
             {
-                if (normalized.EndsWith(ext, StringComparison.Ordinal)) return true;
+                if (path.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) return paths.IsAllowed(path);
             }
             return false;
         }

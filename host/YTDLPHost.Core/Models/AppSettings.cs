@@ -32,7 +32,7 @@ namespace YTDLPHost.Models
         /// </summary>
         public bool ShowWindowOnNativeDownload { get; set; } = false;
 
-        private static string SettingsPath => Path.Combine(AppPaths.Current.DataDir, "settings.json");
+        private static string SettingsPath => Path.Combine(AppPaths.Current.ConfigDir, "settings.json");
 
         public static AppSettings Load()
         {

@@ -9,7 +9,7 @@
     Measured on the owner's PC (2026-11-04): median 109 ms from start to the first reply, so the plan's 150 ms gate is met.
     Native AOT is an option for later (smaller, faster to start) but needs the Visual Studio "Desktop development with C++" tools:
         dotnet publish host/YTDLPHost.Shim -c Release -r win-x64 -p:PublishAot=true -o shim-publish
-    Only NativeFrame.cs and NativePipe.cs are shared with the app (plain stream and pipe code). Do NOT reference YTDLPHost.Core: its
+    Only NativeFrame.cs, NativePipe.cs and the two path files (IAppPaths.cs, PlatformAppPaths.cs; the shim logs to the same folder as the app) are shared with the app (plain stream, pipe and path code). Do NOT reference YTDLPHost.Core: its
     JSON code uses reflection, which Native AOT does not like.
   -->
   <PropertyGroup>
@@ -31,6 +31,8 @@
   <ItemGroup>
     <Compile Include="..\YTDLPHost.Core\Native\NativeFrame.cs" Link="Shared\NativeFrame.cs" />
     <Compile Include="..\YTDLPHost.Core\Native\NativePipe.cs" Link="Shared\NativePipe.cs" />
+    <Compile Include="..\YTDLPHost.Core\Services\IAppPaths.cs" Link="Shared\IAppPaths.cs" />
+    <Compile Include="..\YTDLPHost.Core\Services\PlatformAppPaths.cs" Link="Shared\PlatformAppPaths.cs" />
   </ItemGroup>
 
 </Project>

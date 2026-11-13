@@ -16,8 +16,11 @@ namespace YTDLPHost.Services
         /// <summary>Where yt-dlp, ffmpeg and deno live.</summary>
         string EngineDir { get; }
 
-        /// <summary>settings.json and history.json.</summary>
+        /// <summary>history.json (and, where ConfigDir is not overridden, settings.json).</summary>
         string DataDir { get; }
+
+        /// <summary>settings.json. Same as DataDir except on Linux, where it is XDG_CONFIG_HOME.</summary>
+        string ConfigDir => DataDir;
 
         /// <summary>host_debug.log and crash_log.txt.</summary>
         string LogsDir { get; }
@@ -35,12 +38,12 @@ namespace YTDLPHost.Services
     /// </summary>
     public static class AppPaths
     {
-        public static IAppPaths Current { get; set; } = new LegacyAppPaths();
+        public static IAppPaths Current { get; set; } = AppPathsFactory.CreateDefault();
     }
 
     /// <summary>
     /// Today's layout, unchanged, so existing Windows installs keep their settings, history, engine
-    /// binaries and queued payloads exactly where they are. Replaced per-OS in Phase 3.
+    /// binaries and queued payloads exactly where they are. Still what Windows uses (see AppPathsFactory); macOS and Linux have their own layouts.
     /// </summary>
     public sealed class LegacyAppPaths : IAppPaths
     {

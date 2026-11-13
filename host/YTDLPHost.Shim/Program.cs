@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO.Pipes;
 using YTDLPHost.Native;
+using YTDLPHost.Services;
 
 namespace YTDLPHost.Shim
 {
@@ -128,7 +129,7 @@ namespace YTDLPHost.Shim
         {
             try
             {
-                string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "YTDownloaderProEngine");
+                string dir = AppPathsFactory.CreateDefault().LogsDir;   // Windows: the same folder as before
                 Directory.CreateDirectory(dir);
                 _path = Path.Combine(dir, "shim.log");
                 if (File.Exists(_path) && new FileInfo(_path).Length > MaxBytes) File.Delete(_path);

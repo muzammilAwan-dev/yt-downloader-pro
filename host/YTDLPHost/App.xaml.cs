@@ -16,7 +16,7 @@ namespace YTDLPHost
 {
     public partial class App : System.Windows.Application
     {
-        private SingleInstanceManager? _singleInstanceManager;
+        private SingleInstance? _singleInstance;
         private MainViewModel? _mainViewModel;
         private MainWindow? _mainWindow;
         private FileSystemWatcher? _payloadWatcher;
@@ -61,8 +61,8 @@ namespace YTDLPHost
             string payloadsDir = AppPaths.Current.PayloadsDir;
             if (!Directory.Exists(payloadsDir)) Directory.CreateDirectory(payloadsDir);
 
-            _singleInstanceManager = new SingleInstanceManager();
-            var isFirstInstance = _singleInstanceManager.Initialize();
+            _singleInstance = SingleInstance.ForCurrentUser(AppPaths.Current);
+            var isFirstInstance = _singleInstance.TryBecomePrimary();
 
             if (!isFirstInstance)
             {
@@ -80,7 +80,7 @@ namespace YTDLPHost
                 {
                     try 
                     { 
-                        await SingleInstanceManager.SendUrlToRunningInstanceAsync("ytdlp://show"); 
+                        await SingleInstance.SendToRunningInstanceAsync("ytdlp://show"); 
                         await Task.Delay(500); 
                     } 
                     catch { }
@@ -91,7 +91,7 @@ namespace YTDLPHost
 
             AppLogger.Log("[BOOT] Primary instance established. Initializing UI components.");
             RegisterNativeHost();
-            _singleInstanceManager.UrlReceived += OnUrlReceived;
+            _singleInstance.MessageReceived += OnUrlReceived;
             _mainViewModel = new MainViewModel(WpfPlatform.Create());
             
             _mainViewModel.RequestShowWindow += OnRequestShowWindow;
@@ -201,7 +201,7 @@ namespace YTDLPHost
             _payloadWatcher?.Dispose();
             _nativeServer?.Dispose();
             _mainViewModel?.Dispose();
-            _singleInstanceManager?.Dispose();
+            _singleInstance?.Dispose();
             base.OnExit(e);
         }
     }

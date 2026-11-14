@@ -15,18 +15,24 @@ namespace YTDLPHost.Services
     }
 
     /// <summary>
-    /// What to fetch and what the files are called. Today only the Windows set exists; Phase 3 adds a
-    /// per-OS/CPU catalog (with checksums) behind this same shape.
+    /// What to fetch and what the files are called. The checksum URLs are optional so that tests can use plain fake assets; every real set in
+    /// <see cref="EngineCatalog"/> has them for every download. An empty <paramref name="FfmpegZipUrl"/> means "use the ffmpeg of the system".
     /// </summary>
     public sealed record EngineAssets(
         string YtDlpFile, string FfmpegFile, string FfprobeFile, string DenoFile,
-        string YtDlpUrl, string FfmpegZipUrl, string DenoZipUrl)
+        string YtDlpUrl, string FfmpegZipUrl, string DenoZipUrl,
+        string? YtDlpSumsUrl = null, string? FfmpegSumsUrl = null, string? DenoSumsUrl = null)
     {
+        public bool FfmpegFromSystem => string.IsNullOrEmpty(FfmpegZipUrl);
+
         public static EngineAssets Windows { get; } = new(
             "yt-dlp.exe", "ffmpeg.exe", "ffprobe.exe", "deno.exe",
             "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe",
             "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip",
-            "https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip");
+            "https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip",
+            "https://github.com/yt-dlp/yt-dlp/releases/latest/download/SHA2-256SUMS",
+            "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/checksums.sha256",
+            "https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip.sha256sum");
     }
 
     /// <summary>
@@ -71,8 +77,8 @@ namespace YTDLPHost.Services
                 AppLogger.Log("[DEPENDENCIES] Downloading yt-dlp binary.");
                 onStage?.Invoke(EngineStage.DownloadingYtDlp);
 
-                var ytdlpBytes = await DownloadFileWithRetryAsync(_assets.YtDlpUrl);
-                await File.WriteAllBytesAsync(YtDlpPath, ytdlpBytes);
+                var ytdlpBytes = await DownloadVerifiedAsync(_assets.YtDlpUrl, _assets.YtDlpSumsUrl);
+                await WriteAtomicAsync(YtDlpPath, ytdlpBytes);
 
                 try { File.Delete(YtDlpPath + ":Zone.Identifier"); } catch { }
             }
@@ -85,7 +91,7 @@ namespace YTDLPHost.Services
                 string zipPath = Path.Combine(_paths.TempDir, "ffmpeg.zip");
                 string extractPath = Path.Combine(_paths.TempDir, "ffmpeg_ext");
 
-                var ffmpegBytes = await DownloadFileWithRetryAsync(_assets.FfmpegZipUrl);
+                var ffmpegBytes = await DownloadVerifiedAsync(_assets.FfmpegZipUrl, _assets.FfmpegSumsUrl);
                 await File.WriteAllBytesAsync(zipPath, ffmpegBytes);
 
                 AppLogger.Log("[DEPENDENCIES] Extracting FFmpeg archive contents.");
@@ -101,7 +107,7 @@ namespace YTDLPHost.Services
                         fileName.Equals(_assets.FfprobeFile, StringComparison.OrdinalIgnoreCase))
                     {
                         string destPath = Path.Combine(engineDir, fileName);
-                        File.Copy(file, destPath, true);
+                        CopyAtomically(file, destPath);
                         try { File.Delete(destPath + ":Zone.Identifier"); } catch { }
                     }
                 }
@@ -118,7 +124,7 @@ namespace YTDLPHost.Services
                 string denoZipPath = Path.Combine(_paths.TempDir, "deno.zip");
                 string denoExtractPath = Path.Combine(_paths.TempDir, "deno_ext");
 
-                var denoBytes = await DownloadFileWithRetryAsync(_assets.DenoZipUrl);
+                var denoBytes = await DownloadVerifiedAsync(_assets.DenoZipUrl, _assets.DenoSumsUrl);
                 await File.WriteAllBytesAsync(denoZipPath, denoBytes);
 
                 AppLogger.Log("[DEPENDENCIES] Extracting Deno archive contents.");
@@ -130,7 +136,7 @@ namespace YTDLPHost.Services
                 string extractedDeno = Path.Combine(denoExtractPath, _assets.DenoFile);
                 if (File.Exists(extractedDeno))
                 {
-                    File.Copy(extractedDeno, DenoPath, true);
+                    CopyAtomically(extractedDeno, DenoPath);
                     try { File.Delete(DenoPath + ":Zone.Identifier"); } catch { }
                 }
 
@@ -151,13 +157,79 @@ namespace YTDLPHost.Services
         public EngineUpdater CreateUpdater() =>
             new EngineUpdater(YtDlpPath, EngineDir, () => NormalizeUpdateChannel(AppSettings.Load().UpdateChannel));
 
-        private async Task<byte[]> DownloadFileWithRetryAsync(string url, int maxRetries = 3)
+        /// <summary>
+        /// Downloads a file and checks it against the checksum file its project publishes with the release. A mismatch is tried once more (the "latest" release
+        /// of BtbN can change between the two downloads); after that, or when the checksum file has no entry for the file, nothing is installed
+        /// (<see cref="EngineVerificationException"/>). Without a checksum URL (test assets only) the file is taken as it is.
+        /// </summary>
+        private async Task<byte[]> DownloadVerifiedAsync(string url, string? sumsUrl)
+        {
+            if (string.IsNullOrEmpty(sumsUrl))
+            {
+                AppLogger.Log($"[DEPENDENCIES] No checksum source for {url}; the download is not verified.");
+                return await DownloadFileWithRetryAsync(url);
+            }
+
+            string asset = Path.GetFileName(Uri.UnescapeDataString(new Uri(url).AbsolutePath));
+            bool perFileSums = sumsUrl.EndsWith(".sha256sum", StringComparison.OrdinalIgnoreCase);
+            string problem = "";
+            for (int attempt = 1; attempt <= 2; attempt++)
+            {
+                byte[] bytes = await DownloadFileWithRetryAsync(url);
+                string sums = await DownloadTextWithRetryAsync(sumsUrl);
+
+                string? expected = Sha256Sums.FindHash(sums, asset, perFileSums);
+                if (expected == null) throw new EngineVerificationException($"The published checksums ({sumsUrl}) have no entry for {asset}.");
+
+                string actual = Sha256Hex.Of(bytes);
+                if (string.Equals(expected, actual, StringComparison.OrdinalIgnoreCase)) return bytes;
+
+                problem = $"Checksum mismatch for {asset}: published {expected}, downloaded {actual}.";
+                AppLogger.Log("[DEPENDENCIES] " + problem + (attempt == 1 ? " Trying once more." : ""));
+            }
+            throw new EngineVerificationException(problem);
+        }
+
+        /// <summary>Writes next to the target and renames, so a crash never leaves a half-written tool that File.Exists would accept.</summary>
+        private static async Task WriteAtomicAsync(string path, byte[] bytes)
+        {
+            string temp = path + ".download";
+            try
+            {
+                await File.WriteAllBytesAsync(temp, bytes);
+                File.Move(temp, path, overwrite: true);
+            }
+            finally
+            {
+                try { if (File.Exists(temp)) File.Delete(temp); } catch { }
+            }
+        }
+
+        private static void CopyAtomically(string source, string dest)
+        {
+            string temp = dest + ".download";
+            try
+            {
+                File.Copy(source, temp, true);
+                File.Move(temp, dest, overwrite: true);
+            }
+            finally
+            {
+                try { if (File.Exists(temp)) File.Delete(temp); } catch { }
+            }
+        }
+
+        private Task<byte[]> DownloadFileWithRetryAsync(string url) => WithRetryAsync(() => _http.GetByteArrayAsync(url));
+
+        private Task<string> DownloadTextWithRetryAsync(string url) => WithRetryAsync(() => _http.GetStringAsync(url));
+
+        private async Task<T> WithRetryAsync<T>(Func<Task<T>> action, int maxRetries = 3)
         {
             for (int i = 0; i < maxRetries; i++)
             {
                 try
                 {
-                    return await _http.GetByteArrayAsync(url);
+                    return await action();
                 }
                 catch (Exception) when (i < maxRetries - 1)
                 {
@@ -165,7 +237,7 @@ namespace YTDLPHost.Services
                     await Task.Delay(_retryDelay);
                 }
             }
-            return await _http.GetByteArrayAsync(url);
+            return await action();
         }
 
         /// <summary>

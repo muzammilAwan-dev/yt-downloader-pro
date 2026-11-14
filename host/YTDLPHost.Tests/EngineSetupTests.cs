@@ -124,4 +124,25 @@ public class EngineSetupTests
         Assert.Equal(0, rig.RunnersCreated);      // downloads must not start without the tools
         rig.Queue.Dispose();
     }
+
+    [Fact]
+    public async Task A_failed_integrity_check_is_reported_as_that_and_not_as_a_network_error()
+    {
+        var rig = new Rig();
+        rig.Engine.Install = _ => throw new EngineVerificationException("Checksum mismatch for yt-dlp.exe");
+        rig.AddQueuedItem();
+
+        await rig.Setup.RunAsync();
+
+        Assert.True(rig.Setup.HasFailed);
+        var card = Assert.Single(rig.Items, i => i.Task.Title == EngineSetup.SetupCardTitle);
+        Assert.Equal(DownloadStatus.Error, card.Task.Status);
+        Assert.Contains("checksum", card.Task.ErrorMessage!, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(rig.Statuses, status => status.Contains("integrity"));
+        Assert.DoesNotContain("Network Error. Please check your internet connection.", rig.Statuses);
+
+        await Task.Delay(150);
+        Assert.Equal(0, rig.RunnersCreated);
+        rig.Queue.Dispose();
+    }
 }

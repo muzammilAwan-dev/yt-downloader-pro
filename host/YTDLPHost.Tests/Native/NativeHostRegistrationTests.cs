@@ -173,7 +173,7 @@ public class NativeHostRegistrationTests
         var log = NativeHostRegistration.Unregister(AppDir, registry);
 
         Assert.True(NativeHostRegistration.Failed(log));
-        Assert.Equal(1, registry.Values.Count);   // only the key that refused is left
+        Assert.Single(registry.Values);   // only the key that refused is left
     }
 
     [Fact]

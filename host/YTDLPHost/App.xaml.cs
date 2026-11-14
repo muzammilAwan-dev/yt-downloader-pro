@@ -50,6 +50,13 @@ namespace YTDLPHost
             if (!string.IsNullOrEmpty(urlArg)) AppLogger.Log($"[BOOT] Launch Arguments Received: {urlArg}");
             else AppLogger.Log("[BOOT] Launched normally (no protocol arguments).");
 
+            var hostCommand = HostCommandLine.Parse(e.Args);
+            if (hostCommand != HostCommand.None)
+            {
+                Environment.Exit(RunHostCommand(hostCommand));
+                return;
+            }
+
             base.OnStartup(e);
 
             if (!ProtocolHandler.IsRegistered())
@@ -118,6 +125,26 @@ namespace YTDLPHost
             if (!string.IsNullOrEmpty(urlArg) && urlArg.StartsWith("ytdlp://"))
             {
                 _mainViewModel.ProcessUrl(urlArg);
+            }
+        }
+
+        /// <summary>Step 3.4: <c>--register-native-host</c> / <c>--unregister-native-host</c>. The result is in host_debug.log and in the exit code (0 = done).</summary>
+        private static int RunHostCommand(HostCommand command)
+        {
+            try
+            {
+                string appDir = Path.GetDirectoryName(Environment.ProcessPath) ?? "";
+                var registry = new WindowsNativeHostRegistry();
+                var log = command == HostCommand.RegisterNativeHost
+                    ? NativeHostRegistration.EnsureRegistered(appDir, registry, File.Exists)
+                    : NativeHostRegistration.Unregister(appDir, registry);
+                foreach (var line in log) AppLogger.Log("[NATIVE HOST] " + line);
+                return NativeHostRegistration.Failed(log) ? 1 : 0;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Log("[NATIVE HOST] Command failed: " + ex.Message);
+                return 1;
             }
         }
 

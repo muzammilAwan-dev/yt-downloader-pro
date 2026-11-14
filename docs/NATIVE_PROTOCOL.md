@@ -171,7 +171,13 @@ Exit codes: 0 normal end, 2 caller not allowed, 3 app unreachable or could not b
   the installer and an app folder that was moved. Without those files next to the exe (a development run) it does nothing, so the registration of
   `tools/register-native-host-dev.ps1` stays in place. The log lines start with `[NATIVE HOST]` in `host_debug.log`.
 - **Pinned id.** `NativeHostFilesTests` derives the extension id from the `key` in `extension/manifest.json` and fails if the shipped manifest or origins file names another one.
-- **Not yet:** Firefox (needs `allowed_extensions` and a different manifest, Phase 6), macOS and Linux locations (Phase 3).
+- **macOS and Linux (step 3.4, `NativeHostUnixRegistration`):** there is no registry. Each installed Chromium-family browser (Chrome, Chromium, Edge, Brave; installed = its profile
+  folder exists) gets `NativeMessagingHosts/com.ytdlppro.host.json` inside that folder: macOS `~/Library/Application Support/<Google/Chrome | Chromium | Microsoft Edge | BraveSoftware/Brave-Browser>/`,
+  Linux `~/.config/<google-chrome | chromium | microsoft-edge | BraveSoftware/Brave-Browser>/`. The manifest's `path` is the ABSOLUTE path of `ytdlp-shim` (no `.exe`) next to the app,
+  `allowed_origins` comes from `allowed-origins.txt`; the file is written atomically with mode 0644. Registering again changes nothing; a manifest that points at another install is left alone by the unregister switch.
+- **Command line:** `YTDLPHost --register-native-host` registers this install and exits (0 = done, 1 = nothing registered or something failed; details in `host_debug.log`),
+  `YTDLPHost --unregister-native-host` removes it again.
+- **Not yet:** Firefox (needs `allowed_extensions` and a different manifest, Phase 6), the Unix app that calls the registrar and a settings panel with a Repair button (Phase 4).
 
 ## Notes for later steps
 

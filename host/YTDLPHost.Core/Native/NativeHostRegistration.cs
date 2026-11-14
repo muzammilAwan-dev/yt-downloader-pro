@@ -1,3 +1,5 @@
+using YTDLPHost.Services;
+
 namespace YTDLPHost.Native
 {
     /// <summary>One browser's per-user place for Native Messaging host registrations (a registry key on Windows).</summary>
@@ -12,6 +14,9 @@ namespace YTDLPHost.Native
 
         /// <summary>Creates the key if needed and sets its default value.</summary>
         void SetDefaultValue(string subKey, string value);
+
+        /// <summary>Deletes the key and everything below it; nothing happens when it does not exist.</summary>
+        void DeleteKey(string subKey);
     }
 
     /// <summary>
@@ -25,6 +30,57 @@ namespace YTDLPHost.Native
         public const string ShimFileName = "ytdlp-shim.exe";
         public const string ManifestFileName = "native-host-manifest.json";
         public const string AllowedOriginsFileName = "allowed-origins.txt";
+
+        /// <summary>The shim's file name: ".exe" on Windows only. The shim looks for the app the same way (see the shim's StartApp).</summary>
+        public static string ShimFileNameFor(HostOs os) => os == HostOs.Windows ? ShimFileName : "ytdlp-shim";
+
+        /// <summary>
+        /// Did a register or unregister run go wrong? True for a line that starts with "Skipped" or contains ": could not ". These words are the contract
+        /// of the log lines of this class and of <see cref="NativeHostUnixRegistration"/>; the tests pin them. Used for the exit code of the command line flags.
+        /// </summary>
+        public static bool Failed(IEnumerable<string> log) =>
+            log.Any(line => line.StartsWith("Skipped", StringComparison.Ordinal) || line.Contains(": could not ", StringComparison.Ordinal));
+
+        /// <summary>
+        /// Removes the browser keys that point at the manifest of this install (<c>--unregister-native-host</c>). A key that points at another install is left alone.
+        /// </summary>
+        public static IReadOnlyList<string> Unregister(string appDir, INativeHostRegistry registry)
+        {
+            var log = new List<string>();
+            if (string.IsNullOrWhiteSpace(appDir))
+            {
+                log.Add("Skipped: the app folder is unknown.");
+                return log;
+            }
+
+            string manifestPath = Path.Combine(appDir, ManifestFileName);
+            foreach (var browser in WindowsBrowsers)
+            {
+                try
+                {
+                    string subKey = SubKeyFor(browser);
+                    string? current = registry.GetDefaultValue(subKey);
+                    if (current == null)
+                    {
+                        log.Add($"{browser.Name}: not registered.");
+                    }
+                    else if (!string.Equals(current, manifestPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        log.Add($"{browser.Name}: left alone, it points to another install ({current}).");
+                    }
+                    else
+                    {
+                        registry.DeleteKey(subKey);
+                        log.Add($"{browser.Name}: unregistered.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.Add($"{browser.Name}: could not unregister: {ex.Message}");
+                }
+            }
+            return log;
+        }
 
         /// <summary>Per-user registration keys on Windows (the macOS and Linux file locations come with Phase 3). Firefox needs another manifest format (Phase 6).</summary>
         public static readonly IReadOnlyList<NativeHostBrowser> WindowsBrowsers = new[]

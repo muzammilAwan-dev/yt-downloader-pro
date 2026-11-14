@@ -18,5 +18,7 @@ namespace YTDLPHost.Services
             using var key = Registry.CurrentUser.CreateSubKey(subKey) ?? throw new IOException("The registry key could not be created: " + subKey);
             key.SetValue("", value);
         }
+
+        public void DeleteKey(string subKey) => Registry.CurrentUser.DeleteSubKeyTree(subKey, throwOnMissingSubKey: false);
     }
 }

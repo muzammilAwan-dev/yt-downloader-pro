@@ -55,8 +55,6 @@ namespace YTDLPHost.Services
     /// </summary>
     public sealed class UnixShellActions : IShellActions
     {
-        private static readonly TimeSpan StartWait = TimeSpan.FromSeconds(2);
-
         private readonly HostOs _os;
         private readonly Func<ShellCommand, bool> _run;
 
@@ -64,7 +62,7 @@ namespace YTDLPHost.Services
         public UnixShellActions(HostOs os, Func<ShellCommand, bool>? run = null)
         {
             _os = os;
-            _run = run ?? StartAndCheck;
+            _run = run ?? ShellCommandRunner.StartAndCheck;
         }
 
         public void RevealFile(string path) => Try(UnixShellCommands.Reveal(_os, path), path);
@@ -94,17 +92,6 @@ namespace YTDLPHost.Services
                 }
             }
             AppLogger.Log($"[SHELL ERROR] Could not open '{path}'.");
-        }
-
-        /// <summary>Starts the program. One that is still running after two seconds (a file manager that stays open) counts as started.</summary>
-        private static bool StartAndCheck(ShellCommand command)
-        {
-            var psi = new ProcessStartInfo { FileName = command.FileName, UseShellExecute = false, CreateNoWindow = true };
-            foreach (var argument in command.Arguments) psi.ArgumentList.Add(argument);
-
-            using var process = Process.Start(psi);
-            if (process == null) return false;
-            return !process.WaitForExit((int)StartWait.TotalMilliseconds) || process.ExitCode == 0;
         }
     }
 }

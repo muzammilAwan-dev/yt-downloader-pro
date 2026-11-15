@@ -32,7 +32,7 @@ public partial class MainWindow : Window
         this.FindControl<Button>("NotifyButton")!.Click += (_, _) =>
         {
             _notifier.NotifyDownloadComplete("skeleton-test.mp4");
-            status.Text = "Notification requested (for now it is only written to the log; real OS notifications come in step 4.2).";
+            status.Text = "Notification sent. If you see none, check that notify-send (Linux) is installed; the log has details.";
         };
         this.FindControl<Button>("HideButton")!.Click += (_, _) => Hide();
         this.FindControl<Button>("ExitButton")!.Click += (_, _) => exit();

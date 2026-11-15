@@ -15,7 +15,7 @@ public partial class App : Application
     private IClassicDesktopStyleApplicationLifetime? _desktop;
     private MainWindow? _window;
     private AvaloniaTrayService? _tray;
-    private readonly LoggingNotifier _notifier = new();
+    private readonly INotifier _notifier = new SystemNotifier(AppPathsFactory.CurrentOs());
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 

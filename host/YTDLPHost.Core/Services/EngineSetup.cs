@@ -113,11 +113,13 @@ namespace YTDLPHost.Services
                 AppLogger.Log($"[DEPENDENCIES ERROR] Failed to provision dependencies: {ex.Message}");
                 _hasFailed = true;
                 bool failedCheck = ex is EngineVerificationException;
+                bool missingTool = ex is EngineMissingToolException;
 
                 _ui.Invoke(() =>
                 {
                     _setStatus(failedCheck
                         ? "A downloaded engine file failed its integrity check. Please try again later."
+                        : missingTool ? ex.Message
                         : "Network Error. Please check your internet connection.");
                     if (card != null)
                     {
@@ -126,6 +128,7 @@ namespace YTDLPHost.Services
                         card.Task.IsIndeterminate = false;
                         card.Task.ErrorMessage = failedCheck
                             ? "The downloaded file did not match its published checksum, so nothing was installed."
+                            : missingTool ? ex.Message
                             : "Check your internet connection and try again.";
                         card.Refresh();
                     }

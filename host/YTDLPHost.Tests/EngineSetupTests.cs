@@ -145,4 +145,25 @@ public class EngineSetupTests
         Assert.Equal(0, rig.RunnersCreated);
         rig.Queue.Dispose();
     }
+
+    [Fact]
+    public async Task A_missing_system_ffmpeg_is_explained_and_not_called_a_network_error()
+    {
+        var rig = new Rig();
+        rig.Engine.Install = _ => throw new EngineMissingToolException("ffmpeg", EngineProvisioner.MissingFfmpegMessage);
+        rig.AddQueuedItem();
+
+        await rig.Setup.RunAsync();
+
+        Assert.True(rig.Setup.HasFailed);
+        var card = Assert.Single(rig.Items, i => i.Task.Title == EngineSetup.SetupCardTitle);
+        Assert.Equal(DownloadStatus.Error, card.Task.Status);
+        Assert.Equal(EngineProvisioner.MissingFfmpegMessage, card.Task.ErrorMessage);
+        Assert.Contains(EngineProvisioner.MissingFfmpegMessage, rig.Statuses);
+        Assert.DoesNotContain("Network Error. Please check your internet connection.", rig.Statuses);
+
+        await Task.Delay(150);
+        Assert.Equal(0, rig.RunnersCreated);
+        rig.Queue.Dispose();
+    }
 }

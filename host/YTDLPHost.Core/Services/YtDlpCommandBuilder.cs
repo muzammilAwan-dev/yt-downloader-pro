@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 namespace YTDLPHost.Services
 {
     /// <summary>What the builder needs to know about this machine and the user's settings.</summary>
-    /// <param name="FfmpegPath">Full path of ffmpeg.</param>
+    /// <param name="FfmpegPath">Full path of ffmpeg, or the folder that holds it (a system ffmpeg). Empty = not known: no flag is passed and yt-dlp searches PATH itself.</param>
     /// <param name="DenoPath">Full path of deno, or null when it is not installed.</param>
     /// <param name="SpeedLimit">"0" = unlimited, otherwise a yt-dlp rate such as "2M".</param>
     /// <param name="YoutubePlayerClients">Emergency override from settings.json; "" = let yt-dlp choose.</param>
@@ -67,7 +67,7 @@ namespace YTDLPHost.Services
             if (args.Contains("--extract-audio") && !args.Contains("--embed-thumbnail") && !MentionsWav(args))
                 args.Add("--embed-thumbnail");
 
-            if (!args.Contains("--ffmpeg-location"))
+            if (!string.IsNullOrEmpty(env.FfmpegPath) && !args.Contains("--ffmpeg-location"))
             {
                 args.Add("--ffmpeg-location");
                 args.Add(env.FfmpegPath);

@@ -45,25 +45,35 @@ namespace YTDLPHost.Services
         private readonly HttpClient _http;
         private readonly EngineAssets _assets;
         private readonly TimeSpan _retryDelay;
+        private readonly ToolSearch _search;
 
-        public EngineProvisioner(IAppPaths paths, HttpClient http, EngineAssets? assets = null, TimeSpan? retryDelay = null)
+        /// <param name="assets">What to install. Default: the set of this OS and CPU from <see cref="EngineCatalog"/> (on Windows x64 exactly the old set).</param>
+        /// <param name="search">Where a system tool (ffmpeg on macOS and Linux) is looked for. Default: this computer. Tests pass their own.</param>
+        public EngineProvisioner(IAppPaths paths, HttpClient http, EngineAssets? assets = null, TimeSpan? retryDelay = null, ToolSearch? search = null)
         {
             _paths = paths;
             _http = http;
-            _assets = assets ?? EngineAssets.Windows;
+            _assets = assets ?? EngineCatalog.ForCurrentPlatformOrDefault();
             _retryDelay = retryDelay ?? TimeSpan.FromSeconds(3);
+            _search = search ?? ToolSearch.ForThisComputer();
         }
 
         public string EngineDir => _paths.EngineDir;
         public string YtDlpPath => Path.Combine(EngineDir, _assets.YtDlpFile);
-        public string FfmpegPath => Path.Combine(EngineDir, _assets.FfmpegFile);
         public string DenoPath => Path.Combine(EngineDir, _assets.DenoFile);
 
-        /// <summary>Creates the engine folder if needed, then reports whether all three tools are present.</summary>
+        /// <summary>Full path of ffmpeg: the downloaded one, or the system one when it was found (empty when it was not).</summary>
+        public string FfmpegPath => CurrentTools().FfmpegPath;
+
+        /// <summary>Where the tools are right now. A system ffmpeg is looked up again on every call.</summary>
+        public EngineTools CurrentTools() => EngineTools.Resolve(_paths, _assets, _search);
+
+        /// <summary>Creates the engine folder if needed, then reports whether all three tools are present (a system ffmpeg counts when it is found).</summary>
         public bool AllPresent()
         {
             if (!Directory.Exists(EngineDir)) Directory.CreateDirectory(EngineDir);
-            return File.Exists(YtDlpPath) && File.Exists(FfmpegPath) && File.Exists(DenoPath);
+            var tools = CurrentTools();
+            return File.Exists(tools.YtDlpPath) && File.Exists(tools.DenoPath) && (tools.FfmpegFromSystem ? tools.FfmpegFound : File.Exists(tools.FfmpegPath));
         }
 
         /// <summary>Downloads whichever of the three tools is missing. Throws if the network fails after retries.</summary>
@@ -79,11 +89,10 @@ namespace YTDLPHost.Services
 
                 var ytdlpBytes = await DownloadVerifiedAsync(_assets.YtDlpUrl, _assets.YtDlpSumsUrl);
                 await WriteAtomicAsync(YtDlpPath, ytdlpBytes);
-
-                try { File.Delete(YtDlpPath + ":Zone.Identifier"); } catch { }
+                ClearDownloadMark(YtDlpPath);
             }
 
-            if (!File.Exists(FfmpegPath))
+            if (!_assets.FfmpegFromSystem && !File.Exists(FfmpegPath))
             {
                 AppLogger.Log("[DEPENDENCIES] Downloading FFmpeg build archive.");
                 onStage?.Invoke(EngineStage.DownloadingFfmpeg);
@@ -108,7 +117,7 @@ namespace YTDLPHost.Services
                     {
                         string destPath = Path.Combine(engineDir, fileName);
                         CopyAtomically(file, destPath);
-                        try { File.Delete(destPath + ":Zone.Identifier"); } catch { }
+                        ClearDownloadMark(destPath);
                     }
                 }
 
@@ -137,13 +146,24 @@ namespace YTDLPHost.Services
                 if (File.Exists(extractedDeno))
                 {
                     CopyAtomically(extractedDeno, DenoPath);
-                    try { File.Delete(DenoPath + ":Zone.Identifier"); } catch { }
+                    ClearDownloadMark(DenoPath);
                 }
 
                 File.Delete(denoZipPath);
                 Directory.Delete(denoExtractPath, true);
             }
+
+            // Last on purpose: yt-dlp and deno are installed even when ffmpeg is missing, so after the user installs ffmpeg and restarts, nothing else is needed.
+            if (_assets.FfmpegFromSystem && !CurrentTools().FfmpegFound)
+            {
+                AppLogger.Log("[DEPENDENCIES ERROR] ffmpeg (with ffprobe) was not found on this computer.");
+                throw new EngineMissingToolException("ffmpeg", MissingFfmpegMessage);
+            }
         }
+
+        /// <summary>Shown on the setup card and in the status bar when macOS or Linux has no ffmpeg.</summary>
+        public const string MissingFfmpegMessage =
+            "FFmpeg was not found on this computer. Install it with your package manager (for example \"sudo apt install ffmpeg\", or \"brew install ffmpeg\" on macOS), then restart the app.";
 
         /// <summary>
         /// Set by the app: starts the engine update checks (at launch, then daily). Called once the engine is installed and the queue may run.
@@ -197,6 +217,7 @@ namespace YTDLPHost.Services
             try
             {
                 await File.WriteAllBytesAsync(temp, bytes);
+                MakeExecutable(temp);
                 File.Move(temp, path, overwrite: true);
             }
             finally
@@ -205,12 +226,30 @@ namespace YTDLPHost.Services
             }
         }
 
+        /// <summary>Unix only: a downloaded file is not executable until it is made so (rwxr-xr-x). Set before the rename, so the tool is never visible without it.</summary>
+        private static void MakeExecutable(string path)
+        {
+            if (OperatingSystem.IsWindows()) return;
+            File.SetUnixFileMode(path,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        }
+
+        /// <summary>Windows only: drops the "downloaded from the internet" mark of an NTFS stream, if there is one. Nothing to do elsewhere.</summary>
+        private static void ClearDownloadMark(string path)
+        {
+            if (!OperatingSystem.IsWindows()) return;
+            try { File.Delete(path + ":Zone.Identifier"); } catch { }
+        }
+
         private static void CopyAtomically(string source, string dest)
         {
             string temp = dest + ".download";
             try
             {
                 File.Copy(source, temp, true);
+                MakeExecutable(temp);
                 File.Move(temp, dest, overwrite: true);
             }
             finally

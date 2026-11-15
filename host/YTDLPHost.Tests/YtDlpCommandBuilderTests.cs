@@ -239,4 +239,12 @@ public class YtDlpCommandBuilderTests
 
         Assert.Contains("-o \"~/My Videos/%(title)s.mp4\" https://vimeo.com/123456789", invocation.ToDisplayString());
     }
+
+    [Fact]
+    public void No_ffmpeg_location_is_passed_when_it_is_not_known_so_yt_dlp_searches_PATH_itself()
+    {
+        var invocation = Build("yt-dlp " + Vimeo, new YtDlpEnvironment("", DenoPath, "0", "", null));
+
+        Assert.DoesNotContain("--ffmpeg-location", invocation.Arguments);
+    }
 }

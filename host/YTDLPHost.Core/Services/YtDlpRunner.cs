@@ -14,6 +14,17 @@ namespace YTDLPHost.Services
 {
     public class YtDlpRunner : IDownloadRunner
     {
+        private readonly EngineAssets _assets;
+        private readonly ToolSearch _search;
+
+        /// <param name="assets">Which tool files to run. Default: the set of this OS and CPU (the same one the installer puts in the engine folder).</param>
+        /// <param name="search">Where a system ffmpeg is looked up. Default: this computer.</param>
+        public YtDlpRunner(EngineAssets? assets = null, ToolSearch? search = null)
+        {
+            _assets = assets ?? EngineCatalog.ForCurrentPlatformOrDefault();
+            _search = search ?? ToolSearch.ForThisComputer();
+        }
+
         private static readonly Regex PercentRegex = new(@"\[download\]\s+(?:(\d+\.?\d*)%|100%)", RegexOptions.Compiled);
         private static readonly Regex SpeedRegex = new(@"at\s+([\d\.]+(?:[KMG]iB|B)/s)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex EtaRegex = new(@"ETA\s+([\d:]+|Unknown)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -153,9 +164,9 @@ namespace YTDLPHost.Services
             try
             {
                 string engineDir = AppPaths.Current.EngineDir;
-                string ytdlpPath = Path.Combine(engineDir, "yt-dlp.exe");
-                string ffmpegPath = Path.Combine(engineDir, "ffmpeg.exe");
-                string denoPath = Path.Combine(engineDir, "deno.exe");
+                var tools = EngineTools.Resolve(AppPaths.Current, _assets, _search);   // looked up per download: an ffmpeg installed meanwhile is found
+                string ytdlpPath = tools.YtDlpPath;
+                string denoPath = tools.DenoPath;
                 var settings = AppSettings.Load();
 
                 if (!string.IsNullOrWhiteSpace(task.CookiePayload))
@@ -172,7 +183,7 @@ namespace YTDLPHost.Services
                 // All command-line preparation (tokenizing, engine paths, speed limit, cookies, YouTube rules) lives in
                 // YtDlpCommandBuilder. The result is an argument LIST, so no value can be re-split or re-quoted on its way to the process.
                 var invocation = YtDlpCommandBuilder.Build(task.Command, new YtDlpEnvironment(
-                    ffmpegPath,
+                    tools.FfmpegLocation,
                     File.Exists(denoPath) ? denoPath : null,
                     settings.SpeedLimit,
                     settings.YoutubePlayerClients ?? "",
@@ -206,7 +217,7 @@ namespace YTDLPHost.Services
                 task.AppendLog("=== Download Task Started ===");
                 
                 // FIX: Removed redaction to provide full transparency in logs. (The cookie file path is logged, not the base64 content, so it is safe).
-                task.AppendLog($"Command executed: yt-dlp.exe {invocation.ToDisplayString()}");
+                task.AppendLog($"Command executed: {Path.GetFileName(ytdlpPath)} {invocation.ToDisplayString()}");
                 task.AppendLog("");
 
                 var psi = new ProcessStartInfo

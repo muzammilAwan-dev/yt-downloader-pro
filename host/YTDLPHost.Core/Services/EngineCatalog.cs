@@ -21,6 +21,18 @@ namespace YTDLPHost.Services
 
         public static EngineAssets? ForCurrentPlatform() => For(AppPathsFactory.CurrentOs(), RuntimeInformation.OSArchitecture);
 
+        /// <summary>
+        /// What the app installs by default: the set of this OS and CPU. A Windows PC of an unlisted CPU keeps the old x64 set (what the app always used);
+        /// any other unlisted system cannot run the engine and gets <see cref="PlatformNotSupportedException"/> with a plain message.
+        /// </summary>
+        public static EngineAssets ForCurrentPlatformOrDefault()
+        {
+            var assets = ForCurrentPlatform();
+            if (assets != null) return assets;
+            if (OperatingSystem.IsWindows()) return EngineAssets.Windows;
+            throw new PlatformNotSupportedException($"This computer's processor ({RuntimeInformation.OSArchitecture}) is not supported: there is no yt-dlp or Deno build for it.");
+        }
+
         public static EngineAssets? For(HostOs os, Architecture arch) => (os, arch) switch
         {
             (HostOs.Windows, Architecture.X64) => EngineAssets.Windows,

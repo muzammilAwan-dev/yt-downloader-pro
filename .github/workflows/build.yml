@@ -45,13 +45,19 @@ jobs:
           diff /tmp/GoldenCases.cs host/YTDLPHost.Tests/Native/GoldenCases.cs
 
   test:
-    # The tests reference the portable YTDLPHost.Core project (no WPF), so they run on every
-    # target OS. Windows + Linux now; add macos-14 once Phase 3 lands.
+    # The tests reference the portable YTDLPHost.Core project (no WPF), so they run on every target OS.
+    # Step 3.7: macOS joins. It is marked "experimental" for its first runs: a failure there is shown but does not stop
+    # the Windows build and installer jobs. Once it has been green, delete the two "experimental" lines.
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+          - os: ubuntu-latest
+          - os: macos-latest
+            experimental: true
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental == true }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4

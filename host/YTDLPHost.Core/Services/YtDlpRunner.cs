@@ -174,7 +174,7 @@ namespace YTDLPHost.Services
                     if (string.IsNullOrWhiteSpace(task.CookieFilePath) || !File.Exists(task.CookieFilePath))
                     {
                         task.CookieFilePath = Path.Combine(AppPaths.Current.TempDir, $"ytdlp_cookies_{Guid.NewGuid()}.txt");
-                        File.WriteAllText(task.CookieFilePath, task.CookiePayload, new UTF8Encoding(false));
+                        PrivateFile.WriteAllText(task.CookieFilePath, task.CookiePayload);
                     }
                 }
 

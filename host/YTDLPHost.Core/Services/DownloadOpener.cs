@@ -56,9 +56,13 @@ namespace YTDLPHost.Services
             ShowInFolder(task);
         }
 
-        // Moved unchanged from MainViewModel. Still Windows-flavoured (backslashes, creates the folder);
-        // it is one of the two copies Phase 3 consolidates with YtDlpRunner's.
-        internal static string ExtractSaveDirectory(string command)
+        internal static string ExtractSaveDirectory(string command) => ExtractSaveDirectory(command, AppPaths.Current.HomeDir);
+
+        /// <summary>
+        /// The folder named by the command's -o template ("~" = home, environment variables expanded, created if missing), else the home folder.
+        /// Step 3.6: backslashes are only swapped in on Windows (this was the last Windows-only part; the runner's second copy went in 1.6).
+        /// </summary>
+        internal static string ExtractSaveDirectory(string command, string homeDir)
         {
             var match = CommandInfo.OutputTemplateRegex.Match(command);
             if (match.Success)
@@ -67,14 +71,14 @@ namespace YTDLPHost.Services
                 var dir = Path.GetDirectoryName(template);
                 if (!string.IsNullOrEmpty(dir))
                 {
-                    dir = dir.Replace("/", "\\");
+                    if (OperatingSystem.IsWindows()) dir = dir.Replace("/", "\\");
                     dir = Environment.ExpandEnvironmentVariables(dir);
-                    if (dir.StartsWith("~\\") || dir.StartsWith("~")) dir = Path.Combine(AppPaths.Current.HomeDir, dir.Substring(1).TrimStart('\\'));
+                    if (dir.StartsWith("~")) dir = Path.Combine(homeDir, dir.Substring(1).TrimStart('\\', '/'));
                     if (!Directory.Exists(dir)) try { Directory.CreateDirectory(dir); } catch { }
                     if (Directory.Exists(dir)) return dir;
                 }
             }
-            return AppPaths.Current.HomeDir;
+            return homeDir;
         }
     }
 }

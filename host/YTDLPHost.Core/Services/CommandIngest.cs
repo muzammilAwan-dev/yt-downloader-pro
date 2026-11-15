@@ -75,7 +75,7 @@ namespace YTDLPHost.Services
 
                         Directory.CreateDirectory(_paths.TempDir);
                         var cookieFile = Path.Combine(_paths.TempDir, $"ytdlp_cookies_{Guid.NewGuid()}.txt");
-                        File.WriteAllText(cookieFile, cookieContent, new UTF8Encoding(false));
+                        PrivateFile.WriteAllText(cookieFile, cookieContent);
                         cookieFilePath = cookieFile;
                         AppLogger.Log("[COOKIES] Session cookies provisioned to local temporary storage.");
                     }
@@ -155,7 +155,7 @@ namespace YTDLPHost.Services
 
                     Directory.CreateDirectory(_paths.TempDir);
                     var cookieFile = Path.Combine(_paths.TempDir, $"ytdlp_cookies_{Guid.NewGuid()}.txt");
-                    File.WriteAllText(cookieFile, cookieContent, new UTF8Encoding(false));
+                    PrivateFile.WriteAllText(cookieFile, cookieContent);
                     cookieFilePath = cookieFile;
                     AppLogger.Log("[COOKIES] Session cookies provisioned to local temporary storage.");
                 }

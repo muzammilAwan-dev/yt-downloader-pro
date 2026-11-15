@@ -56,7 +56,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
       - name: Test
         run: dotnet test host/YTDLPHost.Tests/YTDLPHost.Tests.csproj --configuration Release
 
@@ -66,10 +66,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET 8
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Restore dependencies
         run: dotnet restore host/YTDLPHost/YTDLPHost.csproj
@@ -77,7 +77,7 @@ jobs:
       - name: Build
         run: dotnet build host/YTDLPHost/YTDLPHost.csproj --configuration Release --no-restore
 
-      # Self-contained, matching host/Publish.bat: users no longer need the .NET 8 runtime installed.
+      # Self-contained, matching host/Publish.bat: users no longer need a .NET runtime installed.
       - name: Publish Single File
         run: |
           dotnet publish host/YTDLPHost/YTDLPHost.csproj `
@@ -105,10 +105,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET 8
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Publish shim (self-contained single file)
         run: dotnet publish host/YTDLPHost.Shim/YTDLPHost.Shim.csproj --configuration Release --runtime win-x64 --output ./shim-publish

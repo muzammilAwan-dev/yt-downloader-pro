@@ -11,7 +11,7 @@ A premium, Windows-exclusive **Chrome extension + native desktop host**, built a
 | Component | What it is | Lives in |
 |---|---|---|
 | **Browser Extension** | Manifest V3 extension (Chrome, Edge, Brave, Opera): small download button that follows the video in view, popup UI, image saving, cookie/session capture | [`extension/`](extension) |
-| **Native Host (YTDLPHost)** | .NET 8 WPF desktop app: receives `ytdlp://` links, checks them against an allowlist, runs `yt-dlp`/`ffmpeg`/`deno` in a queue, dark-themed GUI | [`host/`](host) |
+| **Native Host (YTDLPHost)** | .NET 10 WPF desktop app: receives `ytdlp://` links, checks them against an allowlist, runs `yt-dlp`/`ffmpeg`/`deno` in a queue, dark-themed GUI | [`host/`](host) |
 
 They're released and versioned together from this single repo.
 
@@ -136,7 +136,7 @@ Settings → Apps → Installed Apps → uninstall **YT Downloader Pro**. This r
 git clone https://github.com/muzammilAwan-dev/yt-downloader-pro.git
 cd yt-downloader-pro
 
-# Host app (requires .NET 8 SDK, Windows)
+# Host app (requires .NET 10 SDK, Windows)
 dotnet build host/YTDLPHost.sln --configuration Release
 
 # Installer (requires Inno Setup, Windows) - optional, only if packaging a setup.exe

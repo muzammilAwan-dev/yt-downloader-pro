@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Plain net8.0 (not net8.0-windows): tests the portable YTDLPHost.Core library directly,
+    Plain net10.0 (not net10.0-windows): tests the portable YTDLPHost.Core library directly,
     so they run on Windows, Linux and macOS without WPF.
   -->
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>

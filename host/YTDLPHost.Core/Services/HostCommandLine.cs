@@ -18,5 +18,9 @@ namespace YTDLPHost.Services
             }
             return HostCommand.None;
         }
+
+        /// <summary>Step 4.1: "--hidden" starts the app in the tray without showing its window (the autostart entry of the Avalonia app uses it).</summary>
+        public static bool StartHidden(IEnumerable<string> args) =>
+            args.Any(arg => arg.Equals("--hidden", StringComparison.OrdinalIgnoreCase));
     }
 }

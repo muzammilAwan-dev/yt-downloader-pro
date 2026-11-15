@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Phase 4, step 4.1: the walking skeleton of the cross-platform UI (window, tray icon, notification stub, hidden start).
+    Avalonia 12.0.2 pinned exactly (see PLAN.md, Phase 4: version decision). The root namespace is YTDLPHost.UI on purpose:
+    a namespace called YTDLPHost.Avalonia would hide the real Avalonia namespace inside our own code.
+    Compiled bindings are the default in Avalonia 12; every future binding needs an x:DataType.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>YTDLPHost.UI</RootNamespace>
+    <AssemblyName>YTDLPHost.Avalonia</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.0.2" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.0.2" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\YTDLPHost.Core\YTDLPHost.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+</Project>

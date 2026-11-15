@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="YTDLPHost.UI.MainWindow"
+        Title="YT Downloader Pro (Avalonia skeleton)"
+        Width="560" Height="340"
+        WindowStartupLocation="CenterScreen">
+  <StackPanel Margin="24" Spacing="12">
+    <TextBlock Text="YT Downloader Pro" FontSize="22" FontWeight="SemiBold" />
+    <TextBlock Text="Walking skeleton (step 4.1): window, tray icon, notification stub, hidden start." TextWrapping="Wrap" />
+    <TextBlock Name="SystemInfo" TextWrapping="Wrap" />
+    <TextBlock Name="Status" TextWrapping="Wrap" />
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <Button Name="NotifyButton" Content="Test notification" />
+      <Button Name="HideButton" Content="Hide to tray" />
+      <Button Name="ExitButton" Content="Exit" />
+    </StackPanel>
+  </StackPanel>
+</Window>

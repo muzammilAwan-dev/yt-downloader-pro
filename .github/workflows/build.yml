@@ -97,6 +97,23 @@ jobs:
           retention-days: 1   # only the installer job needs it, within this run
           if-no-files-found: error
 
+  avalonia:
+    # Step 4.1: the Avalonia app has to compile on every system it will run on. A window cannot be started in CI, so this only builds it;
+    # nothing else waits for this job yet.
+    needs: [test]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build
+        run: dotnet build host/YTDLPHost.Avalonia/YTDLPHost.Avalonia.csproj --configuration Release
+
   shim:
     # Step 2.4: the Native Messaging shim, published the way it ships (self-contained single file; median start-to-reply 109 ms on the owner's PC).
     # Nothing depends on this job yet; it proves the publish works and shows the exe size.

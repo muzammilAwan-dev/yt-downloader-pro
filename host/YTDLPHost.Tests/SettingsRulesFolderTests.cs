@@ -12,7 +12,7 @@ public class SettingsRulesFolderTests
     [InlineData("D:\\Videos", "D:\\Videos")]
     [InlineData("  D:/Videos/YT  ", "D:/Videos/YT")]      // trimmed, otherwise kept as typed
     [InlineData("~/Videos", "~/Videos")]
-    [InlineData("/home/user/Videos", "/home/user/Videos")]
+    [InlineData("/mnt/user/Videos", "/mnt/user/Videos")]   // not "/home": on macOS it is a link into /System, which the path policy blocks
     public void A_usable_folder_is_accepted_and_kept(string typed, string expectedStored)
     {
         Assert.True(SettingsRules.TryNormalizeDownloadFolder(typed, out var stored, out var error));

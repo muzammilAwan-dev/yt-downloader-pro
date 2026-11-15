@@ -100,32 +100,57 @@ namespace YTDLPHost.Services
             }
         }
 
+        // Two instances: the one that has a client and the one that waits for the next. See ListenAsync for why there must always be a waiting one.
+        private NamedPipeServerStream CreateServer() =>
+            new(_pipeName, PipeDirection.In, 2, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+
+        /// <summary>
+        /// Step 3.7: the next listener is created BEFORE the current message is read, so one is always waiting.
+        /// With one instance at a time, a client that arrived while the previous message was being handled was accepted into the old socket's queue on macOS and Linux
+        /// and then lost when that instance was disposed (the sender saw success; CI showed only the first of five messages arriving). Windows never had the
+        /// problem: there, a client simply waits while all instances are busy.
+        /// </summary>
         private async Task ListenAsync(CancellationToken ct)
         {
-            while (!ct.IsCancellationRequested)
+            NamedPipeServerStream? waiting = null;
+            try
             {
-                try
+                while (!ct.IsCancellationRequested)
                 {
-                    await using var server = new NamedPipeServerStream(_pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
-                    await server.WaitForConnectionAsync(ct);
-
-                    // A client that connects and then says nothing must not block the next one for ever.
-                    using var readLimit = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                    readLimit.CancelAfter(TimeSpan.FromSeconds(5));
-                    string? message = await ReadMessageAsync(server, readLimit.Token);
-                    if (!string.IsNullOrWhiteSpace(message))
+                    try
                     {
-                        try { MessageReceived?.Invoke(this, message.Trim()); } catch (Exception) { /* a faulty handler must not stop the listener */ }
+                        var server = waiting ?? CreateServer();
+                        waiting = null;
+                        await using (server)
+                        {
+                            await server.WaitForConnectionAsync(ct);
+
+                            // From here on a new client has somewhere to wait, however long this message takes.
+                            try { waiting = CreateServer(); } catch (Exception) { waiting = null; }
+
+                            // A client that connects and then says nothing must not block the next one for ever.
+                            using var readLimit = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                            readLimit.CancelAfter(TimeSpan.FromSeconds(5));
+                            string? message = await ReadMessageAsync(server, readLimit.Token);
+                            if (!string.IsNullOrWhiteSpace(message))
+                            {
+                                try { MessageReceived?.Invoke(this, message.Trim()); } catch (Exception) { /* a faulty handler must not stop the listener */ }
+                            }
+                        }
+                    }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                        try { await Task.Delay(100, ct); } catch (OperationCanceledException) { break; }
                     }
                 }
-                catch (OperationCanceledException) when (ct.IsCancellationRequested)
-                {
-                    break;
-                }
-                catch (Exception)
-                {
-                    try { await Task.Delay(100, ct); } catch (OperationCanceledException) { break; }
-                }
+            }
+            finally
+            {
+                waiting?.Dispose();
             }
         }
 

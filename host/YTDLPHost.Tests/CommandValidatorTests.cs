@@ -108,12 +108,13 @@ public class CommandValidatorTests
     }
 
     // ---------- Unix absolute output paths ----------
+    // These go through the real disk (symbolic links are followed). Not "/home/...": on macOS "/home" is a link into /System, which the policy blocks (found by CI in step 3.7).
 
     [Theory]
-    [InlineData("yt-dlp -o '/home/me/Downloads/%(title)s.mp4' 'https://a.com'")]
+    [InlineData("yt-dlp -o '/mnt/me/Downloads/%(title)s.mp4' 'https://a.com'")]
     [InlineData("yt-dlp -o '/Users/me/Movies/%(title)s.mp4' 'https://a.com'")]
     [InlineData("yt-dlp -o '/mnt/data/videos/%(title)s.mkv' 'https://a.com'")]
-    [InlineData("yt-dlp --download-archive '/home/me/archive.txt' 'https://a.com'")]
+    [InlineData("yt-dlp --download-archive '/mnt/me/archive.txt' 'https://a.com'")]
     public void Accepts_unix_absolute_output_paths(string command)
     {
         Assert.True(Ok(command, out var reason), reason);

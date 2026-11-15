@@ -160,10 +160,10 @@ public class DownloadRequestMapperTests
     [Fact]
     public void A_unix_folder_is_accepted()
     {
-        var result = DownloadRequestMapper.Map(Request("\"quality\":\"1080\""), new MapperSettings("/home/me/Videos"));
+        var result = DownloadRequestMapper.Map(Request("\"quality\":\"1080\""), new MapperSettings("/mnt/me/Videos"));   // not "/home": on macOS it is a link into /System
 
         Assert.True(result.Ok, result.Error);
-        Assert.Contains("/home/me/Videos/", result.Downloads[0].Command);
+        Assert.Contains("/mnt/me/Videos/", result.Downloads[0].Command);
     }
 
     [Fact]

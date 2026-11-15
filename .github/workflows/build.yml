@@ -46,18 +46,12 @@ jobs:
 
   test:
     # The tests reference the portable YTDLPHost.Core project (no WPF), so they run on every target OS.
-    # Step 3.7: macOS joins. It is marked "experimental" for its first runs: a failure there is shown but does not stop
-    # the Windows build and installer jobs. Once it has been green, delete the two "experimental" lines.
+    # Step 3.7: macOS joined after the first runs were green (run on commit 764745e); all three systems now have to pass.
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: windows-latest
-          - os: ubuntu-latest
-          - os: macos-latest
-            experimental: true
+        os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.experimental == true }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4

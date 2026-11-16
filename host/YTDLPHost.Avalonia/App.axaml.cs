@@ -14,8 +14,7 @@ public partial class App : Application
 {
     private IClassicDesktopStyleApplicationLifetime? _desktop;
     private MainWindow? _window;
-    private AvaloniaTrayService? _tray;
-    private readonly INotifier _notifier = new SystemNotifier(AppPathsFactory.CurrentOs());
+    private PlatformServices? _services;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
@@ -26,12 +25,11 @@ public partial class App : Application
             _desktop = desktop;
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-            _tray = new AvaloniaTrayService(this);
-            _tray.ShowWindowRequested += (_, _) => ShowMainWindow();
-            _tray.ExitRequested += (_, _) => Exit();
-            _tray.Initialize();
-
-            _notifier.Activated += (_, _) => ShowMainWindow();
+            _services = AvaloniaPlatform.Create(this, () => _window, Exit);
+            _services.Tray.ShowWindowRequested += (_, _) => ShowMainWindow();
+            _services.Tray.ExitRequested += (_, _) => Exit();
+            _services.Tray.Initialize();
+            _services.Notifier.Activated += (_, _) => ShowMainWindow();
 
             var args = desktop.Args ?? Array.Empty<string>();
             AppLogger.Log($"[AVALONIA] Started. Hidden start: {HostCommandLine.StartHidden(args)}.");
@@ -43,7 +41,7 @@ public partial class App : Application
 
     private void ShowMainWindow()
     {
-        _window ??= new MainWindow(_notifier, Exit);
+        _window ??= new MainWindow(_services!, Exit);
         if (!_window.IsVisible) _window.Show();
         _window.WindowState = WindowState.Normal;
         _window.Activate();
@@ -52,8 +50,7 @@ public partial class App : Application
     private void Exit()
     {
         if (_window != null) _window.AllowClose = true;
-        _tray?.Dispose();
-        _tray = null;
+        _services?.Tray.Dispose();
         _desktop?.Shutdown();
     }
 }

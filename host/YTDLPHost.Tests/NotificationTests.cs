@@ -40,7 +40,7 @@ public class NotificationTests
 
         Assert.Contains("&lt;b&gt;O&apos;Neil &amp; &quot;co&quot;&lt;/b&gt;.mp4", script);
         Assert.DoesNotContain("<b>", script);
-        Assert.Contains("{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}", script);
+        Assert.Contains("CreateToastNotifier('YTDownloaderPro.Avalonia')", script);
         Assert.Contains(".Show($toast)", script);
     }
 
@@ -86,5 +86,28 @@ public class NotificationTests
         Assert.False(failing.Send("t", "b"));
         Assert.False(missing.Send("t", "b"));
         Assert.True(new SystemNotifier(HostOs.Linux, _ => true, work => work()).Send("t", "b"));
+    }
+
+    [Fact]
+    public void On_Windows_the_script_registers_our_name_and_icon_so_the_toast_shows_them()
+    {
+        var command = Assert.Single(NotificationCommands.Build(HostOs.Windows, "Done", "a.mp4", @"C:\Users\O'Neil\icon.png"));
+        string script = Encoding.Unicode.GetString(Convert.FromBase64String(command.Arguments[^1]));
+
+        Assert.Contains(@"HKCU:\Software\Classes\AppUserModelId\YTDownloaderPro.Avalonia", script);
+        Assert.Contains("-Name DisplayName -Value 'YT Downloader Pro'", script);
+        Assert.Contains(@"-Name IconUri -Value 'C:\Users\O''Neil\icon.png'", script);   // a quote in the path is doubled
+        Assert.DoesNotContain("1AC14E77", script);                                          // no longer borrows PowerShell's identity
+
+        var noIcon = Assert.Single(NotificationCommands.Build(HostOs.Windows, "Done", "a.mp4"));
+        Assert.DoesNotContain("IconUri", Encoding.Unicode.GetString(Convert.FromBase64String(noIcon.Arguments[^1])));
+    }
+
+    [Fact]
+    public void On_Linux_the_icon_is_passed_to_notify_send_before_the_double_dash()
+    {
+        var command = Assert.Single(NotificationCommands.Build(HostOs.Linux, "Done", "a.mp4", "/home/u/.local/share/x/notification-icon.png"));
+
+        Assert.Equal("--app-name=YT Downloader Pro | --icon=/home/u/.local/share/x/notification-icon.png | -- | Done | a.mp4", string.Join(" | ", command.Arguments));
     }
 }

@@ -2,17 +2,24 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="YTDLPHost.UI.MainWindow"
         Title="YT Downloader Pro (Avalonia skeleton)"
-        Width="560" Height="340"
+        Width="620" Height="440"
         WindowStartupLocation="CenterScreen">
   <StackPanel Margin="24" Spacing="12">
     <TextBlock Text="YT Downloader Pro" FontSize="22" FontWeight="SemiBold" />
-    <TextBlock Text="Walking skeleton (step 4.1): window, tray icon, notification stub, hidden start." TextWrapping="Wrap" />
+    <TextBlock Text="Walking skeleton (steps 4.1 and 4.2): window, tray icon, notifications, platform services." TextWrapping="Wrap" />
     <TextBlock Name="SystemInfo" TextWrapping="Wrap" />
     <TextBlock Name="Status" TextWrapping="Wrap" />
     <StackPanel Orientation="Horizontal" Spacing="8">
       <Button Name="NotifyButton" Content="Test notification" />
       <Button Name="HideButton" Content="Hide to tray" />
       <Button Name="ExitButton" Content="Exit" />
+    </StackPanel>
+    <TextBlock Text="Platform services (step 4.2b):" Margin="0,8,0,0" />
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <Button Name="CopyButton" Content="Copy text" />
+      <Button Name="DialogButton" Content="Show dialog" />
+      <Button Name="FolderButton" Content="Open data folder" />
+      <Button Name="ThreadButton" Content="Thread test" />
     </StackPanel>
   </StackPanel>
 </Window>

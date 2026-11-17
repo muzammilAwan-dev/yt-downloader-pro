@@ -101,8 +101,12 @@ internal static class Program
         }
         catch (Exception ex) { Console.WriteLine($"04-settings-menu: failed: {ex.Message}"); }
 
+        // The first three cards out of the way, so the finished and the failed one (error banner) are fully visible.
+        foreach (var card in new[] { running, preparing, paused }) vm.Downloads.Remove(card);
+        count += Capture(window, outDir, "05-finished-and-failed");
+
         window.Width = window.MinWidth; window.Height = window.MinHeight;
-        count += Capture(window, outDir, "05-minimum-size");
+        count += Capture(window, outDir, "06-minimum-size");
 
         return count;
     }

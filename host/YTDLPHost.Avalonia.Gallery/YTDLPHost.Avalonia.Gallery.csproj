@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Step 4.3c: renders the real Avalonia main window to PNG files with Avalonia's headless platform and the Skia renderer (no screen needed),
+    in every state that matters (empty list, cards in all states, log open, settings menu, minimum size). Run it, then look at or attach the PNGs.
+    It never touches the real settings, history or engine: every path points at a throw-away folder (as in the unit tests).
+    Not part of the app, the installer or the CI test jobs.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>YTDLPHost.Gallery</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Headless" Version="12.0.2" />
+    <PackageReference Include="Avalonia.Skia" Version="12.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\YTDLPHost.Avalonia\YTDLPHost.Avalonia.csproj" />
+  </ItemGroup>
+
+</Project>

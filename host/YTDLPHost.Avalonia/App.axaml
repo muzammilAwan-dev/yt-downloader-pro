@@ -86,8 +86,8 @@
       <Setter Property="TextElement.Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     </Style>
 
-    <!-- Accent button: "Apply". -->
-    <Style Selector="Button.accent">
+    <!-- Primary button: "Apply" (not "accent": Fluent has its own Button.accent style that would override ours). -->
+    <Style Selector="Button.primary">
       <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
       <Setter Property="Foreground" Value="White" />
       <Setter Property="BorderThickness" Value="0" />
@@ -101,11 +101,11 @@
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
-    <Style Selector="Button.accent:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}" />
       <Setter Property="TextElement.Foreground" Value="White" />
     </Style>
-    <Style Selector="Button.accent:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="#2A8FD4" />
     </Style>
 
@@ -119,11 +119,7 @@
 
     <!-- Small input controls of the settings rows. -->
     <Style Selector="ComboBox.small">
-      <Setter Property="Height" Value="28" />
-      <Setter Property="MinHeight" Value="28" />
-      <Setter Property="Padding" Value="8,0" />
       <Setter Property="FontSize" Value="12" />
-      <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
     <Style Selector="TextBox.small">
       <Setter Property="Height" Value="28" />

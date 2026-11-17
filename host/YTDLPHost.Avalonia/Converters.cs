@@ -1,3 +1,5 @@
+using System.Globalization;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using YTDLPHost.Models;
@@ -45,4 +47,21 @@ public static class TextConverters
     /// <summary>Status bar, right side.</summary>
     public static readonly IValueConverter ActiveDownloads = new FuncValueConverter<int, string>(count =>
         count == 1 ? "1 active download" : $"{count} active downloads");
+}
+
+public static class NumberConverters
+{
+    /// <summary>A whole number shown in an editable combo box and read back from what was typed; text that is not a number leaves the setting unchanged.</summary>
+    public static readonly IValueConverter IntText = new IntTextConverter();
+}
+
+public sealed class IntTextConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is int number ? number.ToString(CultureInfo.InvariantCulture) : string.Empty;
+
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is string text && int.TryParse(text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out int number)
+            ? number
+            : BindingOperations.DoNothing;
 }

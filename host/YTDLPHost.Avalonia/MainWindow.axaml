@@ -52,7 +52,7 @@
         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
           <TextBlock Text="Max tasks" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12" />
           <ComboBox Classes="small" IsEditable="True" Width="76" Margin="0,0,20,0"
-                    Text="{Binding Settings.MaxConcurrentDownloads, Mode=TwoWay}"
+                    Text="{Binding Settings.MaxConcurrentDownloads, Mode=TwoWay, Converter={x:Static ui:NumberConverters.IntText}}"
                     ToolTip.Tip="How many downloads run at the same time (1-15)">
             <x:String>1</x:String>
             <x:String>3</x:String>
@@ -73,7 +73,7 @@
           </ComboBox>
           <TextBlock Text="0 = unlimited" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,16,0" FontSize="11" />
 
-          <Button Classes="accent" Content="Apply" Command="{Binding SaveSettingsCommand}" ToolTip.Tip="Save these limits" />
+          <Button Classes="primary" Content="Apply" Command="{Binding SaveSettingsCommand}" ToolTip.Tip="Save these limits" />
         </StackPanel>
 
         <Button Grid.Column="1" Classes="action" Content="Clear completed" Command="{Binding ClearCompletedCommand}"

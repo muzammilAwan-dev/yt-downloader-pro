@@ -51,7 +51,7 @@
       <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
           <TextBlock Text="Max tasks" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12" />
-          <ComboBox Classes="small" IsEditable="True" Width="76" Margin="0,0,20,0"
+          <ComboBox Classes="small" IsEditable="True" Width="100" Margin="0,0,20,0"
                     Text="{Binding Settings.MaxConcurrentDownloads, Mode=TwoWay, Converter={x:Static ui:NumberConverters.IntText}}"
                     ToolTip.Tip="How many downloads run at the same time (1-15)">
             <x:String>1</x:String>

@@ -1,25 +1,201 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:YTDLPHost.ViewModels"
+        xmlns:ui="using:YTDLPHost.UI"
         x:Class="YTDLPHost.UI.MainWindow"
-        Title="YT Downloader Pro (Avalonia skeleton)"
-        Width="620" Height="440"
+        x:DataType="vm:MainViewModel"
+        x:CompileBindings="True"
+        Title="YT Downloader Pro"
+        Icon="/Assets/icon.png"
+        Width="950" Height="650"
+        MinWidth="800" MinHeight="500"
         WindowStartupLocation="CenterScreen">
-  <StackPanel Margin="24" Spacing="12">
-    <TextBlock Text="YT Downloader Pro" FontSize="22" FontWeight="SemiBold" />
-    <TextBlock Text="Walking skeleton (steps 4.1 and 4.2): window, tray icon, notifications, platform services." TextWrapping="Wrap" />
-    <TextBlock Name="SystemInfo" TextWrapping="Wrap" />
-    <TextBlock Name="Status" TextWrapping="Wrap" />
-    <StackPanel Orientation="Horizontal" Spacing="8">
-      <Button Name="NotifyButton" Content="Test notification" />
-      <Button Name="HideButton" Content="Hide to tray" />
-      <Button Name="ExitButton" Content="Exit" />
-    </StackPanel>
-    <TextBlock Text="Platform services (step 4.2b):" Margin="0,8,0,0" />
-    <StackPanel Orientation="Horizontal" Spacing="8">
-      <Button Name="CopyButton" Content="Copy text" />
-      <Button Name="DialogButton" Content="Show dialog" />
-      <Button Name="FolderButton" Content="Open data folder" />
-      <Button Name="ThreadButton" Content="Thread test" />
-    </StackPanel>
-  </StackPanel>
+
+  <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+    <!-- Header: logo, title, minimize-to-tray and settings (gear) menu -->
+    <Border Grid.Row="0" Background="{StaticResource BackgroundBrush}" Padding="20,14,16,10">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+          <Image Source="avares://YTDLPHost.Avalonia/Assets/icon.png" Width="32" Height="32" Margin="0,0,12,0" />
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="YT Downloader Pro" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="Native yt-dlp Host" FontSize="11" Foreground="{StaticResource TextMutedBrush}" />
+              <TextBlock Text=" • Crafted with ⚡ by muzammilAwan-dev" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="4,0,0,0" />
+            </StackPanel>
+          </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+          <Button Classes="icon" Command="{Binding MinimizeToTrayCommand}" ToolTip.Tip="Minimize to Tray">
+            <Path Data="M19,13H5V11H19V13Z" Fill="{StaticResource TextSecondaryBrush}" Width="16" Height="16" Stretch="Uniform" />
+          </Button>
+          <Button Name="SettingsButton" Classes="icon" ToolTip.Tip="Settings">
+            <Button.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedRight">
+                <MenuItem Header="Update engine (yt-dlp)..." Click="OnUpdateEngineClick" />
+                <MenuItem Tag="browser-downloads" Header="Browser downloads: notify only (off)" Click="OnToggleShowWindowClick" />
+                <MenuItem Header="-" />
+                <MenuItem Header="Exit" Click="OnExitClick" />
+              </MenuFlyout>
+            </Button.Flyout>
+            <Path Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" Fill="{StaticResource TextSecondaryBrush}" Width="16" Height="16" Stretch="Uniform" />
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Settings rows: limits, apply, clear completed, browser downloads folder -->
+    <Border Grid.Row="1" Background="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="20,0,20,12">
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+          <TextBlock Text="Max tasks" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12" />
+          <ComboBox Classes="small" IsEditable="True" Width="76" Margin="0,0,20,0"
+                    Text="{Binding Settings.MaxConcurrentDownloads, Mode=TwoWay}"
+                    ToolTip.Tip="How many downloads run at the same time (1-15)">
+            <x:String>1</x:String>
+            <x:String>3</x:String>
+            <x:String>5</x:String>
+            <x:String>10</x:String>
+          </ComboBox>
+
+          <TextBlock Text="Speed limit" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12" />
+          <ComboBox Classes="small" IsEditable="True" Width="100" Margin="0,0,8,0"
+                    Text="{Binding Settings.SpeedLimit, Mode=TwoWay}"
+                    ToolTip.Tip="Use 0 for unlimited, or formats like 500K, 2.5M, 10M">
+            <x:String>0</x:String>
+            <x:String>500K</x:String>
+            <x:String>1M</x:String>
+            <x:String>2.5M</x:String>
+            <x:String>5M</x:String>
+            <x:String>10M</x:String>
+          </ComboBox>
+          <TextBlock Text="0 = unlimited" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,16,0" FontSize="11" />
+
+          <Button Classes="accent" Content="Apply" Command="{Binding SaveSettingsCommand}" ToolTip.Tip="Save these limits" />
+        </StackPanel>
+
+        <Button Grid.Column="1" Classes="action" Content="Clear completed" Command="{Binding ClearCompletedCommand}"
+                VerticalAlignment="Center" IsVisible="{Binding HasCompletedDownloads}" />
+
+        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0" ColumnDefinitions="Auto,*,Auto">
+          <TextBlock Grid.Column="0" Text="Browser downloads folder" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12" />
+          <TextBox Grid.Column="1" Classes="small" Text="{Binding Settings.DownloadFolder, Mode=TwoWay}"
+                   ToolTip.Tip="Where downloads started from the browser are saved. Leave empty for the default (Downloads/YTDownloaderPro). Click Apply to save." />
+          <Button Grid.Column="2" Classes="action" Content="Browse..." Click="OnBrowseDownloadFolderClick" Margin="8,0,0,0" />
+        </Grid>
+      </Grid>
+    </Border>
+
+    <!-- Download list or the empty state -->
+    <Grid Grid.Row="2">
+      <StackPanel IsVisible="{Binding !HasDownloads}" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <Path Data="M180,124 L180,319 L353,222 Z M147,349 L365,349 L365,388 L147,388 Z" Fill="{StaticResource SurfaceHoverBrush}" Width="64" Height="64" Stretch="Uniform" HorizontalAlignment="Center" />
+        <TextBlock Text="No active downloads" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,20,0,8" />
+        <TextBlock Text="Use the Download button on YouTube, Instagram, Facebook and other supported sites to add videos" FontSize="13" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" />
+      </StackPanel>
+
+      <ListBox Classes="downloads" ItemsSource="{Binding Downloads}" IsVisible="{Binding HasDownloads}"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:DownloadItemViewModel">
+            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                    CornerRadius="10" Padding="16,14" Margin="0,0,0,8">
+              <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+
+                <!-- Row 0: status dot, title, resolution badge, buttons -->
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto">
+                  <Border Grid.Column="0" Width="10" Height="10" CornerRadius="5" Margin="0,0,12,0" VerticalAlignment="Center"
+                          Background="{Binding Task.Status, Converter={x:Static ui:StatusConverters.DotBrush}}"
+                          Classes.blink="{Binding Task.Status, Converter={x:Static ui:StatusConverters.IsDownloading}}" />
+
+                  <TextBlock Grid.Column="1" Text="{Binding DisplayTitle}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"
+                             TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+
+                  <Border Grid.Column="2" Background="{StaticResource SurfaceHoverBrush}" CornerRadius="4" Padding="6,2" Margin="8,0,8,0" VerticalAlignment="Center"
+                          IsVisible="{Binding ResolutionDisplay, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <TextBlock Text="{Binding ResolutionDisplay}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                  </Border>
+
+                  <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Spacing="4">
+                    <Button Classes="icon" Command="{Binding ToggleLogCommand}" ToolTip.Tip="Logs">
+                      <Path Data="M19,19H5V5H19M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M17,17H7V15H17M17,13H7V11H17M13,9H7V7H13" Fill="{StaticResource TextMutedBrush}" Width="16" Height="16" Stretch="Uniform" />
+                    </Button>
+                    <Button Classes="icon" IsVisible="{Binding IsCompleted}" ToolTip.Tip="Open Folder"
+                            Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).OpenFolderCommand}" CommandParameter="{Binding}">
+                      <Path Data="M20,6H12L10,4H4A2,2 0 0,0 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8A2,2 0 0,0 20,6Z" Fill="{StaticResource TextSecondaryBrush}" Width="16" Height="16" Stretch="Uniform" />
+                    </Button>
+                    <Button Classes="icon" IsVisible="{Binding IsCompleted}" ToolTip.Tip="Play Video"
+                            Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).PlayFileCommand}" CommandParameter="{Binding}">
+                      <Path Data="M8,5.14V19.14L19,12.14L8,5.14Z" Fill="{StaticResource TextSecondaryBrush}" Width="16" Height="16" Stretch="Uniform" />
+                    </Button>
+                    <Button Classes="icon" IsVisible="{Binding IsResumable}" ToolTip.Tip="Resume"
+                            Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).ResumeDownloadCommand}" CommandParameter="{Binding}">
+                      <Path Data="M8,5.14V19.14L19,12.14L8,5.14Z" Fill="{StaticResource SuccessBrush}" Width="16" Height="16" Stretch="Uniform" />
+                    </Button>
+                    <Button Classes="icon" IsVisible="{Binding CanBePaused}" ToolTip.Tip="Pause"
+                            Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).PauseDownloadCommand}" CommandParameter="{Binding}">
+                      <Path Data="M14,19H18V5H14M6,19H10V5H6V19Z" Fill="{StaticResource WarningBrush}" Width="16" Height="16" Stretch="Uniform" />
+                    </Button>
+                    <Button Classes="icon" IsVisible="{Binding CanBeCancelled}" ToolTip.Tip="Cancel (Deletes partial files)"
+                            Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).CancelDownloadCommand}" CommandParameter="{Binding}">
+                      <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Fill="{StaticResource ErrorBrush}" Width="16" Height="16" Stretch="Uniform" />
+                    </Button>
+                    <Button Classes="icon" IsVisible="{Binding CanBeRemoved}" ToolTip.Tip="Remove from List"
+                            Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).RemoveDownloadCommand}" CommandParameter="{Binding}">
+                      <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Fill="{StaticResource TextMutedBrush}" Width="16" Height="16" Stretch="Uniform" />
+                    </Button>
+                  </StackPanel>
+                </Grid>
+
+                <!-- Row 1: progress text -->
+                <TextBlock Grid.Row="1" Margin="22,8,0,0" Text="{Binding ProgressDisplay}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+
+                <!-- Row 2: progress bar -->
+                <ProgressBar Grid.Row="2" Classes="download" Margin="22,8,0,0" Maximum="100"
+                             Value="{Binding Progress, Mode=OneWay}"
+                             IsIndeterminate="{Binding Task.IsIndeterminate, Mode=OneWay}"
+                             Foreground="{Binding Task.Status, Converter={x:Static ui:StatusConverters.ProgressBrush}}" />
+
+                <!-- Row 3 (error banner) and row 4 (log panel) are separate rows so they never overlap. -->
+                <Border Grid.Row="3" Background="#15F44336" CornerRadius="6" Padding="8,6" Margin="22,8,0,0" IsVisible="{Binding HasError}">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <!-- Selectable text: the error can be selected and copied. -->
+                    <SelectableTextBlock Grid.Column="0" Text="{Binding ErrorMessage, Mode=OneWay}" Foreground="{StaticResource ErrorBrush}" FontSize="11" TextWrapping="Wrap" />
+                    <Button Grid.Column="1" Classes="icon" Command="{Binding CopyErrorCommand}" ToolTip.Tip="Copy error" VerticalAlignment="Top" Margin="8,0,0,0">
+                      <Path Data="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" Fill="{StaticResource ErrorBrush}" Width="14" Height="14" Stretch="Uniform" />
+                    </Button>
+                  </Grid>
+                </Border>
+
+                <Border Grid.Row="4" Background="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6"
+                        Margin="22,8,0,0" Padding="8" IsVisible="{Binding IsLogVisible}">
+                  <Grid>
+                    <ScrollViewer Height="150" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                      <SelectableTextBlock Text="{Binding Task.UiLogText, Mode=OneWay}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="11" FontFamily="Consolas, Menlo, Monospace" />
+                    </ScrollViewer>
+                    <Button Classes="icon" Command="{Binding CopyLogCommand}" ToolTip.Tip="Copy full log" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,16,0">
+                      <Path Data="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" Fill="{StaticResource TextMutedBrush}" Width="14" Height="14" Stretch="Uniform" />
+                    </Button>
+                  </Grid>
+                </Border>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Grid>
+
+    <!-- Status bar -->
+    <Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="20,8">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+          <Ellipse Classes="pulse" Width="8" Height="8" Fill="{StaticResource AccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+          <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+        </StackPanel>
+        <TextBlock Grid.Column="1" Text="{Binding ActiveDownloadCount, Converter={x:Static ui:TextConverters.ActiveDownloads}}" FontSize="12" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+      </Grid>
+    </Border>
+  </Grid>
 </Window>

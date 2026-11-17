@@ -206,6 +206,7 @@ namespace YTDLPHost
         private void ShowMainWindow()
         {
             if (_mainWindow == null) return;
+            if (_mainViewModel != null) _mainViewModel.IsWindowVisible = true;
             _mainWindow.Show();
             if (_mainWindow.WindowState == WindowState.Minimized) _mainWindow.WindowState = WindowState.Normal;
             _mainWindow.Activate();

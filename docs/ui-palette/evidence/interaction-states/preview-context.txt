@@ -1,0 +1,10 @@
+dark-default-selected.png: 966x663 pixels; Window=980x700 DIPs; background=#FF181A1E; host DPI=144.
+dark-secondary-hover.png: 966x663 pixels; Window=980x700 DIPs; background=#FF181A1E; host DPI=144.
+dark-secondary-pressed.png: 966x663 pixels; Window=980x700 DIPs; background=#FF181A1E; host DPI=144.
+dark-primary-hover.png: 966x663 pixels; Window=980x700 DIPs; background=#FF181A1E; host DPI=144.
+dark-primary-pressed.png: 966x663 pixels; Window=980x700 DIPs; background=#FF181A1E; host DPI=144.
+light-default-selected.png: 966x663 pixels; Window=980x700 DIPs; background=#FFF2F3F5; host DPI=144.
+light-secondary-hover.png: 966x663 pixels; Window=980x700 DIPs; background=#FFF2F3F5; host DPI=144.
+light-secondary-pressed.png: 966x663 pixels; Window=980x700 DIPs; background=#FFF2F3F5; host DPI=144.
+light-primary-hover.png: 966x663 pixels; Window=980x700 DIPs; background=#FFF2F3F5; host DPI=144.
+light-primary-pressed.png: 966x663 pixels; Window=980x700 DIPs; background=#FFF2F3F5; host DPI=144.

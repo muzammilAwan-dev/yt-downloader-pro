@@ -1,0 +1,19 @@
+Actual compiled MainWindow; App.xaml resource dictionary parsed from source with assembly-qualified converter names and colors initialized from the actual ThemeService palette; synthetic root queue; actual DownloadTask/DownloadItemViewModel.
+No normal startup, MainViewModel, protocol, history, tray, engine or file commands executed. Synthetic pause/resume change fixture status only; other root commands are no-ops.
+Runtime: .NET 8.0.34
+Runtime host: C:\Users\Malku\AppData\Local\Temp\opencode\ytdlp-palette-20261115\runtime\dotnet.exe
+WPF assembly: C:\Users\Malku\AppData\Local\Temp\opencode\ytdlp-palette-20261115\runtime\shared\Microsoft.WindowsDesktop.App\8.0.34\PresentationFramework.dll
+Client-area WPF renders at 96 DPI with Window.Background composited; filter/footer/counts set by fixture; native title bar not captured; not end-to-end testing.
+Separate light window/resources created for static-palette fidelity. This parsed-resource fixture measures static palettes only; runtime switching is verified separately with source resources compiled into a safe application.
+Windows ClientAreaAnimation=True. Physical scaling/contrast themes/Snap/Narrator not tested.
+This solid palette fixture skips native SendInput/foreground activation tests. No physical keys sent.
+After preview explicitly restores the production service's solid fallback for matched client-state captures; this bitmap cannot capture DWM material.
+01-empty-dark.png: 966x663 pixels; Window=980x700 DIPs; background=#FF181A1E; host DPI=144.
+02-queue-dark.png: 966x663 pixels; Window=980x700 DIPs; background=#FF181A1E; host DPI=144.
+03-queue-light.png: 966x663 pixels; Window=980x700 DIPs; background=#FFF2F3F5; host DPI=144.
+04-limits-light.png: 966x663 pixels; Window=980x700 DIPs; background=#FFF2F3F5; host DPI=144.
+05-minimum-limits-light.png: 826x503 pixels; Window=840x540 DIPs; background=#FFF2F3F5; host DPI=144.
+06-queued-processing-live-cancelled-dark.png: 966x663 pixels; Window=980x700 DIPs; background=#FF181A1E; host DPI=144.
+07-expanded-error-and-log-dark.png: 966x663 pixels; Window=980x700 DIPs; background=#FF181A1E; host DPI=144.
+Open settings menus found=1. Only opened; no choices invoked.
+Seven captures completed. Programmatic focus traversal and WPF automation-peer inspection, NOT keyboard-only/Narrator tests.

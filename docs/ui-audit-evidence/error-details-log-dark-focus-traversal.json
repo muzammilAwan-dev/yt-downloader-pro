@@ -1,0 +1,68 @@
+[
+  {
+    "Index": 0,
+    "Type": "ToggleButton",
+    "Name": "Download limits",
+    "Moved": true
+  },
+  {
+    "Index": 1,
+    "Type": "Button",
+    "Name": "Hide to tray",
+    "Moved": true
+  },
+  {
+    "Index": 2,
+    "Type": "Button",
+    "Name": "Settings and tools",
+    "Moved": true
+  },
+  {
+    "Index": 3,
+    "Type": "Button",
+    "Name": "Retry",
+    "Moved": true
+  },
+  {
+    "Index": 4,
+    "Type": "Button",
+    "Name": "Remove from list",
+    "Moved": true
+  },
+  {
+    "Index": 5,
+    "Type": "Button",
+    "Name": "More actions",
+    "Moved": true
+  },
+  {
+    "Index": 6,
+    "Type": "Button",
+    "Name": "Show or hide technical details",
+    "Moved": true
+  },
+  {
+    "Index": 7,
+    "Type": "Button",
+    "Name": "Copy error",
+    "Moved": true
+  },
+  {
+    "Index": 8,
+    "Type": "TextBox",
+    "Name": "",
+    "Moved": true
+  },
+  {
+    "Index": 9,
+    "Type": "TextBox",
+    "Name": "Download log",
+    "Moved": true
+  },
+  {
+    "Index": 10,
+    "Type": "Button",
+    "Name": "Copy log",
+    "Moved": true
+  }
+]

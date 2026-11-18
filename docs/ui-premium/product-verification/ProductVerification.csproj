@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.17763.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <StartupObject>ProductVerification</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Page Remove="SafeCompiledApplication.xaml" />
+    <ApplicationDefinition Include="SafeCompiledApplication.xaml" />
+    <Compile Include="../preview/Program.cs" Link="Fixture.cs" />
+    <Compile Include="../material-probe/NativeWindowCapture.cs" Link="NativeWindowCapture.cs" />
+    <ProjectReference Include="C:/Users/Malku/Downloads/Compressed/yt-downloader-pro/host/YTDLPHost/YTDLPHost.csproj" />
+  </ItemGroup>
+</Project>

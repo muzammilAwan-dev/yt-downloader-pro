@@ -90,7 +90,7 @@ namespace YTDLPHost.ViewModels
             
             _trayService = new TrayIconService();
             _trayService.ShowWindowRequested += (s, e) => RequestShowWindow?.Invoke(this, EventArgs.Empty);
-            _trayService.ExitRequested += (s, e) => ExitCommand.Execute(null);
+            _trayService.ExitRequested += (s, e) => ExitCommand?.Execute(null);
             _trayService.Initialize();
 
             ProcessUrlCommand = new RelayCommand<string>(ProcessUrl);
@@ -303,7 +303,7 @@ namespace YTDLPHost.ViewModels
                 {
                     return await client.GetByteArrayAsync(url);
                 }
-                catch (Exception ex) when (i < maxRetries - 1)
+                catch (Exception) when (i < maxRetries - 1)
                 {
                     AppLogger.Log($"[DEPENDENCIES] Network drop detected on dependency download. Retrying ({i + 1}/{maxRetries})...");
                     await Task.Delay(3000); 
@@ -715,7 +715,7 @@ namespace YTDLPHost.ViewModels
                     {
                         UrlPayload = url,
                         Command = command,
-                        CookiePayload = cookieContent,
+                        CookiePayload = cookieContent ?? string.Empty,
                         CookieFilePath = cookieFilePath ?? string.Empty,
                         Resolution = ExtractResolution(command),
                         Title = ExtractTitleHint(command),

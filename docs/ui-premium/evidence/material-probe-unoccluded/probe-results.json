@@ -1,0 +1,8 @@
+[
+  {
+    "Check": "Screen capture",
+    "File": "01-solid-dark.png",
+    "Captured": false,
+    "Detail": "Blocked: selected-window crop extends beyond the virtual screen; no screen pixels read."
+  }
+]

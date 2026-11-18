@@ -3,10 +3,14 @@ name: Build YTDLPHost
 on:
   push:
     branches: [main, master]
-    # Only re-run this workflow when the host app changes
     paths:
       - 'host/**'
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:
+
+# A newer push cancels the run still in progress.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -43,3 +47,5 @@ jobs:
         with:
           name: YTDLPHost-Release
           path: ./publish/YTDLPHost.exe
+          retention-days: 7
+          if-no-files-found: error

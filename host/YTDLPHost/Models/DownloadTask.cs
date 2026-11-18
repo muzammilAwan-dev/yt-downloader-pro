@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace YTDLPHost.Models
@@ -123,38 +124,88 @@ namespace YTDLPHost.Models
 
         [JsonIgnore]
         private readonly StringBuilder _fullLogBuilder = new();
-        
+
         [JsonIgnore]
-        private readonly Queue<string> _uiLogQueue = new();
-        
+        private readonly List<string> _uiLogLines = new();
+
         [JsonIgnore]
-        private const int MaxUiLogLines = 100; 
-        
+        private const int MaxUiLogLines = 3000;
+
         [JsonIgnore]
         private readonly object _logLock = new();
-        
+
+        // Progress lines replace each other (like a terminal's carriage return) instead of piling up by the thousand.
+        private bool _lastLineWasProgress;
+        private int _fullLogLastLineStart = -1;
+
+        // The on-screen log is only built while someone is looking at it, and at most 4 times a second.
+        // yt-dlp prints a progress line many times per second; rebuilding and re-laying-out the log text for each one
+        // froze the whole window (clicks and scrolling were delayed or lost while a download ran).
+        private volatile bool _uiLogActive;
+        private int _uiLogFlushPending;
+
         [JsonIgnore]
-        public string FullLogText => _fullLogBuilder.ToString();
+        public string FullLogText
+        {
+            get { lock (_logLock) { return _fullLogBuilder.ToString(); } }
+        }
 
         [property: JsonIgnore]
         [ObservableProperty]
         private string _uiLogText = "";
+
+        private static bool IsProgressLine(string line) =>
+            line.StartsWith("[download]", StringComparison.Ordinal) && line.Contains('%') &&
+            (line.Contains(" ETA ", StringComparison.Ordinal) || line.Contains(" at ", StringComparison.Ordinal));
+
+        /// <summary>Tells the task whether its log panel is open. Opening it shows the current log immediately.</summary>
+        public void SetUiLogActive(bool active)
+        {
+            _uiLogActive = active;
+            if (active) FlushUiLog();
+        }
+
+        private void ScheduleUiLogFlush()
+        {
+            if (!_uiLogActive) return;
+            if (Interlocked.Exchange(ref _uiLogFlushPending, 1) == 1) return;
+            _ = System.Threading.Tasks.Task.Delay(250).ContinueWith(_ => FlushUiLog());
+        }
+
+        private void FlushUiLog()
+        {
+            Interlocked.Exchange(ref _uiLogFlushPending, 0);
+            string text;
+            lock (_logLock)
+            {
+                text = string.Join(Environment.NewLine, _uiLogLines);
+            }
+            UiLogText = text;
+        }
 
         public void AppendLog(string? line)
         {
             if (string.IsNullOrWhiteSpace(line)) return;
             lock (_logLock)
             {
-                _fullLogBuilder.AppendLine(line);
-                
-                _uiLogQueue.Enqueue(line);
-                if (_uiLogQueue.Count > MaxUiLogLines)
+                bool isProgress = IsProgressLine(line);
+                if (isProgress && _lastLineWasProgress)
                 {
-                    _uiLogQueue.Dequeue();
+                    // Replace the previous progress line, in both the full log and the on-screen log.
+                    if (_fullLogLastLineStart >= 0 && _fullLogLastLineStart <= _fullLogBuilder.Length)
+                        _fullLogBuilder.Length = _fullLogLastLineStart;
+                    if (_uiLogLines.Count > 0) _uiLogLines.RemoveAt(_uiLogLines.Count - 1);
                 }
 
-                UiLogText = string.Join(Environment.NewLine, _uiLogQueue);
+                _fullLogLastLineStart = _fullLogBuilder.Length;
+                _fullLogBuilder.AppendLine(line);
+
+                _uiLogLines.Add(line);
+                if (_uiLogLines.Count > MaxUiLogLines) _uiLogLines.RemoveAt(0);
+
+                _lastLineWasProgress = isProgress;
             }
+            ScheduleUiLogFlush();
         }
 
         /// <summary>Writes a line to the full on-disk log only (not the live log view). Used for noisy ffmpeg diagnostics.</summary>
@@ -164,6 +215,7 @@ namespace YTDLPHost.Models
             lock (_logLock)
             {
                 _fullLogBuilder.AppendLine(line);
+                _lastLineWasProgress = false; // a quiet line sits in the full log now, so the next progress line must not overwrite it
             }
         }
 
@@ -172,7 +224,9 @@ namespace YTDLPHost.Models
             lock (_logLock)
             {
                 _fullLogBuilder.Clear();
-                _uiLogQueue.Clear();
+                _uiLogLines.Clear();
+                _lastLineWasProgress = false;
+                _fullLogLastLineStart = -1;
                 UiLogText = "";
                 LogFileSaved = false;
                 

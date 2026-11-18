@@ -1,0 +1,2510 @@
+{
+  "RemovedPath": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115",
+  "TemporaryDirectoryAbsent": false,
+  "RuntimeDirectoryAbsent": false,
+  "DownloadsDirectoryAbsent": false,
+  "RemainingFiles": 573,
+  "RemainingEntries": [
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\before-source",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\bootstrap.py",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\compile-resources.py",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\downloads",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\material-probe",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preserve-evidence.py",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\summarize.py",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\after",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\after-preview-build.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\baseline-check-results.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\baseline-checks-build.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\baseline-host-build.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\baseline-preview-build.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\before",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\checks-final-build.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\checks-final-results.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\checks-initial-palette-results.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\checks-palette-build.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\checks-palette-results.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\compiled-native",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\host-final-build.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\host-palette-build.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\interaction-build.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\interaction-states",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\isolated-runtimes.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\runtime-download-verification.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\source-invariants.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\system-runtimes-before.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\verification-summary.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\material-probe\\NativeWindowCapture.cs",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\NativePreview.csproj",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\Program.cs",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\PaletteStates.cs",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\ProductVerification.cs",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\ProductVerification.csproj",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\SafeCompiledApplication.xaml",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\dotnet.exe",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\host",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\LICENSE.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\ThirdPartyNotices.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\host\\fxr",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\Accessibility.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\D3DCompiler_47_cor3.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\DirectWriteForwarder.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\Microsoft.VisualBasic.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\Microsoft.VisualBasic.Forms.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\Microsoft.Win32.Registry.AccessControl.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\Microsoft.Win32.SystemEvents.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\Microsoft.WindowsDesktop.App.deps.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\Microsoft.WindowsDesktop.App.runtimeconfig.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PenImc_cor3.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationCore.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationFramework-SystemCore.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationFramework-SystemData.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationFramework-SystemDrawing.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationFramework-SystemXml.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationFramework-SystemXmlLinq.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationFramework.Aero.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationFramework.Aero2.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationFramework.AeroLite.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationFramework.Classic.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationFramework.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationFramework.Luna.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationFramework.Royale.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationNative_cor3.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\PresentationUI.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ReachFramework.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.CodeDom.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Configuration.ConfigurationManager.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Design.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Diagnostics.EventLog.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Diagnostics.EventLog.Messages.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Diagnostics.PerformanceCounter.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.DirectoryServices.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Drawing.Common.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Drawing.Design.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Drawing.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.IO.Packaging.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Printing.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Resources.Extensions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Security.Cryptography.Pkcs.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Security.Cryptography.ProtectedData.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Security.Cryptography.Xml.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Security.Permissions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Threading.AccessControl.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Windows.Controls.Ribbon.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Windows.Extensions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Windows.Forms.Design.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Windows.Forms.Design.Editors.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Windows.Forms.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Windows.Forms.Primitives.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Windows.Input.Manipulations.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Windows.Presentation.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\System.Xaml.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\UIAutomationClient.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\UIAutomationClientSideProviders.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\UIAutomationProvider.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\UIAutomationTypes.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\vcruntime140_cor3.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\WindowsBase.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\WindowsFormsIntegration.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\wpfgfx_cor3.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\cs\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\de\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\es\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\fr\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\it\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ja\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ko\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pl\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\pt-BR\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\ru\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\tr\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hans\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\Microsoft.VisualBasic.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\PresentationCore.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\PresentationFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\PresentationUI.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\ReachFramework.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\System.Windows.Controls.Ribbon.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\System.Windows.Forms.Design.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\System.Windows.Forms.Primitives.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\System.Windows.Forms.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\System.Windows.Input.Manipulations.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\System.Xaml.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\UIAutomationClient.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\UIAutomationClientSideProviders.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\UIAutomationProvider.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\UIAutomationTypes.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\WindowsBase.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.WindowsDesktop.App\\8.0.34\\zh-Hant\\WindowsFormsIntegration.resources.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\.version",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\clretwrc.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\clrgc.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\clrjit.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\coreclr.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\createdump.exe",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\hostpolicy.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\Microsoft.CSharp.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\Microsoft.DiaSymReader.Native.amd64.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\Microsoft.NETCore.App.deps.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\Microsoft.NETCore.App.runtimeconfig.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\Microsoft.VisualBasic.Core.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\Microsoft.VisualBasic.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\Microsoft.Win32.Primitives.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\Microsoft.Win32.Registry.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\mscordaccore.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\mscordaccore_amd64_amd64_8.0.3426.52217.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\mscordbi.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\mscorlib.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\mscorrc.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\msquic.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\netstandard.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.AppContext.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Buffers.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Collections.Concurrent.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Collections.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Collections.Immutable.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Collections.NonGeneric.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Collections.Specialized.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.ComponentModel.Annotations.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.ComponentModel.DataAnnotations.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.ComponentModel.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.ComponentModel.EventBasedAsync.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.ComponentModel.Primitives.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.ComponentModel.TypeConverter.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Configuration.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Console.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Core.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Data.Common.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Data.DataSetExtensions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Data.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Diagnostics.Contracts.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Diagnostics.Debug.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Diagnostics.DiagnosticSource.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Diagnostics.FileVersionInfo.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Diagnostics.Process.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Diagnostics.StackTrace.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Diagnostics.TextWriterTraceListener.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Diagnostics.Tools.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Diagnostics.TraceSource.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Diagnostics.Tracing.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Drawing.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Drawing.Primitives.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Dynamic.Runtime.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Formats.Asn1.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Formats.Tar.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Globalization.Calendars.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Globalization.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Globalization.Extensions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.Compression.Brotli.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.Compression.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.Compression.FileSystem.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.Compression.Native.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.Compression.ZipFile.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.FileSystem.AccessControl.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.FileSystem.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.FileSystem.DriveInfo.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.FileSystem.Primitives.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.FileSystem.Watcher.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.IsolatedStorage.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.MemoryMappedFiles.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.Pipes.AccessControl.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.Pipes.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.IO.UnmanagedMemoryStream.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Linq.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Linq.Expressions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Linq.Parallel.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Linq.Queryable.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Memory.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.Http.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.Http.Json.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.HttpListener.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.Mail.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.NameResolution.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.NetworkInformation.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.Ping.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.Primitives.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.Quic.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.Requests.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.Security.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.ServicePoint.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.Sockets.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.WebClient.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.WebHeaderCollection.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.WebProxy.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.WebSockets.Client.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Net.WebSockets.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Numerics.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Numerics.Vectors.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.ObjectModel.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Private.CoreLib.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Private.DataContractSerialization.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Private.Uri.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Private.Xml.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Private.Xml.Linq.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Reflection.DispatchProxy.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Reflection.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Reflection.Emit.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Reflection.Emit.ILGeneration.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Reflection.Emit.Lightweight.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Reflection.Extensions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Reflection.Metadata.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Reflection.Primitives.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Reflection.TypeExtensions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Resources.Reader.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Resources.ResourceManager.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Resources.Writer.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.CompilerServices.Unsafe.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.CompilerServices.VisualC.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.Extensions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.Handles.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.InteropServices.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.InteropServices.JavaScript.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.InteropServices.RuntimeInformation.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.Intrinsics.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.Loader.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.Numerics.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.Serialization.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.Serialization.Formatters.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.Serialization.Json.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.Serialization.Primitives.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Runtime.Serialization.Xml.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.AccessControl.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.Claims.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.Cryptography.Algorithms.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.Cryptography.Cng.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.Cryptography.Csp.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.Cryptography.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.Cryptography.Encoding.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.Cryptography.OpenSsl.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.Cryptography.Primitives.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.Cryptography.X509Certificates.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.Principal.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.Principal.Windows.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Security.SecureString.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.ServiceModel.Web.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.ServiceProcess.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Text.Encoding.CodePages.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Text.Encoding.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Text.Encoding.Extensions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Text.Encodings.Web.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Text.Json.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Text.RegularExpressions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Threading.Channels.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Threading.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Threading.Overlapped.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Threading.Tasks.Dataflow.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Threading.Tasks.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Threading.Tasks.Extensions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Threading.Tasks.Parallel.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Threading.Thread.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Threading.ThreadPool.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Threading.Timer.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Transactions.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Transactions.Local.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.ValueTuple.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Web.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Web.HttpUtility.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Windows.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Xml.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Xml.Linq.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Xml.ReaderWriter.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Xml.Serialization.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Xml.XDocument.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Xml.XmlDocument.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Xml.XmlSerializer.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Xml.XPath.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\System.Xml.XPath.XDocument.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\shared\\Microsoft.NETCore.App\\8.0.34\\WindowsBase.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\host\\fxr\\8.0.34",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\runtime\\host\\fxr\\8.0.34\\hostfxr.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\ProductVerification.csproj.nuget.dgspec.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\ProductVerification.csproj.nuget.g.props",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\ProductVerification.csproj.nuget.g.targets",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\project.assets.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\project.nuget.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\apphost.exe",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductV.103A15BC.Up2Date",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.AssemblyInfo.cs",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.AssemblyInfoInputs.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.assets.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.csproj.AssemblyReference.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.csproj.CoreCompileInputs.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.csproj.FileListAbsolute.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.g.resources",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.GeneratedMSBuildEditorConfig.editorconfig",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.genruntimeconfig.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.GlobalUsings.g.cs",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.pdb",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification_MarkupCompile.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ref",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\refint",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\SafeCompiledApplication.baml",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\SafeCompiledApplication.g.cs",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\ref\\ProductVerification.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\obj\\Debug\\net8.0-windows10.0.17763.0\\refint\\ProductVerification.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\CommunityToolkit.Mvvm.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\Microsoft.Toolkit.Uwp.Notifications.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\Microsoft.Windows.SDK.NET.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.deps.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.exe",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.pdb",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\ProductVerification.runtimeconfig.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\WinRT.Runtime.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\YTDLPHost.deps.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\YTDLPHost.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\YTDLPHost.exe",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\YTDLPHost.pdb",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\product-verification\\bin\\Debug\\net8.0-windows10.0.17763.0\\YTDLPHost.runtimeconfig.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\NativePreview.csproj.nuget.dgspec.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\NativePreview.csproj.nuget.g.props",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\NativePreview.csproj.nuget.g.targets",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\project.assets.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\project.nuget.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\apphost.exe",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\NativePr.EA51997B.Up2Date",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.AssemblyInfo.cs",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.AssemblyInfoInputs.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.assets.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.csproj.AssemblyReference.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.csproj.CoreCompileInputs.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.csproj.FileListAbsolute.txt",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.GeneratedMSBuildEditorConfig.editorconfig",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.genruntimeconfig.cache",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.GlobalUsings.g.cs",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.pdb",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\ref",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\refint",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\ref\\NativePreview.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\obj\\Debug\\net8.0-windows10.0.17763.0\\refint\\NativePreview.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\CommunityToolkit.Mvvm.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\Microsoft.Toolkit.Uwp.Notifications.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\Microsoft.Windows.SDK.NET.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.deps.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.exe",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.pdb",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\NativePreview.runtimeconfig.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\WinRT.Runtime.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\YTDLPHost.deps.json",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\YTDLPHost.dll",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\YTDLPHost.exe",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\YTDLPHost.pdb",
+      "IsDirectory": false
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\preview\\bin\\Debug\\net8.0-windows10.0.17763.0\\YTDLPHost.runtimeconfig.json",
+      "IsDirectory": false
+    }
+  ],
+  "NoMatchingProcessBeforeRemoval": true,
+  "PreservedExactFilesVerified": 134,
+  "SystemRuntimeListMatchesEarlierBaseline": true,
+  "SystemWindowsDesktop8Absent": true,
+  "SystemRuntimeListAfter": [
+    "Microsoft.AspNetCore.App 10.0.12 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]",
+    "Microsoft.NETCore.App 8.0.14 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]",
+    "Microsoft.NETCore.App 9.0.8 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]",
+    "Microsoft.NETCore.App 10.0.12 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]",
+    "Microsoft.WindowsDesktop.App 9.0.8 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]",
+    "Microsoft.WindowsDesktop.App 10.0.12 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]"
+  ],
+  "RemovalErrors": [
+    "[WinError 32] The process cannot access the file because it is being used by another process: 'C:\\\\Users\\\\Malku\\\\AppData\\\\Local\\\\Temp\\\\opencode\\\\ytdlp-palette-20261115\\\\evidence\\\\after'"
+  ],
+  "Scope": "Only the fresh palette runtime/download/test tree targeted. No unrelated process termination, system runtime or environment changes. Earlier premium locked empty folder outside scope.",
+  "CleanupMethod": "Python standard library; PowerShell script execution was blocked by policy. No execution-policy changes."
+}

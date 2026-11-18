@@ -1,0 +1,283 @@
+[
+  {
+    "Check": "Production Mica dark",
+    "IsMaterialEnabled": true,
+    "Fallback": "",
+    "Theme": "Dark",
+    "IsDark": true,
+    "Background": "#00FFFFFF",
+    "CompositionBackground": "#00FFFFFF",
+    "BackdropReadHRESULT": 0,
+    "BackdropType": 2,
+    "Width": 980,
+    "Height": 656,
+    "DPI": 144,
+    "Runtime": ".NET 8.0.34"
+  },
+  {
+    "Check": "Selected-window composited capture",
+    "File": "01-mica-dark.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1424x959 physical pixels; foreground=True; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Source resources compiled in safe application, runtime theme switch",
+    "SameBrushInstance": false,
+    "Resource": "#FF1A1A1A",
+    "VisibleHeaderBrush": "#FF1A1A1A",
+    "BrushFrozen": true,
+    "MatchesPalette": true
+  },
+  {
+    "Check": "Production Mica light",
+    "IsMaterialEnabled": true,
+    "Fallback": "",
+    "Theme": "Light",
+    "IsDark": false,
+    "Background": "#00FFFFFF",
+    "CompositionBackground": "#00FFFFFF",
+    "BackdropReadHRESULT": 0,
+    "BackdropType": 2,
+    "Width": 980,
+    "Height": 656,
+    "DPI": 144,
+    "Runtime": ".NET 8.0.34"
+  },
+  {
+    "Check": "Selected-window composited capture",
+    "File": "02-mica-light.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1424x959 physical pixels; foreground=True; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Software-rendering solid fallback light",
+    "IsMaterialEnabled": false,
+    "Fallback": "Windows support, accessibility, transparency, power or rendering policy",
+    "Theme": "Light",
+    "IsDark": false,
+    "Background": "#FFF3F3F3",
+    "CompositionBackground": "#FFF3F3F3",
+    "BackdropReadHRESULT": 0,
+    "BackdropType": 1,
+    "Width": 980,
+    "Height": 656,
+    "DPI": 144,
+    "Runtime": ".NET 8.0.34"
+  },
+  {
+    "Check": "Selected-window composited capture",
+    "File": "03-fallback-light.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1424x959 physical pixels; foreground=False; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Software-rendering solid fallback dark",
+    "IsMaterialEnabled": false,
+    "Fallback": "Windows support, accessibility, transparency, power or rendering policy",
+    "Theme": "Dark",
+    "IsDark": true,
+    "Background": "#FF181818",
+    "CompositionBackground": "#FF181818",
+    "BackdropReadHRESULT": 0,
+    "BackdropType": 1,
+    "Width": 980,
+    "Height": 656,
+    "DPI": 144,
+    "Runtime": ".NET 8.0.34"
+  },
+  {
+    "Check": "Selected-window composited capture",
+    "File": "04-fallback-dark.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1424x959 physical pixels; foreground=False; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Runtime system theme",
+    "IsMaterialEnabled": true,
+    "Fallback": "",
+    "Theme": "System",
+    "IsDark": true,
+    "Background": "#00FFFFFF",
+    "CompositionBackground": "#00FFFFFF",
+    "BackdropReadHRESULT": 0,
+    "BackdropType": 2,
+    "Width": 980,
+    "Height": 656,
+    "DPI": 144,
+    "Runtime": ".NET 8.0.34"
+  },
+  {
+    "Check": "Selected-window composited capture",
+    "File": "05-system-theme.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1424x959 physical pixels; foreground=False; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Keyboard guard",
+    "Blocked": "Selected preview not foreground; no key sent."
+  },
+  {
+    "Check": "Actual Tab input (programmatic initial focus)",
+    "Traversal": [
+      {
+        "Step": 0,
+        "Focus": "Hide to tray"
+      },
+      {
+        "Step": 1,
+        "Focus": "Settings and tools"
+      },
+      {
+        "Step": 2,
+        "Focus": ""
+      },
+      {
+        "Step": 3,
+        "Focus": ""
+      }
+    ],
+    "ReturnedToStart": false
+  },
+  {
+    "Check": "Keyboard guard",
+    "Blocked": "Selected preview not foreground; no key sent."
+  },
+  {
+    "Check": "Actual Shift\u002BTab input",
+    "Traversal": [],
+    "ReturnedToStart": false
+  },
+  {
+    "Check": "Keyboard guard",
+    "Blocked": "Selected preview not foreground; no key sent."
+  },
+  {
+    "Check": "Space opens limits",
+    "Open": false
+  },
+  {
+    "Check": "Keyboard guard",
+    "Blocked": "Selected preview not foreground; no key sent."
+  },
+  {
+    "Check": "Selected-window composited capture",
+    "File": "07-limits-keyboard-focus-light.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1424x959 physical pixels; foreground=False; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Tab reaches limits input",
+    "Focus": "Download limits",
+    "Type": "ToggleButton"
+  },
+  {
+    "Check": "Keyboard guard",
+    "Blocked": "Selected preview not foreground; no key sent."
+  },
+  {
+    "Check": "Keyboard guard",
+    "Blocked": "Selected preview not foreground; no key sent."
+  },
+  {
+    "Check": "Space pauses synthetic task",
+    "Status": "Downloading",
+    "Focus": "Pause"
+  },
+  {
+    "Check": "Keyboard guard",
+    "Blocked": "Selected preview not foreground; no key sent."
+  },
+  {
+    "Check": "Space resumes synthetic task",
+    "Status": "Downloading",
+    "Focus": "Pause"
+  },
+  {
+    "Check": "Keyboard guard",
+    "Blocked": "Selected preview not foreground; no key sent."
+  },
+  {
+    "Check": "Keyboard guard",
+    "Blocked": "Selected preview not foreground; no key sent."
+  },
+  {
+    "Check": "Settings Space / Escape",
+    "FocusRestored": true
+  },
+  {
+    "Check": "Production native maximize/restore",
+    "Restored": true,
+    "NativeStyleUnchanged": true,
+    "Caption": true,
+    "ResizeFrame": true,
+    "AllowsTransparency": false,
+    "WindowStyle": 1
+  },
+  {
+    "Check": "Production minimum light",
+    "IsMaterialEnabled": true,
+    "Fallback": "",
+    "Theme": "Light",
+    "IsDark": false,
+    "Background": "#00FFFFFF",
+    "CompositionBackground": "#00FFFFFF",
+    "BackdropReadHRESULT": 0,
+    "BackdropType": 2,
+    "Width": 840,
+    "Height": 540,
+    "DPI": 144,
+    "Runtime": ".NET 8.0.34"
+  },
+  {
+    "Check": "Selected-window composited capture",
+    "File": "06-minimum-light.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1214x785 physical pixels; foreground=False; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Fresh production light HWND Mica",
+    "IsMaterialEnabled": true,
+    "Fallback": "",
+    "Theme": "Light",
+    "IsDark": false,
+    "Background": "#00FFFFFF",
+    "CompositionBackground": "#00FFFFFF",
+    "BackdropReadHRESULT": 0,
+    "BackdropType": 2,
+    "Width": 980,
+    "Height": 656,
+    "DPI": 144,
+    "Runtime": ".NET 8.0.34"
+  },
+  {
+    "Check": "Selected-window composited capture",
+    "File": "08-fresh-light-mica.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1424x959 physical pixels; foreground=True; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Fresh production light HWND solid",
+    "IsMaterialEnabled": false,
+    "Fallback": "Windows support, accessibility, transparency, power or rendering policy",
+    "Theme": "Light",
+    "IsDark": false,
+    "Background": "#FFF3F3F3",
+    "CompositionBackground": "#FFF3F3F3",
+    "BackdropReadHRESULT": 0,
+    "BackdropType": 1,
+    "Width": 980,
+    "Height": 656,
+    "DPI": 144,
+    "Runtime": ".NET 8.0.34"
+  },
+  {
+    "Check": "Selected-window composited capture",
+    "File": "09-fresh-light-solid.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1424x959 physical pixels; foreground=True; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Closed window theme change",
+    "CompletedWithoutException": true
+  }
+]

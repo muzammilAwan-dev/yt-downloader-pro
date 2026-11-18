@@ -1,0 +1,8 @@
+[
+  {
+    "Check": "Screen capture",
+    "File": "01-solid-dark.png",
+    "Captured": false,
+    "Detail": "Blocked: selected preview not foreground; no screen pixels read."
+  }
+]

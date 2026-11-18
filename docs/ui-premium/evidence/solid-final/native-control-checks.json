@@ -1,0 +1,22 @@
+[
+  {
+    "Check": "Synthetic Pause replaces focused action",
+    "WindowActive": true,
+    "Status": "Paused",
+    "Focus": "Resume"
+  },
+  {
+    "Check": "Programmatic settings dismissal",
+    "FocusRestored": true
+  },
+  {
+    "Check": "Details expand/collapse",
+    "Expanded": true,
+    "FocusRetained": true
+  },
+  {
+    "Check": "Reduced-motion template branch (injected Tag=false)",
+    "Sweep": "Collapsed",
+    "Indeterminate": true
+  }
+]

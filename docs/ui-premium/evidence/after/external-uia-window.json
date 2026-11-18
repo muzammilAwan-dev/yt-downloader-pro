@@ -1,0 +1,688 @@
+[
+  {
+    "Name": "YT Downloader Pro",
+    "Type": "ControlType.TitleBar",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "System Menu Bar",
+    "Type": "ControlType.MenuBar",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "System",
+    "Type": "ControlType.MenuItem",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Minimize",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Maximize",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Close",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "",
+    "Type": "ControlType.Image",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "YT Downloader Pro",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Download limits",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": "On"
+  },
+  {
+    "Name": "\uE9E9",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Limits",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Hide to tray",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE738",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Settings and tools",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE713",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "All",
+    "Type": "ControlType.RadioButton",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "All",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Active",
+    "Type": "ControlType.RadioButton",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Active",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Completed",
+    "Type": "ControlType.RadioButton",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Completed",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Failed",
+    "Type": "ControlType.RadioButton",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Failed",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Downloads at once",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Downloads at once",
+    "Type": "ControlType.ComboBox",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Downloads at once",
+    "Type": "ControlType.Edit",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Speed limit",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Speed limit",
+    "Type": "ControlType.ComboBox",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Speed limit",
+    "Type": "ControlType.Edit",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "0 = unlimited. Or type 500K, 2.5M, 10M",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Changes also apply to downloads already running.",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Save limits",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Save limits",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Downloads",
+    "Type": "ControlType.List",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "A walk through the mountains at sunrise",
+    "Type": "ControlType.ListItem",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE896",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "A walk through the mountains at sunrise",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "1080p",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Downloading video \u00B7 42.6% of 128.40 MiB",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "3.30",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "MiB/s",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "ETA 00:22",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Pause",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE769",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Pause",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Cancel download",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE71A",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "More actions",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE712",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "A walk through the mountains at sunrise: Downloading video \u00B7 42.6% of 128.40 MiB",
+    "Type": "ControlType.ProgressBar",
+    "IsKeyboardFocusable": false,
+    "RangeValue": true,
+    "ToggleState": null
+  },
+  {
+    "Name": "Acoustic session \u2014 live at the studio",
+    "Type": "ControlType.ListItem",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE769",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Acoustic session \u2014 live at the studio",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "MP3",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Paused at 61.3%",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Resume",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE768",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Resume",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Cancel download",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE71A",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "More actions",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE712",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Acoustic session \u2014 live at the studio: Paused at 61.3%",
+    "Type": "ControlType.ProgressBar",
+    "IsKeyboardFocusable": false,
+    "RangeValue": true,
+    "ToggleState": null
+  },
+  {
+    "Name": "Independent short film \u2014 behind the scenes",
+    "Type": "ControlType.ListItem",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE73E",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Independent short film \u2014 behind the scenes",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "720p",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Completed \u00B7 10:42 AM",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Show in folder",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE838",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Show in folder",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Play",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE768",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Remove from list",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE711",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "More actions",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE712",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "A very long documentary title about restoring historical buildings and preserving local craft traditions for the next generation",
+    "Type": "ControlType.ListItem",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE7BA",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "A very long documentary title about restoring historical buildings and preserving local craft traditions for the next generation",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "1080p",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "The site refused the download (HTTP 403)",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Retry",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE72C",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Retry",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Remove from list",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE711",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "More actions",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "\uE712",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Update the download engine in Settings and tools, then retry.",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Show details",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Show details",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Copy error",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Copy error",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "1 downloading \u00B7 1 paused \u00B7 1 completed \u00B7 1 failed",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Clear finished",
+    "Type": "ControlType.Button",
+    "IsKeyboardFocusable": true,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "Clear finished",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  },
+  {
+    "Name": "3.30 MiB/s",
+    "Type": "ControlType.Text",
+    "IsKeyboardFocusable": false,
+    "RangeValue": false,
+    "ToggleState": null
+  }
+]

@@ -1,0 +1,100 @@
+[
+  {
+    "Index": 0,
+    "Type": "ToggleButton",
+    "Name": "Download limits",
+    "Task": null,
+    "Moved": true
+  },
+  {
+    "Index": 1,
+    "Type": "Button",
+    "Name": "More actions",
+    "Task": "Untitled download",
+    "Moved": true
+  },
+  {
+    "Index": 2,
+    "Type": "Button",
+    "Name": "Remove from list",
+    "Task": "Untitled download",
+    "Moved": true
+  },
+  {
+    "Index": 3,
+    "Type": "Button",
+    "Name": "More actions",
+    "Task": "Live acoustic session \u2014 duration unknown",
+    "Moved": true
+  },
+  {
+    "Index": 4,
+    "Type": "Button",
+    "Name": "Cancel download",
+    "Task": "Live acoustic session \u2014 duration unknown",
+    "Moved": true
+  },
+  {
+    "Index": 5,
+    "Type": "Button",
+    "Name": "Pause",
+    "Task": "Live acoustic session \u2014 duration unknown",
+    "Moved": true
+  },
+  {
+    "Index": 6,
+    "Type": "Button",
+    "Name": "More actions",
+    "Task": "A walk through the mountains at sunrise",
+    "Moved": true
+  },
+  {
+    "Index": 7,
+    "Type": "Button",
+    "Name": "Cancel download",
+    "Task": "A walk through the mountains at sunrise",
+    "Moved": true
+  },
+  {
+    "Index": 8,
+    "Type": "Button",
+    "Name": "Pause",
+    "Task": "A walk through the mountains at sunrise",
+    "Moved": true
+  },
+  {
+    "Index": 9,
+    "Type": "Button",
+    "Name": "More actions",
+    "Task": "Untitled download",
+    "Moved": true
+  },
+  {
+    "Index": 10,
+    "Type": "Button",
+    "Name": "Cancel download",
+    "Task": "Untitled download",
+    "Moved": true
+  },
+  {
+    "Index": 11,
+    "Type": "Button",
+    "Name": "Pause",
+    "Task": "Untitled download",
+    "Moved": true
+  },
+  {
+    "Index": 12,
+    "Type": "Button",
+    "Name": "Settings and tools",
+    "Task": null,
+    "Moved": true
+  },
+  {
+    "Index": 13,
+    "Type": "Button",
+    "Name": "Hide to tray",
+    "Task": null,
+    "Moved": true
+  }
+]

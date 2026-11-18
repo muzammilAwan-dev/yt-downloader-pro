@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
+using YTDLPHost.Models;
 using YTDLPHost.Services;
 using YTDLPHost.ViewModels;
 
@@ -24,7 +25,13 @@ namespace YTDLPHost
             AppLogger.Log("=== YTDLP HOST APPLICATION START ===");
             AppLogger.Log($"OS Version: {Environment.OSVersion}");
 
-            RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
+            // Hardware rendering is much faster for gradients, glows and animations. Software rendering stays as the fallback for
+            // machines with no usable GPU (render tier 0), or when forced with the --software-render argument.
+            bool forceSoftware = e.Args.Contains("--software-render") || Environment.GetEnvironmentVariable("YTDLP_SOFTWARE_RENDER") == "1";
+            if (forceSoftware || (RenderCapability.Tier >> 16) == 0)
+            {
+                RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
+            }
 
             this.DispatcherUnhandledException += (s, args) =>
             {
@@ -42,11 +49,14 @@ namespace YTDLPHost
                 }
             };
 
-            string? urlArg = e.Args.FirstOrDefault();
+            // Options such as --software-render are not links; only the first real argument is.
+            string? urlArg = e.Args.FirstOrDefault(a => !a.StartsWith("--", StringComparison.Ordinal));
             if (!string.IsNullOrEmpty(urlArg)) AppLogger.Log($"[BOOT] Launch Arguments Received: {urlArg}");
             else AppLogger.Log("[BOOT] Launched normally (no protocol arguments).");
 
             base.OnStartup(e);
+
+            ThemeService.Initialize(AppSettings.Load().Theme);
 
             if (!ProtocolHandler.IsRegistered())
             {

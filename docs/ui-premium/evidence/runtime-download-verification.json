@@ -1,0 +1,21 @@
+{
+    "MetadataUrl":  "https://builds.dotnet.microsoft.com/dotnet/release-metadata/8.0/releases.json",
+    "RuntimeVersion":  "8.0.34",
+    "SupportPhase":  "eol",
+    "EolDate":  "2026-11-10",
+    "Scope":  "ZIP-only isolated test runtime. No installer, registry, PATH or system .NET changes.",
+    "Files":  [
+                  {
+                      "Url":  "https://builds.dotnet.microsoft.com/dotnet/Runtime/8.0.34/dotnet-runtime-8.0.34-win-x64.zip",
+                      "SHA512":  "d86d165a29dcdb71df23dd150a3fc5db6386fa55da5cb18c0c22889a0dab5071a3a2d852572e6cebfecf12b489870ac76243ae35665a746ed5b1011e7c68979d",
+                      "Verified":  true,
+                      "ArchiveBytes":  33343771
+                  },
+                  {
+                      "Url":  "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/8.0.34/windowsdesktop-runtime-8.0.34-win-x64.zip",
+                      "SHA512":  "e2d06ff86f9bac6a72e0c624364f400f53d0361220d926db59baeffddc8e9483c4f80cf8eaebd5dc836e07a1d72293c7a75ec2adbf90c33957efe7771f5c2558",
+                      "Verified":  true,
+                      "ArchiveBytes":  36813213
+                  }
+              ]
+}

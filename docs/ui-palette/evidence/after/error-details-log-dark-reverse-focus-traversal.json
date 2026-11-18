@@ -1,0 +1,79 @@
+[
+  {
+    "Index": 0,
+    "Type": "ToggleButton",
+    "Name": "Download limits",
+    "Task": null,
+    "Moved": true
+  },
+  {
+    "Index": 1,
+    "Type": "Button",
+    "Name": "Copy log",
+    "Task": "Independent short film \u2014 behind the scenes",
+    "Moved": true
+  },
+  {
+    "Index": 2,
+    "Type": "TextBox",
+    "Name": "Download log",
+    "Task": "Independent short film \u2014 behind the scenes",
+    "Moved": true
+  },
+  {
+    "Index": 3,
+    "Type": "TextBox",
+    "Name": "Technical error details",
+    "Task": "Independent short film \u2014 behind the scenes",
+    "Moved": true
+  },
+  {
+    "Index": 4,
+    "Type": "Button",
+    "Name": "Copy error",
+    "Task": "Independent short film \u2014 behind the scenes",
+    "Moved": true
+  },
+  {
+    "Index": 5,
+    "Type": "Button",
+    "Name": "Hide details",
+    "Task": "Independent short film \u2014 behind the scenes",
+    "Moved": true
+  },
+  {
+    "Index": 6,
+    "Type": "Button",
+    "Name": "More actions",
+    "Task": "Independent short film \u2014 behind the scenes",
+    "Moved": true
+  },
+  {
+    "Index": 7,
+    "Type": "Button",
+    "Name": "Remove from list",
+    "Task": "Independent short film \u2014 behind the scenes",
+    "Moved": true
+  },
+  {
+    "Index": 8,
+    "Type": "Button",
+    "Name": "Retry",
+    "Task": "Independent short film \u2014 behind the scenes",
+    "Moved": true
+  },
+  {
+    "Index": 9,
+    "Type": "Button",
+    "Name": "Settings and tools",
+    "Task": null,
+    "Moved": true
+  },
+  {
+    "Index": 10,
+    "Type": "Button",
+    "Name": "Hide to tray",
+    "Task": null,
+    "Moved": true
+  }
+]

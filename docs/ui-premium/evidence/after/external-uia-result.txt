@@ -1,0 +1,3 @@
+Exit=0
+External UIA read: 98 elements in selected window. No controls invoked.
+

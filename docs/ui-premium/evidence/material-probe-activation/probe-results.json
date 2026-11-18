@@ -1,0 +1,125 @@
+[
+  {
+    "Check": "Selected preview activation",
+    "Active": true
+  },
+  {
+    "Check": "Screen capture",
+    "File": "01-solid-dark.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1424x959 physical pixels; foreground=True; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Prototype enable",
+    "Theme": "Dark",
+    "OS": "10.0.26100.0",
+    "Runtime": ".NET 8.0.34",
+    "WindowsTransparency": 1,
+    "HighContrast": false,
+    "DarkHRESULT": 0,
+    "FrameHRESULT": 0,
+    "BackdropHRESULT": 0,
+    "CaptionHRESULT": 0,
+    "TextHRESULT": 0,
+    "ReadHRESULT": 0,
+    "ActualBackdropType": 2,
+    "AllowsTransparency": false,
+    "WindowStyle": "SingleBorderWindow",
+    "CompositionBackground": "#00FFFFFF"
+  },
+  {
+    "Check": "Screen capture",
+    "File": "02-mica-dark.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1424x959 physical pixels; foreground=True; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Programmatic maximize/restore",
+    "State": "Normal",
+    "NativeStyleUnchanged": true,
+    "NativeCaption": true,
+    "NativeResizeFrame": true
+  },
+  {
+    "Check": "Screen capture",
+    "File": "03-mica-minimum-dark.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1214x785 physical pixels; foreground=True; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Prototype restore solid",
+    "Theme": "Dark",
+    "OS": "10.0.26100.0",
+    "Runtime": ".NET 8.0.34",
+    "WindowsTransparency": 1,
+    "HighContrast": false,
+    "DarkHRESULT": 0,
+    "FrameHRESULT": 0,
+    "BackdropHRESULT": 0,
+    "CaptionHRESULT": 0,
+    "TextHRESULT": 0,
+    "ReadHRESULT": 0,
+    "ActualBackdropType": 1,
+    "AllowsTransparency": false,
+    "WindowStyle": "SingleBorderWindow",
+    "CompositionBackground": "#FF181818"
+  },
+  {
+    "Check": "Screen capture",
+    "File": "04-solid-restored-dark.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1214x785 physical pixels; foreground=True; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Selected preview activation",
+    "Active": true
+  },
+  {
+    "Check": "Prototype enable",
+    "Theme": "Light",
+    "OS": "10.0.26100.0",
+    "Runtime": ".NET 8.0.34",
+    "WindowsTransparency": 1,
+    "HighContrast": false,
+    "DarkHRESULT": 0,
+    "FrameHRESULT": 0,
+    "BackdropHRESULT": 0,
+    "CaptionHRESULT": 0,
+    "TextHRESULT": 0,
+    "ReadHRESULT": 0,
+    "ActualBackdropType": 2,
+    "AllowsTransparency": false,
+    "WindowStyle": "SingleBorderWindow",
+    "CompositionBackground": "#00FFFFFF"
+  },
+  {
+    "Check": "Screen capture",
+    "File": "05-mica-light.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1424x959 physical pixels; foreground=True; native caption included, outer corners/borders excluded."
+  },
+  {
+    "Check": "Prototype restore solid",
+    "Theme": "Light",
+    "OS": "10.0.26100.0",
+    "Runtime": ".NET 8.0.34",
+    "WindowsTransparency": 1,
+    "HighContrast": false,
+    "DarkHRESULT": 0,
+    "FrameHRESULT": 0,
+    "BackdropHRESULT": 0,
+    "CaptionHRESULT": 0,
+    "TextHRESULT": 0,
+    "ReadHRESULT": 0,
+    "ActualBackdropType": 1,
+    "AllowsTransparency": false,
+    "WindowStyle": "SingleBorderWindow",
+    "CompositionBackground": "#FFF3F3F3"
+  },
+  {
+    "Check": "Screen capture",
+    "File": "06-solid-restored-light.png",
+    "Captured": true,
+    "Detail": "Composited unobstructed selected-window crop, 1424x959 physical pixels; foreground=True; native caption included, outer corners/borders excluded."
+  }
+]

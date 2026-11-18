@@ -1,0 +1,41 @@
+{
+  "RemovedPath": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115",
+  "TemporaryDirectoryAbsent": false,
+  "RuntimeDirectoryAbsent": true,
+  "DownloadsDirectoryAbsent": true,
+  "RemainingFiles": 0,
+  "RemainingEntries": [
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\after",
+      "IsDirectory": true
+    },
+    {
+      "FullName": "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-palette-20261115\\evidence\\compiled-native",
+      "IsDirectory": true
+    }
+  ],
+  "NoMatchingProcessBeforeRemoval": true,
+  "PreservedExactFilesVerified": 134,
+  "SystemRuntimeListMatchesEarlierBaseline": true,
+  "SystemWindowsDesktop8Absent": true,
+  "SystemRuntimeListAfter": [
+    "Microsoft.AspNetCore.App 10.0.12 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]",
+    "Microsoft.NETCore.App 8.0.14 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]",
+    "Microsoft.NETCore.App 9.0.8 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]",
+    "Microsoft.NETCore.App 10.0.12 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]",
+    "Microsoft.WindowsDesktop.App 9.0.8 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]",
+    "Microsoft.WindowsDesktop.App 10.0.12 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]"
+  ],
+  "RemovalErrors": [
+    "[WinError 32] The process cannot access the file because it is being used by another process: 'C:\\\\Users\\\\Malku\\\\AppData\\\\Local\\\\Temp\\\\opencode\\\\ytdlp-palette-20261115\\\\evidence\\\\after'",
+    "[WinError 32] The process cannot access the file because it is being used by another process: 'C:\\\\Users\\\\Malku\\\\AppData\\\\Local\\\\Temp\\\\opencode\\\\ytdlp-palette-20261115\\\\evidence\\\\compiled-native'",
+    "[WinError 145] The directory is not empty: 'C:\\\\Users\\\\Malku\\\\AppData\\\\Local\\\\Temp\\\\opencode\\\\ytdlp-palette-20261115\\\\evidence'",
+    "[WinError 145] The directory is not empty: 'C:\\\\Users\\\\Malku\\\\AppData\\\\Local\\\\Temp\\\\opencode\\\\ytdlp-palette-20261115'"
+  ],
+  "Scope": "Only the fresh palette runtime/download/test tree targeted. No unrelated process termination, system runtime or environment changes. Earlier premium locked empty folder outside scope.",
+  "CleanupMethod": "Python standard library; PowerShell script execution was blocked by policy. No execution-policy changes."
+}

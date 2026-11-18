@@ -1,0 +1,2 @@
+Microsoft.NETCore.App 8.0.34 [C:\Users\Malku\AppData\Local\Temp\opencode\ytdlp-premium-20261115\runtime\shared\Microsoft.NETCore.App]
+Microsoft.WindowsDesktop.App 8.0.34 [C:\Users\Malku\AppData\Local\Temp\opencode\ytdlp-premium-20261115\runtime\shared\Microsoft.WindowsDesktop.App]

@@ -1,0 +1,37 @@
+﻿{
+    "RemovedPath":  "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-premium-20261115",
+    "TemporaryDirectoryAbsent":  false,
+    "RuntimeDirectoryAbsent":  true,
+    "DownloadsDirectoryAbsent":  true,
+    "RemainingFiles":  0,
+    "RemainingEntries":  [
+                             {
+                                 "FullName":  "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-premium-20261115\\evidence",
+                                 "PSIsContainer":  true,
+                                 "Length":  null
+                             },
+                             {
+                                 "FullName":  "C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-premium-20261115\\evidence\\before",
+                                 "PSIsContainer":  true,
+                                 "Length":  null
+                             }
+                         ],
+    "NoMatchingProcessBeforeRemoval":  true,
+    "PreservedExactFilesVerified":  219,
+    "SystemRuntimeListMatchesEarlierBaseline":  true,
+    "SystemWindowsDesktop8Absent":  true,
+    "SystemRuntimeListAfter":  [
+                                   "Microsoft.AspNetCore.App 10.0.12 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]",
+                                   "Microsoft.NETCore.App 8.0.14 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]",
+                                   "Microsoft.NETCore.App 9.0.8 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]",
+                                   "Microsoft.NETCore.App 10.0.12 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]",
+                                   "Microsoft.WindowsDesktop.App 9.0.8 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]",
+                                   "Microsoft.WindowsDesktop.App 10.0.12 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]"
+                               ],
+    "RemovalErrors":  [
+                          "The process cannot access the file \u0027C:\\Users\\Malku\\AppData\\Local\\Temp\\opencode\\ytdlp-premium-20261115\\evidence\\before\u0027 because it is being used by another process.",
+                          "The directory is not empty.\r\n",
+                          "The directory is not empty.\r\n"
+                      ],
+    "Scope":  "Only the second newly created isolated runtime/download/test tree targeted. Runtime, ZIPs and all test files removed. Empty evidence/before directory is locked by another process, leaving its parent directories. No processes terminated or system runtime/environment changes."
+}

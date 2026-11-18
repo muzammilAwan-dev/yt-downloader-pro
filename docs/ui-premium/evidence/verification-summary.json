@@ -1,0 +1,82 @@
+{
+  "Scope": "Synthetic WPF presentation only; no production startup or downloads",
+  "Contrast": [
+    {
+      "State": "additional-states-dark-text-measurements",
+      "OrdinaryTextSamples": 17,
+      "MinimumContrast": 5.108976080475338,
+      "Below4Point5": [],
+      "Scope": "Effective solid drawing brushes, alpha composited; not glyph pixels, hover/focus/selection or DWM backgrounds"
+    },
+    {
+      "State": "dark-queue-text-measurements",
+      "OrdinaryTextSamples": 35,
+      "MinimumContrast": 5.108976080475338,
+      "Below4Point5": [],
+      "Scope": "Effective solid drawing brushes, alpha composited; not glyph pixels, hover/focus/selection or DWM backgrounds"
+    },
+    {
+      "State": "error-details-log-dark-text-measurements",
+      "OrdinaryTextSamples": 9,
+      "MinimumContrast": 5.244917390792271,
+      "Below4Point5": [],
+      "Scope": "Effective solid drawing brushes, alpha composited; not glyph pixels, hover/focus/selection or DWM backgrounds"
+    },
+    {
+      "State": "light-minimum-limits-text-measurements",
+      "OrdinaryTextSamples": 40,
+      "MinimumContrast": 4.933510913340934,
+      "Below4Point5": [],
+      "Scope": "Effective solid drawing brushes, alpha composited; not glyph pixels, hover/focus/selection or DWM backgrounds"
+    },
+    {
+      "State": "light-queue-text-measurements",
+      "OrdinaryTextSamples": 35,
+      "MinimumContrast": 4.933510913340934,
+      "Below4Point5": [],
+      "Scope": "Effective solid drawing brushes, alpha composited; not glyph pixels, hover/focus/selection or DWM backgrounds"
+    }
+  ],
+  "XamlBindings": {
+    "BeforeCount": 68,
+    "AfterCount": 68,
+    "Removed": [],
+    "Added": [],
+    "IdenticalMultiset": true
+  },
+  "ExternalUia": "Exit=0\nExternal UIA read: 98 elements in selected window. No controls invoked.",
+  "LargeQueueBefore": "Synthetic items=200; generated ListBoxItem containers=200; CanContentScroll=False. No performance timing or engine throughput test.",
+  "LargeQueueAfter": "Synthetic items=200; generated ListBoxItem containers=200; CanContentScroll=False. No performance timing or engine throughput test.",
+  "product-final": {
+    "KeyboardGuardBlocks": 0,
+    "Traversal": [
+      {
+        "Check": "Actual Tab input (programmatic initial focus)",
+        "Steps": 23,
+        "ReturnedToStart": true
+      },
+      {
+        "Check": "Actual Shift+Tab input",
+        "Steps": 23,
+        "ReturnedToStart": true
+      }
+    ],
+    "FailedCaptures": []
+  },
+  "product-final-comparison": {
+    "KeyboardGuardBlocks": 9,
+    "Traversal": [
+      {
+        "Check": "Actual Tab input (programmatic initial focus)",
+        "Steps": 4,
+        "ReturnedToStart": false
+      },
+      {
+        "Check": "Actual Shift+Tab input",
+        "Steps": 0,
+        "ReturnedToStart": false
+      }
+    ],
+    "FailedCaptures": []
+  }
+}

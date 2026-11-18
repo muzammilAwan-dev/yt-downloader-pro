@@ -1,0 +1,68 @@
+[
+  {
+    "Index": 0,
+    "Type": "ToggleButton",
+    "Name": "Download limits",
+    "Moved": true
+  },
+  {
+    "Index": 1,
+    "Type": "Button",
+    "Name": "Hide to tray",
+    "Moved": true
+  },
+  {
+    "Index": 2,
+    "Type": "Button",
+    "Name": "Settings and tools",
+    "Moved": true
+  },
+  {
+    "Index": 3,
+    "Type": "RadioButton",
+    "Name": "All",
+    "Moved": true
+  },
+  {
+    "Index": 4,
+    "Type": "RadioButton",
+    "Name": "Active",
+    "Moved": true
+  },
+  {
+    "Index": 5,
+    "Type": "RadioButton",
+    "Name": "Completed",
+    "Moved": true
+  },
+  {
+    "Index": 6,
+    "Type": "RadioButton",
+    "Name": "Failed",
+    "Moved": true
+  },
+  {
+    "Index": 7,
+    "Type": "Button",
+    "Name": "Pause",
+    "Moved": true
+  },
+  {
+    "Index": 8,
+    "Type": "Button",
+    "Name": "Cancel download",
+    "Moved": true
+  },
+  {
+    "Index": 9,
+    "Type": "Button",
+    "Name": "More actions",
+    "Moved": true
+  },
+  {
+    "Index": 10,
+    "Type": "Button",
+    "Name": "Clear finished",
+    "Moved": true
+  }
+]

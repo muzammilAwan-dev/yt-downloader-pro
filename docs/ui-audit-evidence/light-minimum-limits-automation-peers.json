@@ -1,0 +1,737 @@
+[
+  {
+    "Type": "MainWindow",
+    "Name": "YT Downloader Pro",
+    "ControlType": "Window",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "Image",
+    "Name": "",
+    "ControlType": "Image",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "YT Downloader Pro",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ToggleButton",
+    "Name": "Download limits",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE9E9",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Limits",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Hide to tray",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE738",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Settings and tools",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE713",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "RadioButton",
+    "Name": "All",
+    "ControlType": "RadioButton",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "All",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "4",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "RadioButton",
+    "Name": "Active",
+    "ControlType": "RadioButton",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Active",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "2",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "RadioButton",
+    "Name": "Completed",
+    "ControlType": "RadioButton",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Completed",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "1",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "RadioButton",
+    "Name": "Failed",
+    "ControlType": "RadioButton",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Failed",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "1",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Downloads at once",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ComboBox",
+    "Name": "Downloads at once",
+    "ControlType": "ComboBox",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "ToggleButton",
+    "Name": "",
+    "ControlType": "Button",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBox",
+    "Name": "",
+    "ControlType": "Edit",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "ScrollViewer",
+    "Name": "",
+    "ControlType": "Pane",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Speed limit",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ComboBox",
+    "Name": "Speed limit",
+    "ControlType": "ComboBox",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "ToggleButton",
+    "Name": "",
+    "ControlType": "Button",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBox",
+    "Name": "",
+    "ControlType": "Edit",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "ScrollViewer",
+    "Name": "",
+    "ControlType": "Pane",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "0 = unlimited. Or type 500K, 2.5M, 10M",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Changes also apply to downloads already running.",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Save limits",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Save limits",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ListBox",
+    "Name": "",
+    "ControlType": "List",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ScrollViewer",
+    "Name": "",
+    "ControlType": "Pane",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ListBoxItem",
+    "Name": "YTDLPHost.ViewModels.DownloadItemViewModel",
+    "ControlType": "ListItem",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE896",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "A walk through the mountains at sunrise",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "1080p",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Pause",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE769",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Cancel download",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE711",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "More actions",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE712",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Downloading video \u00B7 42.6% of 128.40 MiB",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "3.30",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "MiB/s",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "ETA 00:22",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ProgressBar",
+    "Name": "",
+    "ControlType": "ProgressBar",
+    "KeyboardFocusable": false,
+    "RangeValue": true
+  },
+  {
+    "Type": "ListBoxItem",
+    "Name": "YTDLPHost.ViewModels.DownloadItemViewModel",
+    "ControlType": "ListItem",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE769",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Acoustic session \u2014 live at the studio",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "MP3",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Resume",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE768",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Resume",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Cancel download",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE711",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "More actions",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE712",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Paused at 61.3%",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ProgressBar",
+    "Name": "",
+    "ControlType": "ProgressBar",
+    "KeyboardFocusable": false,
+    "RangeValue": true
+  },
+  {
+    "Type": "ListBoxItem",
+    "Name": "YTDLPHost.ViewModels.DownloadItemViewModel",
+    "ControlType": "ListItem",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE73E",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Independent short film \u2014 behind the scenes",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "720p",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Show in folder",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE838",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Show in folder",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Play",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE768",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Remove from list",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE711",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "More actions",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE712",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Completed \u00B7 10:42 AM",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ListBoxItem",
+    "Name": "YTDLPHost.ViewModels.DownloadItemViewModel",
+    "ControlType": "ListItem",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE7BA",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "A very long documentary title about restoring historical buildings and preserving local craft traditions for the next generation",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "1080p",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Retry",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE72C",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Retry",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Remove from list",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE711",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "More actions",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE712",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "The site refused the download (HTTP 403)",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Update the download engine from the gear menu, then retry.",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Show or hide technical details",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Show details",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Copy error",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Copy error",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ScrollBar",
+    "Name": "",
+    "ControlType": "ScrollBar",
+    "KeyboardFocusable": false,
+    "RangeValue": true
+  },
+  {
+    "Type": "RepeatButton",
+    "Name": "",
+    "ControlType": "Button",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Thumb",
+    "Name": "",
+    "ControlType": "Thumb",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "RepeatButton",
+    "Name": "",
+    "ControlType": "Button",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "1 downloading \u00B7 1 paused \u00B7 1 completed \u00B7 1 failed",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Clear finished",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Clear finished",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "3.30 MiB/s",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  }
+]

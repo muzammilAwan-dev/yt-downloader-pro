@@ -1,0 +1,327 @@
+{
+  "Scope": "Native synthetic palette verification; no production startup/downloads",
+  "MatchedCaptures": [
+    {
+      "File": "01-empty-dark.png",
+      "BeforeSize": [
+        966,
+        663
+      ],
+      "AfterSize": [
+        966,
+        663
+      ],
+      "SamePixelDimensions": true
+    },
+    {
+      "File": "02-queue-dark.png",
+      "BeforeSize": [
+        966,
+        663
+      ],
+      "AfterSize": [
+        966,
+        663
+      ],
+      "SamePixelDimensions": true
+    },
+    {
+      "File": "03-queue-light.png",
+      "BeforeSize": [
+        966,
+        663
+      ],
+      "AfterSize": [
+        966,
+        663
+      ],
+      "SamePixelDimensions": true
+    },
+    {
+      "File": "04-limits-light.png",
+      "BeforeSize": [
+        966,
+        663
+      ],
+      "AfterSize": [
+        966,
+        663
+      ],
+      "SamePixelDimensions": true
+    },
+    {
+      "File": "05-minimum-limits-light.png",
+      "BeforeSize": [
+        826,
+        503
+      ],
+      "AfterSize": [
+        826,
+        503
+      ],
+      "SamePixelDimensions": true
+    },
+    {
+      "File": "06-queued-processing-live-cancelled-dark.png",
+      "BeforeSize": [
+        966,
+        663
+      ],
+      "AfterSize": [
+        966,
+        663
+      ],
+      "SamePixelDimensions": true
+    },
+    {
+      "File": "07-expanded-error-and-log-dark.png",
+      "BeforeSize": [
+        966,
+        663
+      ],
+      "AfterSize": [
+        966,
+        663
+      ],
+      "SamePixelDimensions": true
+    }
+  ],
+  "Contrast": [
+    {
+      "State": "additional-states-dark-text-measurements",
+      "OrdinaryTextSamples": 17,
+      "MinimumContrast": 6.26556410772611,
+      "Below4Point5": [],
+      "Scope": "Actual effective solid drawing brushes, alpha composited; not glyph pixels or DWM"
+    },
+    {
+      "State": "dark-queue-text-measurements",
+      "OrdinaryTextSamples": 35,
+      "MinimumContrast": 5.675917308094266,
+      "Below4Point5": [],
+      "Scope": "Actual effective solid drawing brushes, alpha composited; not glyph pixels or DWM"
+    },
+    {
+      "State": "error-details-log-dark-text-measurements",
+      "OrdinaryTextSamples": 9,
+      "MinimumContrast": 5.675917308094266,
+      "Below4Point5": [],
+      "Scope": "Actual effective solid drawing brushes, alpha composited; not glyph pixels or DWM"
+    },
+    {
+      "State": "light-minimum-limits-text-measurements",
+      "OrdinaryTextSamples": 40,
+      "MinimumContrast": 5.113965979127384,
+      "Below4Point5": [],
+      "Scope": "Actual effective solid drawing brushes, alpha composited; not glyph pixels or DWM"
+    },
+    {
+      "State": "light-queue-text-measurements",
+      "OrdinaryTextSamples": 35,
+      "MinimumContrast": 5.113965979127384,
+      "Below4Point5": [],
+      "Scope": "Actual effective solid drawing brushes, alpha composited; not glyph pixels or DWM"
+    }
+  ],
+  "InjectedNativeStates": [
+    {
+      "Check": "Primary default",
+      "Theme": "Dark",
+      "Foreground": "#FF111C2E",
+      "PaintedBackground": "#FF7BAAF7",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": false,
+      "Contrast": 7.267980417748841,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Selected filter",
+      "Theme": "Dark",
+      "Foreground": "#FFF2F4F7",
+      "PaintedBackground": "#FF2C3037",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": false,
+      "Contrast": 12.024157975955486,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Secondary injected hover",
+      "Theme": "Dark",
+      "Foreground": "#FFF2F4F7",
+      "PaintedBackground": "#FF343B45",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": false,
+      "Contrast": 10.260277034136939,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Secondary injected pressed",
+      "Theme": "Dark",
+      "Foreground": "#FFF2F4F7",
+      "PaintedBackground": "#FF3B424D",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": true,
+      "Contrast": 9.196436900187377,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Primary injected hover",
+      "Theme": "Dark",
+      "Foreground": "#FF111C2E",
+      "PaintedBackground": "#FF94BAFA",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": false,
+      "Contrast": 8.673564362943342,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Primary injected pressed",
+      "Theme": "Dark",
+      "Foreground": "#FF111C2E",
+      "PaintedBackground": "#FF6D9CE9",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": true,
+      "Contrast": 6.167518389146899,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Primary restored default",
+      "Theme": "Dark",
+      "Foreground": "#FF111C2E",
+      "PaintedBackground": "#FF7BAAF7",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": false,
+      "Contrast": 7.267980417748841,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Primary default",
+      "Theme": "Light",
+      "Foreground": "#FFFFFFFF",
+      "PaintedBackground": "#FF2463C4",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": false,
+      "Contrast": 5.742640870590559,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Selected filter",
+      "Theme": "Light",
+      "Foreground": "#FF20242A",
+      "PaintedBackground": "#FFE9ECF0",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": false,
+      "Contrast": 13.154077585167315,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Secondary injected hover",
+      "Theme": "Light",
+      "Foreground": "#FF20242A",
+      "PaintedBackground": "#FFD9DEE6",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": false,
+      "Contrast": 11.53614652728646,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Secondary injected pressed",
+      "Theme": "Light",
+      "Foreground": "#FF20242A",
+      "PaintedBackground": "#FFDCE1E8",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": true,
+      "Contrast": 11.860497901343647,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Primary injected hover",
+      "Theme": "Light",
+      "Foreground": "#FFFFFFFF",
+      "PaintedBackground": "#FF1D53A8",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": false,
+      "Contrast": 7.355579977047115,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Primary injected pressed",
+      "Theme": "Light",
+      "Foreground": "#FFFFFFFF",
+      "PaintedBackground": "#FF19498F",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": true,
+      "Contrast": 8.78298713936021,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    },
+    {
+      "Check": "Primary restored default",
+      "Theme": "Light",
+      "Foreground": "#FFFFFFFF",
+      "PaintedBackground": "#FF2463C4",
+      "Opacity": 1,
+      "IsMouseOver": false,
+      "Pressed": false,
+      "Contrast": 5.742640870590559,
+      "Scope": "Actual painted template-border and inherited label brushes; solid/opaque, not glyph pixels"
+    }
+  ],
+  "InjectedStatesBelow4Point5": [],
+  "SyntheticTaskStates": [
+    {
+      "Check": "Synthetic task states unchanged",
+      "Statuses": [
+        "Downloading",
+        "Paused",
+        "Completed",
+        "Error"
+      ]
+    }
+  ],
+  "ThemeSwitch": [
+    {
+      "Check": "Source resources compiled in safe application, runtime theme switch",
+      "SameBrushInstance": false,
+      "Resource": "#FF20242A",
+      "VisibleHeaderBrush": "#FF20242A",
+      "BrushFrozen": true,
+      "MatchesPalette": true
+    }
+  ],
+  "KeyboardGuardBlocks": 0,
+  "KeyboardTraversal": [
+    {
+      "Check": "Actual Tab input (programmatic initial focus)",
+      "Steps": 23,
+      "ReturnedToStart": true
+    },
+    {
+      "Check": "Actual Shift+Tab input",
+      "Steps": 23,
+      "ReturnedToStart": true
+    }
+  ],
+  "FailedCompositedCaptures": [],
+  "SourceInvariants": {
+    "MainWindowXamlByteIdentical": true,
+    "MainWindowCodeByteIdentical": true,
+    "AppBindingsIdentical": true,
+    "AppBindingCountBefore": 10,
+    "AppBindingCountAfter": 10
+  },
+  "ExternalUia": "Exit=0\nExternal UIA read: 98 elements in selected window. No controls invoked.",
+  "LargeQueueAfter": "Synthetic items=200; generated ListBoxItem containers=200; CanContentScroll=False. No performance timing or engine throughput test."
+}

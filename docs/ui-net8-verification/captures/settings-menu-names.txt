@@ -1,0 +1,9 @@
+visible= | Update download engine | Fixes most “can’t download” errors. Runs automatically at launch and once a day.; peer-name=Update download engine; type=MenuItem
+visible=Appearance; peer-name=Appearance; type=MenuItem
+visible= | Dark; peer-name=Dark; type=MenuItem
+visible= | Light; peer-name=Light; type=MenuItem
+visible= | Match Windows; peer-name=Match Windows; type=MenuItem
+visible= | Repair browser link | Reconnects the extension so its Download button can open this app.; peer-name=Repair browser link; type=MenuItem
+visible= | Disconnect browser link | The extension will stop opening this app until you repair the link.; peer-name=Disconnect browser link; type=MenuItem
+visible= | Exit YT Downloader Pro | Stops the app and any running downloads.; peer-name=Exit YT Downloader Pro; type=MenuItem
+visible=Crafted with ⚡ by muzammilAwan-dev; peer-name=Crafted with ⚡ by muzammilAwan-dev; type=MenuItem

@@ -1,0 +1,240 @@
+[
+  {
+    "Type": "ContextMenu",
+    "Name": "",
+    "ControlType": "Menu",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "MenuItem",
+    "Name": "",
+    "ControlType": "MenuItem",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE895",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Update download engine",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Fixes most \u201Ccan\u2019t download\u201D errors. Runs automatically at launch and once a day.",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Separator",
+    "Name": "",
+    "ControlType": "Separator",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "MenuItem",
+    "Name": "Appearance",
+    "ControlType": "MenuItem",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Appearance",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "MenuItem",
+    "Name": "",
+    "ControlType": "MenuItem",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE73E",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Dark",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "MenuItem",
+    "Name": "",
+    "ControlType": "MenuItem",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Light",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "MenuItem",
+    "Name": "",
+    "ControlType": "MenuItem",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Match Windows",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Separator",
+    "Name": "",
+    "ControlType": "Separator",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "MenuItem",
+    "Name": "",
+    "ControlType": "MenuItem",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE71B",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Repair browser link",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Reconnects the extension so its Download button can open this app.",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "MenuItem",
+    "Name": "",
+    "ControlType": "MenuItem",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE711",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Disconnect browser link",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "The extension will stop opening this app until you repair the link.",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Separator",
+    "Name": "",
+    "ControlType": "Separator",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "MenuItem",
+    "Name": "",
+    "ControlType": "MenuItem",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE7E8",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Exit YT Downloader Pro",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Stops the app and any running downloads.",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Separator",
+    "Name": "",
+    "ControlType": "Separator",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "MenuItem",
+    "Name": "Crafted with \u26A1 by muzammilAwan-dev",
+    "ControlType": "MenuItem",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Crafted with \u26A1 by muzammilAwan-dev",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  }
+]

@@ -1,0 +1,247 @@
+[
+  {
+    "Type": "MainWindow",
+    "Name": "YT Downloader Pro",
+    "ControlType": "Window",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "Image",
+    "Name": "",
+    "ControlType": "Image",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "YT Downloader Pro",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ToggleButton",
+    "Name": "Download limits",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE9E9",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Limits",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Hide to tray",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE738",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Settings and tools",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE713",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ListBox",
+    "Name": "Downloads",
+    "ControlType": "List",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ScrollViewer",
+    "Name": "",
+    "ControlType": "Pane",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "ListBoxItem",
+    "Name": "Independent short film \u2014 behind the scenes",
+    "ControlType": "ListItem",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE7BA",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Independent short film \u2014 behind the scenes",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "The site refused the download (HTTP 403)",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Retry",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE72C",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Retry",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Remove from list",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE711",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "More actions",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE712",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Update the download engine in Settings and tools, then retry.",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Hide details",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Hide details",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Copy error",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "Copy error",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBox",
+    "Name": "Technical error details",
+    "ControlType": "Edit",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "ScrollViewer",
+    "Name": "",
+    "ControlType": "Pane",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBox",
+    "Name": "Download log",
+    "ControlType": "Edit",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "ScrollViewer",
+    "Name": "",
+    "ControlType": "Pane",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "Button",
+    "Name": "Copy log",
+    "ControlType": "Button",
+    "KeyboardFocusable": true,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "\uE8C8",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  },
+  {
+    "Type": "TextBlock",
+    "Name": "All downloads finished",
+    "ControlType": "Text",
+    "KeyboardFocusable": false,
+    "RangeValue": false
+  }
+]

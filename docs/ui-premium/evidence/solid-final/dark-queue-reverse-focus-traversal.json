@@ -1,0 +1,163 @@
+[
+  {
+    "Index": 0,
+    "Type": "ToggleButton",
+    "Name": "Download limits",
+    "Task": null,
+    "Moved": true
+  },
+  {
+    "Index": 1,
+    "Type": "Button",
+    "Name": "Clear finished",
+    "Task": null,
+    "Moved": true
+  },
+  {
+    "Index": 2,
+    "Type": "Button",
+    "Name": "Copy error",
+    "Task": "A very long documentary title about restoring historical buildings and preserving local craft traditions for the next generation",
+    "Moved": true
+  },
+  {
+    "Index": 3,
+    "Type": "Button",
+    "Name": "Show details",
+    "Task": "A very long documentary title about restoring historical buildings and preserving local craft traditions for the next generation",
+    "Moved": true
+  },
+  {
+    "Index": 4,
+    "Type": "Button",
+    "Name": "More actions",
+    "Task": "A very long documentary title about restoring historical buildings and preserving local craft traditions for the next generation",
+    "Moved": true
+  },
+  {
+    "Index": 5,
+    "Type": "Button",
+    "Name": "Remove from list",
+    "Task": "A very long documentary title about restoring historical buildings and preserving local craft traditions for the next generation",
+    "Moved": true
+  },
+  {
+    "Index": 6,
+    "Type": "Button",
+    "Name": "Retry",
+    "Task": "A very long documentary title about restoring historical buildings and preserving local craft traditions for the next generation",
+    "Moved": true
+  },
+  {
+    "Index": 7,
+    "Type": "Button",
+    "Name": "More actions",
+    "Task": "Independent short film \u2014 behind the scenes",
+    "Moved": true
+  },
+  {
+    "Index": 8,
+    "Type": "Button",
+    "Name": "Remove from list",
+    "Task": "Independent short film \u2014 behind the scenes",
+    "Moved": true
+  },
+  {
+    "Index": 9,
+    "Type": "Button",
+    "Name": "Play",
+    "Task": "Independent short film \u2014 behind the scenes",
+    "Moved": true
+  },
+  {
+    "Index": 10,
+    "Type": "Button",
+    "Name": "Show in folder",
+    "Task": "Independent short film \u2014 behind the scenes",
+    "Moved": true
+  },
+  {
+    "Index": 11,
+    "Type": "Button",
+    "Name": "More actions",
+    "Task": "Acoustic session \u2014 live at the studio",
+    "Moved": true
+  },
+  {
+    "Index": 12,
+    "Type": "Button",
+    "Name": "Cancel download",
+    "Task": "Acoustic session \u2014 live at the studio",
+    "Moved": true
+  },
+  {
+    "Index": 13,
+    "Type": "Button",
+    "Name": "Resume",
+    "Task": "Acoustic session \u2014 live at the studio",
+    "Moved": true
+  },
+  {
+    "Index": 14,
+    "Type": "Button",
+    "Name": "More actions",
+    "Task": "A walk through the mountains at sunrise",
+    "Moved": true
+  },
+  {
+    "Index": 15,
+    "Type": "Button",
+    "Name": "Cancel download",
+    "Task": "A walk through the mountains at sunrise",
+    "Moved": true
+  },
+  {
+    "Index": 16,
+    "Type": "Button",
+    "Name": "Pause",
+    "Task": "A walk through the mountains at sunrise",
+    "Moved": true
+  },
+  {
+    "Index": 17,
+    "Type": "RadioButton",
+    "Name": "Failed",
+    "Task": null,
+    "Moved": true
+  },
+  {
+    "Index": 18,
+    "Type": "RadioButton",
+    "Name": "Completed",
+    "Task": null,
+    "Moved": true
+  },
+  {
+    "Index": 19,
+    "Type": "RadioButton",
+    "Name": "Active",
+    "Task": null,
+    "Moved": true
+  },
+  {
+    "Index": 20,
+    "Type": "RadioButton",
+    "Name": "All",
+    "Task": null,
+    "Moved": true
+  },
+  {
+    "Index": 21,
+    "Type": "Button",
+    "Name": "Settings and tools",
+    "Task": null,
+    "Moved": true
+  },
+  {
+    "Index": 22,
+    "Type": "Button",
+    "Name": "Hide to tray",
+    "Task": null,
+    "Moved": true
+  }
+]

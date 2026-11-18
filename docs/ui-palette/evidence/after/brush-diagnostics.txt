@@ -1,0 +1,21 @@
+Parsed dark resources
+BackgroundBrush=#FF181A1E, frozen=True
+SurfaceBrush=#FF22252A, frozen=True
+TextPrimaryBrush=#FFF2F4F7, frozen=True
+AccentBrush=#FF7BAAF7, frozen=True
+Before light switch
+BackgroundBrush=#FF181A1E, frozen=True
+SurfaceBrush=#FF22252A, frozen=True
+TextPrimaryBrush=#FFF2F4F7, frozen=True
+AccentBrush=#FF7BAAF7, frozen=True
+After light switch
+BackgroundBrush=#FFF2F3F5, frozen=True
+SurfaceBrush=#FFFCFCFD, frozen=True
+TextPrimaryBrush=#FF20242A, frozen=True
+AccentBrush=#FF2463C4, frozen=True
+Window.Background=#FFF2F3F5
+Fresh static light resources
+BackgroundBrush=#FFF2F3F5, frozen=True
+SurfaceBrush=#FFFCFCFD, frozen=True
+TextPrimaryBrush=#FF20242A, frozen=True
+AccentBrush=#FF2463C4, frozen=True

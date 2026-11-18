@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using YTDLPHost.Models;
+using YTDLPHost.Native;
 using YTDLPHost.Services;
 using YTDLPHost.UI;
 using YTDLPHost.ViewModels;
@@ -104,6 +105,26 @@ internal static class Program
         // The first three cards out of the way, so the finished and the failed one (error banner) are fully visible.
         foreach (var card in new[] { running, preparing, paused }) vm.Downloads.Remove(card);
         count += Capture(window, outDir, "05-finished-and-failed");
+
+        // The Browser integration panel with sample results (one browser of each state).
+        try
+        {
+            var report = new NativeHostReport(true, "Some browsers are not linked to this install. Press Repair.", new[]
+            {
+                new BrowserLinkStatus("Chrome", BrowserLinkState.Linked, "Linked to this install."),
+                new BrowserLinkStatus("Chromium", BrowserLinkState.NotInstalled, "Not installed."),
+                new BrowserLinkStatus("Edge", BrowserLinkState.OutOfDate, "Points to another install: /opt/old-ytdlp/ytdlp-shim"),
+                new BrowserLinkStatus("Brave", BrowserLinkState.NotLinked, "Not linked.")
+            });
+            var panelModel = new BrowserIntegrationViewModel(() => report, () => new[] { "Edge: registered /home/user/.config/microsoft-edge/NativeMessagingHosts/com.ytdlppro.host.json.", "Brave: registered /home/user/.config/BraveSoftware/Brave-Browser/NativeMessagingHosts/com.ytdlppro.host.json." });
+            var panel = new BrowserIntegrationWindow(panelModel);
+            panel.Show();
+            count += Capture(panel, outDir, "07-browser-integration");
+            panelModel.RepairCommand.Execute(null);
+            count += Capture(panel, outDir, "08-browser-integration-after-repair");
+            panel.Close();
+        }
+        catch (Exception ex) { Console.WriteLine($"07-browser-integration: failed: {ex.Message}"); }
 
         window.Width = window.MinWidth; window.Height = window.MinHeight;
         count += Capture(window, outDir, "06-minimum-size");

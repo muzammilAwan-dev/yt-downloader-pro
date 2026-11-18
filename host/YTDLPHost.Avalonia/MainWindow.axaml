@@ -36,6 +36,7 @@
               <MenuFlyout Placement="BottomEdgeAlignedRight">
                 <MenuItem Header="Update engine (yt-dlp)..." Click="OnUpdateEngineClick" />
                 <MenuItem Tag="browser-downloads" Header="Browser downloads: notify only (off)" Click="OnToggleShowWindowClick" />
+                <MenuItem Header="Browser integration..." Click="OnBrowserIntegrationClick" ToolTip.Tip="See which browsers are linked to this install and repair the link" />
                 <MenuItem Header="-" />
                 <MenuItem Header="Exit" Click="OnExitClick" />
               </MenuFlyout>

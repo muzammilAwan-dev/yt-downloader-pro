@@ -70,6 +70,19 @@ public partial class MainWindow : Window
         if (DataContext is MainViewModel vm) vm.SetShowWindowOnNativeDownload(!vm.ShowWindowOnNativeDownload);
     }
 
+    private async void OnBrowserIntegrationClick(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var panel = new BrowserIntegrationWindow(new BrowserIntegrationViewModel(PlatformNativeHost.Check, PlatformNativeHost.EnsureRegistered));
+            await panel.ShowDialog(this);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Log($"[UI] The Browser integration panel failed: {ex.Message}");
+        }
+    }
+
     private void OnExitClick(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainViewModel vm) vm.ExitCommand.Execute(null);

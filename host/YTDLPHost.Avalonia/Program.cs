@@ -10,6 +10,10 @@ internal static class Program
     {
         try
         {
+            // "--register-native-host" and "--unregister-native-host" do their job and exit; no window, no single-instance check.
+            var command = HostCommandLine.Parse(args);
+            if (command != HostCommand.None) return PlatformNativeHost.RunCommand(command);
+
             return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
         catch (Exception ex)

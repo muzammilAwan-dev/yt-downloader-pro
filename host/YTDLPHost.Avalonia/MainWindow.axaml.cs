@@ -29,9 +29,11 @@ public partial class MainWindow : Window
         Closing += OnClosing;
 
         // The view model decides what a browser download does from "is the window on screen" (NativeAnnouncePolicy), so keep it true to life.
+        // A minimised window is as invisible to the user as a hidden one (the case of a desktop without a tray, step 4.5).
         PropertyChanged += (_, e) =>
         {
-            if (e.Property == IsVisibleProperty && DataContext is MainViewModel vm) vm.IsWindowVisible = IsVisible;
+            if ((e.Property == IsVisibleProperty || e.Property == WindowStateProperty) && DataContext is MainViewModel vm)
+                vm.IsWindowVisible = IsVisible && WindowState != WindowState.Minimized;
         };
 
         // The toggle item's text shows the current state, so it is refreshed each time the menu opens.
@@ -52,6 +54,10 @@ public partial class MainWindow : Window
                     ? "Browser downloads: show this window (on)"
                     : "Browser downloads: notify only (off)";
                 ToolTip.SetTip(item, "Choose what happens when a download starts from the browser while this window is hidden: a short notification (default) or bringing this window to the front. Click to switch.");
+            }
+            else if (Equals(item.Tag, "tray-info"))
+            {
+                item.IsVisible = !TraySupport.CanHideToTray;
             }
             else if (item.Header is string text && text.StartsWith("Update engine", StringComparison.Ordinal))
             {
@@ -118,7 +124,8 @@ public partial class MainWindow : Window
     private void OnClosing(object? sender, WindowClosingEventArgs e)
     {
         if (AllowClose || e.CloseReason is WindowCloseReason.OSShutdown or WindowCloseReason.ApplicationShutdown) return;
-        e.Cancel = true;   // close-to-tray: the app keeps running
-        Hide();
+        e.Cancel = true;   // the app keeps running: to the tray, or, where the desktop has none, to the task bar
+        if (TraySupport.CanHideToTray) Hide();
+        else WindowState = WindowState.Minimized;
     }
 }

@@ -7,7 +7,8 @@ namespace YTDLPHost.UI;
 
 /// <summary>
 /// The tray icon on Windows, macOS and Linux through Avalonia's own <see cref="TrayIcon"/>. On Linux it needs a desktop that shows
-/// StatusNotifier icons (KDE, Xfce with a plugin, GNOME only with an AppIndicator extension): the fallback is step 4.5.
+/// StatusNotifier icons (KDE, Xfce with a plugin, GNOME only with an AppIndicator extension); without one no icon is created and the
+/// window minimises instead of hiding (<see cref="TraySupport"/>, step 4.5).
 /// </summary>
 public sealed class AvaloniaTrayService : ITrayService
 {
@@ -21,6 +22,12 @@ public sealed class AvaloniaTrayService : ITrayService
 
     public void Initialize()
     {
+        if (!TraySupport.CanHideToTray)
+        {
+            AppLogger.Log("[TRAY] No system tray on this desktop: no tray icon is created.");
+            return;
+        }
+
         using var stream = AssetLoader.Open(new Uri("avares://YTDLPHost.Avalonia/Assets/icon.png"));
 
         var show = new NativeMenuItem("Show");

@@ -37,6 +37,8 @@
                 <MenuItem Header="Update engine (yt-dlp)..." Click="OnUpdateEngineClick" />
                 <MenuItem Tag="browser-downloads" Header="Browser downloads: notify only (off)" Click="OnToggleShowWindowClick" />
                 <MenuItem Header="Browser integration..." Click="OnBrowserIntegrationClick" ToolTip.Tip="See which browsers are linked to this install and repair the link" />
+                <MenuItem Tag="tray-info" Header="No system tray found: closing the window minimises it" IsEnabled="False" IsVisible="False"
+                          ToolTip.Tip="This desktop shows no tray icons (on GNOME install the AppIndicator extension). The app keeps running in the task bar; use Exit in this menu to quit." />
                 <MenuItem Header="-" />
                 <MenuItem Header="Exit" Click="OnExitClick" />
               </MenuFlyout>

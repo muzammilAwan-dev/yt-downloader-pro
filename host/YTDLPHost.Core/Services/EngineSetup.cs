@@ -78,7 +78,7 @@ namespace YTDLPHost.Services
                     CurrentPhase = "Initializing download...",
                     IsIndeterminate = true
                 };
-                var setupCard = new DownloadItemViewModel(setupTask, _clipboard);
+                var setupCard = new DownloadItemViewModel(setupTask, _clipboard, _ui);
                 card = setupCard;
 
                 _ui.Invoke(() =>

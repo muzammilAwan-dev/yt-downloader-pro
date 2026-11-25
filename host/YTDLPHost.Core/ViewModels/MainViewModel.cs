@@ -197,7 +197,7 @@ namespace YTDLPHost.ViewModels
             var recoveredTasks = HistoryManager.LoadHistory();
             foreach (var task in recoveredTasks)
             {
-                var vm = new DownloadItemViewModel(task, _clipboard);
+                var vm = new DownloadItemViewModel(task, _clipboard, _ui);
                 AttachTaskObserver(vm);
                 _downloads.Add(vm);
             }

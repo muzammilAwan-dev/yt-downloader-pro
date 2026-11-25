@@ -82,7 +82,7 @@ namespace YTDLPHost.Services
                     Status = DownloadStatus.Queued
                 };
 
-                var vm = new DownloadItemViewModel(task, _clipboard);
+                var vm = new DownloadItemViewModel(task, _clipboard, _ui);
                 _attach?.Invoke(vm);
 
                 _ui.Invoke(() =>
@@ -143,7 +143,7 @@ namespace YTDLPHost.Services
                     Status = DownloadStatus.Queued
                 };
 
-                var vm = new DownloadItemViewModel(task, _clipboard);
+                var vm = new DownloadItemViewModel(task, _clipboard, _ui);
                 _attach?.Invoke(vm);
 
                 _ui.Invoke(() =>

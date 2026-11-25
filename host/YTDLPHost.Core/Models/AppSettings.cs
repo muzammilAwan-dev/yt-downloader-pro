@@ -8,6 +8,9 @@ namespace YTDLPHost.Models
     public class AppSettings
     {
         public int MaxConcurrentDownloads { get; set; } = 3;
+
+        // "Dark" (default), "Light" or "System" (follow the operating system's app mode).
+        public string Theme { get; set; } = "Dark";
         
         // "0" = Unlimited. yt-dlp accepts formats like "5M" (5 MB/s), "500K" (500 KB/s)
         public string SpeedLimit { get; set; } = "0";

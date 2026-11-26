@@ -29,7 +29,11 @@ public partial class App : Application
     private NativePipeServer? _nativeServer;
     private FileSystemWatcher? _payloadWatcher;
 
-    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+    public override void Initialize()
+    {
+        AvaloniaXamlLoader.Load(this);
+        ThemeResources.Install(this);   // the colours of ThemePalette, as Dark and Light dictionaries
+    }
 
     public override void OnFrameworkInitializationCompleted()
     {
@@ -73,6 +77,14 @@ public partial class App : Application
             // all the app does is show the window when it asks to.
             _viewModel = new MainViewModel(_services);
             _viewModel.RequestShowWindow += (_, _) => Dispatcher.UIThread.Post(ShowMainWindow);
+
+            // The saved theme (Dark, Light or follow the system) applies at once and again whenever the settings menu changes it.
+            RequestedThemeVariant = ThemeResources.ToVariant(_viewModel.Theme);
+            _viewModel.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(MainViewModel.Theme) && _viewModel != null)
+                    Dispatcher.UIThread.Post(() => RequestedThemeVariant = ThemeResources.ToVariant(_viewModel.Theme));
+            };
 
             // Native Messaging: the shim of the browser extension connects here. The ytdlp:// route below keeps working.
             _nativeServer = new NativePipeServer(

@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
+using YTDLPHost.Models;
 using YTDLPHost.Services;
 using YTDLPHost.ViewModels;
 
@@ -59,11 +60,50 @@ public partial class MainWindow : Window
             {
                 item.IsVisible = !TraySupport.CanHideToTray;
             }
-            else if (item.Header is string text && text.StartsWith("Update engine", StringComparison.Ordinal))
+            else if (Equals(item.Tag, "update-engine"))
             {
                 ToolTip.SetTip(item, EngineUpdater.TroubleshootingHint);
             }
+            else if (item.Tag is string tag && tag.StartsWith("theme-", StringComparison.Ordinal))
+            {
+                item.IsChecked = tag == "theme-" + vm.Theme;
+            }
         }
+    }
+
+    private void OnThemeClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm && sender is MenuItem { Tag: string tag } && tag.StartsWith("theme-", StringComparison.Ordinal))
+            vm.SetTheme(ThemePalette.Parse(tag.Substring("theme-".Length)));
+    }
+
+    private void OnFilterTabClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm && sender is Control { Tag: string tag } && Enum.TryParse<QueueFilter>(tag, out var filter))
+            vm.Queue.Filter = filter;
+    }
+
+    private void OnToastActionClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel vm) vm.Toast.RunAction();
+    }
+
+    // Right-click menu of a card: the same actions as its buttons (a context menu is not part of the list, so it cannot bind to the window's commands).
+    private void RunCardCommand(object? sender, Func<MainViewModel, System.Windows.Input.ICommand> command)
+    {
+        if (DataContext is MainViewModel vm && sender is Control { DataContext: DownloadItemViewModel item } && command(vm).CanExecute(item))
+            command(vm).Execute(item);
+    }
+
+    private void OnCardPlayClick(object? sender, RoutedEventArgs e) => RunCardCommand(sender, vm => vm.PlayFileCommand);
+    private void OnCardFolderClick(object? sender, RoutedEventArgs e) => RunCardCommand(sender, vm => vm.OpenFolderCommand);
+    private void OnCardResumeClick(object? sender, RoutedEventArgs e) => RunCardCommand(sender, vm => vm.ResumeDownloadCommand);
+    private void OnCardPauseClick(object? sender, RoutedEventArgs e) => RunCardCommand(sender, vm => vm.PauseDownloadCommand);
+    private void OnCardCancelClick(object? sender, RoutedEventArgs e) => RunCardCommand(sender, vm => vm.CancelDownloadCommand);
+    private void OnCardRemoveClick(object? sender, RoutedEventArgs e) => RunCardCommand(sender, vm => vm.RemoveDownloadCommand);
+    private void OnCardLogClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Control { DataContext: DownloadItemViewModel item }) item.ToggleLogCommand.Execute(null);
     }
 
     private void OnUpdateEngineClick(object? sender, RoutedEventArgs e)

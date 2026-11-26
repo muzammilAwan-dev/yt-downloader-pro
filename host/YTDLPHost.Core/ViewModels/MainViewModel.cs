@@ -40,6 +40,24 @@ namespace YTDLPHost.ViewModels
 
         public ObservableCollection<DownloadItemViewModel> Downloads => _downloads;
 
+        /// <summary>Filter tabs, the cards that match, footer text and total speed, Limits label (see <see cref="QueueViewModel"/>).</summary>
+        public QueueViewModel Queue { get; }
+
+        /// <summary>The short message over the list (replaces message boxes).</summary>
+        public ToastViewModel Toast { get; }
+
+        /// <summary>Dark, Light or follow the operating system; saved in the settings.</summary>
+        public ThemeMode Theme => ThemePalette.Parse(Settings.Theme);
+
+        public void SetTheme(ThemeMode mode)
+        {
+            Settings.Theme = mode.ToString();
+            Settings.Save();
+            OnPropertyChanged(nameof(Theme));
+        }
+
+        partial void OnStatusTextChanged(string value) => Queue?.Refresh();
+
         public IRelayCommand<string> ProcessUrlCommand { get; }
         public IRelayCommand<DownloadItemViewModel> PauseDownloadCommand { get; }
         public IRelayCommand<DownloadItemViewModel> CancelDownloadCommand { get; }
@@ -48,6 +66,7 @@ namespace YTDLPHost.ViewModels
         public IRelayCommand<DownloadItemViewModel> OpenFolderCommand { get; }
         public IRelayCommand<DownloadItemViewModel> PlayFileCommand { get; }
         public IRelayCommand ClearCompletedCommand { get; }
+        public IRelayCommand ClearFinishedCommand { get; }
         public IRelayCommand ShowWindowCommand { get; }
         public IRelayCommand ExitCommand { get; }
         public IRelayCommand MinimizeToTrayCommand { get; }
@@ -148,7 +167,10 @@ namespace YTDLPHost.ViewModels
             OpenFolderCommand = new RelayCommand<DownloadItemViewModel>(OpenFolder);
             PlayFileCommand = new RelayCommand<DownloadItemViewModel>(PlayFile);
             
+            Queue = new QueueViewModel(_downloads, _ui, () => StatusText, () => Settings);
+            Toast = new ToastViewModel(_ui);
             ClearCompletedCommand = new RelayCommand(ClearCompleted);
+            ClearFinishedCommand = new RelayCommand(ClearFinished);
             ShowWindowCommand = new RelayCommand(() => RequestShowWindow?.Invoke(this, EventArgs.Empty));
             ExitCommand = new RelayCommand(ExitApplication);
             
@@ -228,6 +250,7 @@ namespace YTDLPHost.ViewModels
 
                 Settings.SpeedLimit = AppSettings.Load().SpeedLimit;
                 OnPropertyChanged(nameof(Settings));
+                Queue.Refresh();
                 return;
             }
 
@@ -239,6 +262,7 @@ namespace YTDLPHost.ViewModels
 
                 Settings.DownloadFolder = AppSettings.Load().DownloadFolder;
                 OnPropertyChanged(nameof(Settings));
+                Queue.Refresh();
                 return;
             }
 
@@ -250,6 +274,8 @@ namespace YTDLPHost.ViewModels
 
             Settings.Save();
             OnPropertyChanged(nameof(Settings));
+            Queue.Refresh();
+            Toast.Show("Limits saved");
 
             await _queue.ApplySettingsAsync(speedChanged, maxChanged, Settings.MaxConcurrentDownloads);
         }
@@ -370,6 +396,13 @@ namespace YTDLPHost.ViewModels
         {
             if (vm?.Task == null || IsSetupCard(vm)) return;
             _opener.Play(vm.Task);
+        }
+
+        /// <summary>"Clear finished": removes completed and cancelled cards (the files stay on disk).</summary>
+        private void ClearFinished()
+        {
+            var finished = _downloads.Where(d => d.Task.Status == DownloadStatus.Completed || d.Task.Status == DownloadStatus.Cancelled).ToList();
+            foreach (var item in finished) RemoveDownloadCommand.Execute(item);
         }
 
         private void ClearCompleted()

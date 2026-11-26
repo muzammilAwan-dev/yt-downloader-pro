@@ -90,6 +90,20 @@ public class DownloadCardTextTests
         Assert.Equal("Sign in in your browser, then retry.", card.ErrorHint);
     }
 
+    [Theory]
+    [InlineData(DownloadStatus.Queued, "Queued", "queued")]
+    [InlineData(DownloadStatus.Downloading, "Downloading video", "downloading")]
+    [InlineData(DownloadStatus.Downloading, "Merging video and audio", "processing")]
+    [InlineData(DownloadStatus.Paused, "", "paused")]
+    [InlineData(DownloadStatus.Completed, "", "completed")]
+    [InlineData(DownloadStatus.Error, "", "failed")]
+    [InlineData(DownloadStatus.Cancelled, "", "cancelled")]
+    public void State_glyph_follows_status_and_phase(DownloadStatus status, string phase, string kind)
+    {
+        var card = Card(t => { t.Status = status; t.CurrentPhase = phase; });
+        Assert.Equal(kind, card.StatusKind);
+    }
+
     [Fact]
     public void Error_details_toggle_flips_the_button_text()
     {

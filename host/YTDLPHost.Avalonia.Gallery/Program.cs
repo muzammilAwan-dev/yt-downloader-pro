@@ -1,6 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
+using Avalonia.Styling;
+using Avalonia.Threading;
 using YTDLPHost.Models;
 using YTDLPHost.Native;
 using YTDLPHost.Services;
@@ -53,6 +56,7 @@ internal static class Program
         var vm = new MainViewModel(services);
         var window = new MainWindow(vm);
         window.Show();
+        var app = Application.Current!;
 
         int count = 0;
         count += Capture(window, outDir, "01-empty");
@@ -60,16 +64,22 @@ internal static class Program
         // Cards in every state (no "Queued" one: the queue would try to start it).
         var running = Card(t =>
         {
-            t.Title = "A sample video with a very long title that must be trimmed at the end of the line instead of wrapping";
+            t.Title = "A_sample_video_with_a_very_long_title_that_must_be_trimmed_at_the_end_of_the_line_instead_of_wrapping_1080p";
             t.Resolution = "1080p"; t.Status = DownloadStatus.Downloading; t.Progress = 42.5;
             t.Speed = "3.2MiB/s"; t.Eta = "00:41"; t.FileSize = "128.4MiB"; t.CurrentPhase = "Downloading video";
         });
         var preparing = Card(t =>
         {
-            t.Title = "Fetching video information"; t.Status = DownloadStatus.Downloading; t.IsIndeterminate = true; t.CurrentPhase = "Preparing...";
+            t.Title = "Unknown"; t.Status = DownloadStatus.Downloading; t.IsIndeterminate = true; t.CurrentPhase = "Preparing...";
             t.AppendLog("[youtube] Extracting URL: https://example.invalid/watch?v=sample");
             t.AppendLog("[youtube] sample: Downloading webpage");
             t.AppendLog("[info] Available formats for sample: 137 mp4 1080p, 140 m4a 128k");
+            t.AppendLog("[download]  12.0% of 80.00MiB at 3.10MiB/s ETA 00:22");
+            t.AppendLog("[download]  18.5% of 80.00MiB at 3.20MiB/s ETA 00:20");
+        });
+        var merging = Card(t =>
+        {
+            t.Title = "Merging_sample_2160p"; t.Resolution = "2160p"; t.Status = DownloadStatus.Downloading; t.Progress = 100; t.CurrentPhase = "Merging video and audio";
         });
         var paused = Card(t =>
         {
@@ -84,6 +94,7 @@ internal static class Program
             t.Title = "Failed sample"; t.Status = DownloadStatus.Error; t.Progress = 12;
             t.ErrorMessage = "ERROR: [youtube] sample: Sign in to confirm you're not a bot. Use --cookies-from-browser or --cookies for the authentication.";
         });
+        var cancelled = Card(t => { t.Title = "Cancelled sample"; t.Status = DownloadStatus.Cancelled; });
 
         foreach (var card in new[] { running, preparing, paused, done, failed }) vm.Downloads.Add(card);
         vm.StatusText = "Downloading: A sample video with a very long title...";
@@ -102,9 +113,48 @@ internal static class Program
         }
         catch (Exception ex) { Console.WriteLine($"04-settings-menu: failed: {ex.Message}"); }
 
-        // The first three cards out of the way, so the finished and the failed one (error banner) are fully visible.
-        foreach (var card in new[] { running, preparing, paused }) vm.Downloads.Remove(card);
-        count += Capture(window, outDir, "05-finished-and-failed");
+        // The Limits panel, with a speed cap so the button shows it; and the toast.
+        vm.Settings.SpeedLimit = "5M"; vm.Queue.Refresh();
+        window.DataContext = null; window.DataContext = vm;   // the settings are plain values: bind again so the panel shows them
+        var limits = window.FindControl<ToggleButton>("LimitsToggle");
+        if (limits != null) limits.IsChecked = true;
+        vm.Toast.Show("Browser link repaired. The extension can open this app again.");
+        count += Capture(window, outDir, "05-limits-panel-and-toast");
+        if (limits != null) limits.IsChecked = false;
+        vm.Toast.Dismiss();
+
+        // Tabs: Failed, then the glyph set (processing, cancelled) on the All tab, with Clear finished in the footer.
+        vm.Queue.Filter = QueueFilter.Failed;
+        count += Capture(window, outDir, "06-failed-tab");
+        vm.Queue.Filter = QueueFilter.Done;
+        count += Capture(window, outDir, "07-completed-tab");
+        vm.Queue.Filter = QueueFilter.All;
+        vm.Downloads.Remove(running); vm.Downloads.Remove(preparing);
+        vm.Downloads.Insert(0, merging); vm.Downloads.Add(cancelled);
+        vm.Toast.Show("Browser link disconnected.", "Undo", () => { });
+        count += Capture(window, outDir, "08-glyphs-processing-cancelled");
+        vm.Toast.Dismiss();
+        vm.Downloads.Remove(merging); vm.Downloads.Remove(cancelled);
+        vm.Downloads.Insert(0, running); vm.Downloads.Insert(1, preparing);
+
+        // The light theme.
+        app.RequestedThemeVariant = ThemeVariant.Light;
+        count += Capture(window, outDir, "09-light-cards");
+        preparing.IsLogVisible = true;
+        count += Capture(window, outDir, "10-light-log-open");
+        preparing.IsLogVisible = false;
+        try
+        {
+            var gear = window.FindControl<Button>("SettingsButton");
+            gear?.Flyout?.ShowAt(gear);
+            count += Capture(window, outDir, "11-light-settings-menu");
+            gear?.Flyout?.Hide();
+        }
+        catch (Exception ex) { Console.WriteLine($"11-light-settings-menu: failed: {ex.Message}"); }
+        if (limits != null) limits.IsChecked = true;
+        count += Capture(window, outDir, "12-light-limits-panel");
+        if (limits != null) limits.IsChecked = false;
+        app.RequestedThemeVariant = ThemeVariant.Dark;
 
         // The Browser integration panel with sample results (one browser of each state).
         try
@@ -119,15 +169,17 @@ internal static class Program
             var panelModel = new BrowserIntegrationViewModel(() => report, () => new[] { "Edge: registered /home/user/.config/microsoft-edge/NativeMessagingHosts/com.ytdlppro.host.json.", "Brave: registered /home/user/.config/BraveSoftware/Brave-Browser/NativeMessagingHosts/com.ytdlppro.host.json." });
             var panel = new BrowserIntegrationWindow(panelModel);
             panel.Show();
-            count += Capture(panel, outDir, "07-browser-integration");
+            count += Capture(panel, outDir, "13-browser-integration");
             panelModel.RepairCommand.Execute(null);
-            count += Capture(panel, outDir, "08-browser-integration-after-repair");
+            app.RequestedThemeVariant = ThemeVariant.Light;
+            count += Capture(panel, outDir, "14-browser-integration-light-after-repair");
+            app.RequestedThemeVariant = ThemeVariant.Dark;
             panel.Close();
         }
-        catch (Exception ex) { Console.WriteLine($"07-browser-integration: failed: {ex.Message}"); }
+        catch (Exception ex) { Console.WriteLine($"13-browser-integration: failed: {ex.Message}"); }
 
         window.Width = window.MinWidth; window.Height = window.MinHeight;
-        count += Capture(window, outDir, "06-minimum-size");
+        count += Capture(window, outDir, "15-minimum-size");
 
         return count;
     }
@@ -143,6 +195,7 @@ internal static class Program
     {
         try
         {
+            Dispatcher.UIThread.RunJobs();   // the view models update the lists on the UI thread through the dispatcher
             var frame = window.CaptureRenderedFrame();
             if (frame is null) { Console.WriteLine($"{name}: no frame was rendered (is the Skia renderer on?)"); return 0; }
             string path = Path.Combine(dir, name + ".png");

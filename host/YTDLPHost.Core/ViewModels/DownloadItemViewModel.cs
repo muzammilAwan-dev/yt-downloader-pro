@@ -101,6 +101,20 @@ namespace YTDLPHost.ViewModels
             _ => "Unknown"
         };
 
+        /// <summary>
+        /// Which state glyph the card shows: queued, downloading, processing (merging or converting), paused, completed, failed or cancelled.
+        /// The glyph's shape and colour both follow it, so state is never told by colour alone.
+        /// </summary>
+        public string StatusKind => Task.Status switch
+        {
+            DownloadStatus.Downloading => IsProcessing ? "processing" : "downloading",
+            DownloadStatus.Paused => "paused",
+            DownloadStatus.Completed => "completed",
+            DownloadStatus.Error => "failed",
+            DownloadStatus.Cancelled => "cancelled",
+            _ => "queued"
+        };
+
         /// <summary>The one line under the title: what is happening right now, in plain words.</summary>
         public string StatusLine
         {
@@ -335,6 +349,7 @@ namespace YTDLPHost.ViewModels
             Interlocked.Exchange(ref _liveRefreshPending, 0);
             OnPropertyChanged(nameof(Progress));
             OnPropertyChanged(nameof(IsProcessing));
+            OnPropertyChanged(nameof(StatusKind));
             OnPropertyChanged(nameof(IsTransferMetricsVisible));
             OnPropertyChanged(nameof(IsProgressIndeterminate));
             OnPropertyChanged(nameof(ProgressAutomationName));
@@ -387,6 +402,7 @@ namespace YTDLPHost.ViewModels
             OnPropertyChanged(nameof(EtaText));
             OnPropertyChanged(nameof(ErrorTitle));
             OnPropertyChanged(nameof(ErrorHint));
+            OnPropertyChanged(nameof(StatusKind));
             OnPropertyChanged(nameof(StatusLabel)); // last: the window listens to this one to refresh filters and counts
         }
 

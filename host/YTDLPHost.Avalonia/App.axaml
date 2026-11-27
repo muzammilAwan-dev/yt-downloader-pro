@@ -57,6 +57,10 @@
       <Style Selector="^:checked /template/ Border#Bd">
         <Setter Property="Background" Value="{DynamicResource SurfacePressedBrush}" />
       </Style>
+      <Style Selector="^:focus-visible /template/ Border#Bd">
+        <Setter Property="BorderBrush" Value="{DynamicResource TextPrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
+      </Style>
     </ControlTheme>
   </Application.Resources>
 
@@ -67,15 +71,26 @@
     <Style Selector="Window">
       <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-      <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI, Inter, Roboto, Cantarell, sans-serif" />
+      <Setter Property="FontFamily" Value="avares://YTDLPHost.Avalonia/Assets/Fonts#Inter, Segoe UI Variable, Segoe UI, Roboto, Cantarell, sans-serif" />
       <Setter Property="FontSize" Value="13" />
+    </Style>
+
+    <!-- Motion: colour changes of buttons take 120 ms, so hover and press feel responsive but never snap. -->
+    <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter, ToggleButton /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.12" />
+          <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+        </Transitions>
+      </Setter>
     </Style>
 
     <!-- Icon button: 32 x 32, quiet until hovered. "danger" turns red on hover (Cancel). -->
     <Style Selector="Button.icon">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
-      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="BorderBrush" Value="Transparent" />
       <Setter Property="Width" Value="32" />
       <Setter Property="Height" Value="32" />
       <Setter Property="MinHeight" Value="0" />
@@ -112,7 +127,9 @@
     <Style Selector="Button.queue">
       <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
-      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Padding" Value="10,0" />
     </Style>
     <Style Selector="Button.queue:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
@@ -140,8 +157,9 @@
     <Style Selector="Button.cta">
       <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
-      <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Padding" Value="16,0" />
+      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Padding" Value="14,0" />
       <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
     <Style Selector="Button.cta:pointerover /template/ ContentPresenter#PART_ContentPresenter">
@@ -155,9 +173,11 @@
     <!-- Text-only buttons: "link" (accent, in the error panel and the toast) and "quiet" (footer). -->
     <Style Selector="Button.link, Button.quiet">
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="BorderBrush" Value="Transparent" />
       <Setter Property="MinHeight" Value="0" />
-      <Setter Property="Padding" Value="0,4" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="4,2" />
       <Setter Property="FontSize" Value="12" />
       <Setter Property="Cursor" Value="Hand" />
     </Style>
@@ -178,6 +198,12 @@
     </Style>
     <Style Selector="Button.link:pressed /template/ ContentPresenter#PART_ContentPresenter, Button.quiet:pressed /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <!-- Keyboard focus: a 2 px ring in the text colour (clear on the accent button and on every surface, in both themes). -->
+    <Style Selector="Button:focus-visible /template/ ContentPresenter#PART_ContentPresenter, ToggleButton:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource TextPrimaryBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
     </Style>
 
     <!-- The Limits button of the header: a toggle that looks like a quiet button and turns accent while its panel is open. -->
@@ -252,14 +278,64 @@
       <Setter Property="BorderBrush" Value="{DynamicResource CardContourBrush}" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="CornerRadius" Value="{StaticResource SurfaceCornerRadius}" />
-      <Setter Property="Padding" Value="16,12" />
-      <Setter Property="Margin" Value="0,0,0,8" />
+      <Setter Property="Padding" Value="18,14" />
+      <Setter Property="Margin" Value="0,0,0,10" />
+      <Setter Property="BoxShadow" Value="{DynamicResource CardShadow}" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Border.card.active">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentSubtleHoverBrush}" />
     </Style>
     <Style Selector="Border.card:pointerover">
       <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />
     </Style>
+
+    <!-- Secondary row actions (log, cancel, remove) appear when the card is hovered or has keyboard focus; the main action never hides. -->
+    <Style Selector="Border.card Button.reveal">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.15" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Border.card:pointerover Button.reveal, Border.card:focus-within Button.reveal">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <!-- The quality badge makes room for the actions in the same place. -->
+    <Style Selector="Border.badge">
+      <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+      <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+      <Setter Property="Padding" Value="8,3" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.15" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Border.card:pointerover Border.badge, Border.card:focus-within Border.badge">
+      <Setter Property="Opacity" Value="0" />
+    </Style>
     <Style Selector="Border.card.failed">
       <Setter Property="BorderBrush" Value="{DynamicResource ErrorBorderBrush}" />
+    </Style>
+    <Style Selector="TextBlock.title">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.title.done">
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+    <Style Selector="Border.chip">
+      <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardContourBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="999" />
+      <Setter Property="Padding" Value="10,4" />
     </Style>
     <Style Selector="Border.panel">
       <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
@@ -290,11 +366,16 @@
 
     <!-- Download progress bar: 8 px, rounded, accent fill (amber while paused). -->
     <Style Selector="ProgressBar.download">
-      <Setter Property="Height" Value="8" />
-      <Setter Property="MinHeight" Value="8" />
+      <Setter Property="Height" Value="6" />
+      <Setter Property="MinHeight" Value="6" />
       <Setter Property="Background" Value="{DynamicResource TrackBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
-      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Foreground" Value="{DynamicResource ProgressFillBrush}" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Value" Duration="0:0:0.25" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
     </Style>
     <Style Selector="ProgressBar.download.paused">
       <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
@@ -336,6 +417,25 @@
     </Style>
     <Style Selector="ListBox.downloads ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+    <!-- Toast: always in the tree, shown by fading and rising 8 px (exits are as quick as entrances here, and it never blocks clicks while hidden). -->
+    <Style Selector="Border.toast">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+      <Setter Property="RenderTransform" Value="translateY(8px)" />
+      <Setter Property="BoxShadow" Value="{DynamicResource ToastShadow}" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="CubicEaseOut" />
+          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Border.toast.shown">
+      <Setter Property="Opacity" Value="1" />
+      <Setter Property="IsHitTestVisible" Value="True" />
+      <Setter Property="RenderTransform" Value="none" />
     </Style>
 
     <!-- Footer dot: accent while something is active, muted when idle. No pulsing. -->

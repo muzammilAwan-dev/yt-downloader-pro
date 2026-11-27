@@ -24,7 +24,7 @@ namespace YTDLPHost.Services
             ["BorderStrongBrush"] = "#424954",
             ["CardContourBrush"] = "#0AFFFFFF",
             ["HairlineBrush"] = "#14FFFFFF",
-            ["TrackBrush"] = "#0A0B0D",
+            ["TrackBrush"] = "#272B32",
             ["LogBackgroundBrush"] = "#0B0C0E",
             ["TextPrimaryBrush"] = "#EEF0F3",
             ["TextSecondaryBrush"] = "#B4BAC5",

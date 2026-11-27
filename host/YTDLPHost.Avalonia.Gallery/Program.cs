@@ -1,6 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Automation;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.VisualTree;
 using Avalonia.Headless;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -100,6 +103,21 @@ internal static class Program
         vm.StatusText = "Downloading: A sample video with a very long title...";
         count += Capture(window, outDir, "02-cards");
 
+        // Hover: the secondary actions (log, cancel, remove) appear on the card under the pointer.
+        SettleAnimations();
+        var hovered = Cards(window).Skip(1).FirstOrDefault();
+        if (hovered != null) { SetPointerOver(hovered, true); count += Capture(window, outDir, "02b-hover-reveals-actions"); SetPointerOver(hovered, false); }
+
+        // Keyboard: Tab to a button shows the focus ring and reveals the card's actions too.
+        try
+        {
+            var pause = Cards(window).Skip(1).FirstOrDefault()?.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => Equals(AutomationProperties.GetName(b), "Pause"));
+            pause?.Focus(NavigationMethod.Tab);
+            count += Capture(window, outDir, "02c-keyboard-focus");
+            window.Focus();
+        }
+        catch (Exception ex) { Console.WriteLine($"02c-keyboard-focus: failed: {ex.Message}"); }
+
         preparing.IsLogVisible = true;
         count += Capture(window, outDir, "03-log-open");
         preparing.IsLogVisible = false;
@@ -184,6 +202,31 @@ internal static class Program
         return count;
     }
 
+    /// <summary>Lets queued UI work and short animations (150 to 250 ms) finish, so a picture shows the state and not the middle of a transition.</summary>
+    private static void SettleAnimations()
+    {
+        for (int i = 0; i < 45; i++)
+        {
+            Dispatcher.UIThread.RunJobs();
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Thread.Sleep(8);
+        }
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    /// <summary>The sandbox has no ffmpeg, so the app adds its "Initial System Setup" card here. It is real behaviour but would hide what a picture is about.</summary>
+    private static void RemoveSandboxSetupCard(Window window)
+    {
+        if (window.DataContext is not MainViewModel vm) return;
+        foreach (var card in vm.Downloads.Where(d => d.Task.Title == EngineSetup.SetupCardTitle).ToList()) vm.Downloads.Remove(card);
+        if (vm.Downloads.Count == 0 && vm.StatusText.Contains("FFmpeg", StringComparison.OrdinalIgnoreCase)) vm.StatusText = "Ready";
+    }
+
+    private static IEnumerable<Border> Cards(Window window) =>
+        window.GetVisualDescendants().OfType<Border>().Where(b => b.Classes.Contains("card"));
+
+    private static void SetPointerOver(Border card, bool on) => ((IPseudoClasses)card.Classes).Set(":pointerover", on);
+
     private static DownloadItemViewModel Card(Action<DownloadTask> setup)
     {
         var task = new DownloadTask();
@@ -195,7 +238,8 @@ internal static class Program
     {
         try
         {
-            Dispatcher.UIThread.RunJobs();   // the view models update the lists on the UI thread through the dispatcher
+            RemoveSandboxSetupCard(window);
+            SettleAnimations();
             var frame = window.CaptureRenderedFrame();
             if (frame is null) { Console.WriteLine($"{name}: no frame was rendered (is the Skia renderer on?)"); return 0; }
             string path = Path.Combine(dir, name + ".png");

@@ -156,11 +156,24 @@
     <!-- Queue -->
     <Grid Grid.Row="3">
       <!-- Nothing in the queue yet -->
-      <StackPanel IsVisible="{Binding !Queue.HasAnyCards}" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="420">
-        <ui:LucideIcon Data="{StaticResource Icon.Download}" StrokeWidth="1.4" Width="40" Height="40" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center" />
-        <TextBlock Text="No downloads yet" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,14,0,6" />
-        <TextBlock Text="Click Download on a video in your browser and it will show up here." FontSize="13" Classes="secondary"
+      <StackPanel IsVisible="{Binding !Queue.HasAnyCards}" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="440">
+        <!-- A soft halo around the icon: the one decorative element of the app, and it says where downloads come from. -->
+        <Grid Width="84" Height="84" HorizontalAlignment="Center">
+          <Ellipse Fill="{DynamicResource AccentSubtleBrush}" />
+          <Ellipse Stroke="{DynamicResource AccentBorderBrush}" StrokeThickness="1" Margin="10" />
+          <ui:LucideIcon Data="{StaticResource Icon.Download}" StrokeWidth="1.9" Width="30" Height="30" Foreground="{DynamicResource AccentBrush}"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Grid>
+        <TextBlock Text="No downloads yet" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,22,0,6" />
+        <TextBlock Text="Click Download on a video in your browser and it will show up here." FontSize="13.5" Classes="secondary"
                    TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,18,0,0">
+          <Border Classes="chip"><TextBlock Text="YouTube" Classes="muted" FontSize="11.5" /></Border>
+          <Border Classes="chip"><TextBlock Text="Instagram" Classes="muted" FontSize="11.5" /></Border>
+          <Border Classes="chip"><TextBlock Text="Facebook" Classes="muted" FontSize="11.5" /></Border>
+          <Border Classes="chip"><TextBlock Text="and more" Classes="muted" FontSize="11.5" /></Border>
+        </StackPanel>
+        <TextBlock Text="Downloads keep running when you close this window." FontSize="12" Classes="muted" HorizontalAlignment="Center" Margin="0,22,0,0" />
       </StackPanel>
 
       <!-- A filter tab has no matches -->
@@ -172,7 +185,7 @@
                ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto">
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="vm:DownloadItemViewModel">
-            <Border Classes="card" Classes.failed="{Binding HasError}">
+            <Border Classes="card" Classes.failed="{Binding HasError}" Classes.active="{Binding IsDownloading}">
               <Border.ContextMenu>
                 <ContextMenu>
                   <MenuItem Header="Play" IsVisible="{Binding IsCompleted}" Click="OnCardPlayClick" />
@@ -199,13 +212,32 @@
 
                   <!-- Row 0: full-width title and quality; actions never crowd the title -->
                   <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-                    <TextBlock Grid.Column="0" Text="{Binding DisplayTitle}" ToolTip.Tip="{Binding TitleTooltip}" FontSize="14" FontWeight="SemiBold"
+                    <TextBlock Grid.Column="0" Classes="title" Classes.done="{Binding IsCompleted}" Text="{Binding DisplayTitle}" ToolTip.Tip="{Binding TitleTooltip}"
                                TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="44" VerticalAlignment="Center" />
-                    <Border Grid.Column="1" Background="{DynamicResource SurfaceHoverBrush}" CornerRadius="{StaticResource ControlCornerRadius}"
-                            Padding="8,3" Margin="16,0,0,0" VerticalAlignment="Center"
-                            IsVisible="{Binding ResolutionDisplay, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                      <TextBlock Text="{Binding ResolutionDisplay}" FontSize="12" FontWeight="SemiBold" Classes="secondary" />
-                    </Border>
+                    <!-- Right cell: the quality badge at rest; on hover or keyboard focus it gives way to log, cancel and remove, in the same place,
+                         so nothing moves and the main action below stays flush with the card edge. -->
+                    <Grid Grid.Column="1" Margin="16,-6,-4,-6" VerticalAlignment="Center">
+                      <Border Classes="badge" Margin="0,0,4,0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                              IsVisible="{Binding ResolutionDisplay, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                        <TextBlock Text="{Binding ResolutionDisplay}" FontSize="12" FontWeight="SemiBold" Classes="secondary" />
+                      </Border>
+                      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Spacing="2">
+                        <!-- The log -->
+                        <Button Classes="icon reveal" Width="28" Height="28" Command="{Binding ToggleLogCommand}" ToolTip.Tip="Show or hide the log" AutomationProperties.Name="Show or hide the log">
+                          <ui:LucideIcon Data="{StaticResource Icon.Log}" Width="16" Height="16" />
+                        </Button>
+                        <!-- Cancel: red on hover -->
+                        <Button Classes="icon danger reveal" Width="28" Height="28" IsVisible="{Binding CanBeCancelled}" ToolTip.Tip="Cancel download (deletes the partial files)" AutomationProperties.Name="Cancel download"
+                                Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).CancelDownloadCommand}" CommandParameter="{Binding}">
+                          <ui:LucideIcon Data="{StaticResource Icon.CancelCircle}" Width="15" Height="15" />
+                        </Button>
+                        <!-- Remove: clears the list entry and keeps the file -->
+                        <Button Classes="icon reveal" Width="28" Height="28" IsVisible="{Binding CanBeRemoved}" ToolTip.Tip="Remove from list (keeps the file)" AutomationProperties.Name="Remove from list"
+                                Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).RemoveDownloadCommand}" CommandParameter="{Binding}">
+                          <ui:LucideIcon Data="{StaticResource Icon.Cancel}" Width="15" Height="15" />
+                        </Button>
+                      </StackPanel>
+                    </Grid>
                   </Grid>
 
                   <!-- Row 1: status, live metrics, labelled main action -->
@@ -213,14 +245,15 @@
                     <TextBlock Grid.Column="0" Classes="statusline" Classes.failed="{Binding HasError}" Classes.paused="{Binding IsPaused}"
                                Text="{Binding StatusLine}" ToolTip.Tip="{Binding StatusLine}" VerticalAlignment="Center" Margin="0,0,12,0" />
 
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,20,0" VerticalAlignment="Center" IsVisible="{Binding IsTransferMetricsVisible}">
-                      <StackPanel Orientation="Horizontal" IsVisible="{Binding SpeedValue, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <Grid Grid.Column="1" Width="196" ColumnDefinitions="*,92" Margin="0,0,12,0" VerticalAlignment="Center" IsVisible="{Binding IsTransferMetricsVisible}">
+                      <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Right"
+                                  IsVisible="{Binding SpeedValue, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                         <TextBlock Text="{Binding SpeedValue}" FontSize="20" FontWeight="SemiBold" FontFeatures="+tnum" VerticalAlignment="Bottom" />
-                        <TextBlock Text="{Binding SpeedUnit}" FontSize="12" Classes="muted" Margin="4,0,0,2" VerticalAlignment="Bottom" />
+                        <TextBlock Text="{Binding SpeedUnit}" FontSize="12" Classes="muted" Margin="4,0,0,3" VerticalAlignment="Bottom" />
                       </StackPanel>
-                      <TextBlock Text="{Binding EtaText}" FontSize="12" Classes="muted" FontFeatures="+tnum" Margin="12,0,0,2" VerticalAlignment="Bottom"
+                      <TextBlock Grid.Column="1" Text="{Binding EtaText}" FontSize="12" Classes="muted" FontFeatures="+tnum" Margin="14,0,0,3" VerticalAlignment="Bottom"
                                  IsVisible="{Binding EtaText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                    </StackPanel>
+                    </Grid>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="4">
                       <!-- Completed: Show in folder + Play -->
@@ -260,23 +293,6 @@
                           <ui:LucideIcon Data="{StaticResource Icon.Pause}" IsSolid="True" Width="15" Height="15" />
                           <TextBlock Text="Pause" />
                         </StackPanel>
-                      </Button>
-
-                      <!-- The log: always visible, never buried in a menu -->
-                      <Button Classes="icon" Command="{Binding ToggleLogCommand}" ToolTip.Tip="Show or hide the log" AutomationProperties.Name="Show or hide the log">
-                        <ui:LucideIcon Data="{StaticResource Icon.Log}" Width="16" Height="16" />
-                      </Button>
-
-                      <!-- Cancel: one click away while running or paused; red on hover -->
-                      <Button Classes="icon danger" IsVisible="{Binding CanBeCancelled}" ToolTip.Tip="Cancel download (deletes the partial files)" AutomationProperties.Name="Cancel download"
-                              Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).CancelDownloadCommand}" CommandParameter="{Binding}">
-                        <ui:LucideIcon Data="{StaticResource Icon.CancelCircle}" Width="15" Height="15" />
-                      </Button>
-
-                      <!-- Remove: for finished items; clears the list entry and keeps the file -->
-                      <Button Classes="icon" IsVisible="{Binding CanBeRemoved}" ToolTip.Tip="Remove from list (keeps the file)" AutomationProperties.Name="Remove from list"
-                              Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).RemoveDownloadCommand}" CommandParameter="{Binding}">
-                        <ui:LucideIcon Data="{StaticResource Icon.Cancel}" Width="15" Height="15" />
                       </Button>
                     </StackPanel>
                   </Grid>
@@ -330,9 +346,9 @@
       </ListBox>
 
       <!-- Toast: replaces message boxes, which cannot follow the theme -->
-      <Border IsVisible="{Binding Toast.IsVisible}" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="20,0,20,18" Padding="16,11"
+      <Border Classes="toast" Classes.shown="{Binding Toast.IsVisible}" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="20,0,20,18" Padding="16,11"
               Background="{DynamicResource SurfaceHoverBrush}" BorderBrush="{DynamicResource BorderStrongBrush}" BorderThickness="1"
-              CornerRadius="{StaticResource SurfaceCornerRadius}" BoxShadow="0 3 16 0 #4D000000">
+              CornerRadius="{StaticResource SurfaceCornerRadius}">
         <StackPanel Orientation="Horizontal" Spacing="16">
           <TextBlock Text="{Binding Toast.Message}" FontSize="12.5" MaxWidth="520" TextWrapping="Wrap" VerticalAlignment="Center"
                      AutomationProperties.LiveSetting="Polite" />

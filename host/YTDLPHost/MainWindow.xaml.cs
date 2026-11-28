@@ -21,6 +21,8 @@ using ContextMenu = System.Windows.Controls.ContextMenu;
 using MenuItem = System.Windows.Controls.MenuItem;
 using Separator = System.Windows.Controls.Separator;
 using MessageBox = System.Windows.MessageBox;
+// .NET 10 added System.Windows.ThemeMode; ours (Core) is the one the settings menu means.
+using ThemeMode = YTDLPHost.Services.ThemeMode;
 
 namespace YTDLPHost
 {

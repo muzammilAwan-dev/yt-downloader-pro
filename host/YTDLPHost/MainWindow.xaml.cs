@@ -739,9 +739,9 @@ namespace YTDLPHost
                     Foreground = (System.Windows.Media.Brush)FindResource("TextMutedBrush")
                 }
             };
-            var darkItem = MakeThemeItem("Dark", ThemeMode.Dark);
-            var lightItem = MakeThemeItem("Light", ThemeMode.Light);
-            var systemItem = MakeThemeItem("Match Windows", ThemeMode.System);
+            var darkItem = MakeThemeItem("Dark", YTDLPHost.Services.ThemeMode.Dark);
+            var lightItem = MakeThemeItem("Light", YTDLPHost.Services.ThemeMode.Light);
+            var systemItem = MakeThemeItem("Match Windows", YTDLPHost.Services.ThemeMode.System);
 
             var repairItem = MakeMenuItem("Icon.Link", "Repair browser link",
                 "Reconnects the extension so its Download button can open this app.",

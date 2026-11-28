@@ -3,14 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:YTDLPHost.ViewModels;assembly=YTDLPHost.Core"
+        xmlns:vm="clr-namespace:YTDLPHost.ViewModels"
         mc:Ignorable="d"
-        Title="YT Downloader Pro" 
+        Title="YT Downloader Pro"
         Icon="Assets/icon.ico"
-        Height="650" Width="950"
-        MinHeight="500" MinWidth="800"
-        Background="{StaticResource BackgroundBrush}"
-        Foreground="{StaticResource TextPrimaryBrush}"
+        Height="700" Width="980"
+        MinHeight="460" MinWidth="760"
+        Background="{DynamicResource BackgroundBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
         WindowStartupLocation="CenterScreen"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
@@ -18,120 +18,247 @@
         SnapsToDevicePixels="True">
 
     <Window.Resources>
+
+        <!-- Status icon: a plain glyph whose shape and color both say what is happening (never color alone). -->
+        <Style x:Key="StatusGlyphStyle" TargetType="ContentControl" BasedOn="{StaticResource LucideIcon}">
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+            <!-- Default = queued -->
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+            <Setter Property="Content" Value="{StaticResource Icon.Recent}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Task.Status}" Value="Downloading">
+                    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                    <Setter Property="Content" Value="{StaticResource Icon.Download}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsProcessing}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                    <Setter Property="Content" Value="{StaticResource Icon.Sync}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Task.Status}" Value="Paused">
+                    <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+                    <Setter Property="Content" Value="{StaticResource Icon.Pause}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Task.Status}" Value="Completed">
+                    <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                    <Setter Property="Content" Value="{StaticResource Icon.Check}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Task.Status}" Value="Error">
+                    <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/>
+                    <Setter Property="Content" Value="{StaticResource Icon.Warning}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Task.Status}" Value="Cancelled">
+                    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+                    <Setter Property="Content" Value="{StaticResource Icon.Cancel}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Opaque cards with a quiet decorative contour; hover/focus/error still have their distinct cues. -->
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardContourBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="{StaticResource SurfaceCornerRadius}"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}"/>
+                </Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}"/>
+                </Trigger>
+                <DataTrigger Binding="{Binding Task.Status}" Value="Error">
+                    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBorderBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="StatusLineStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Typography.NumeralAlignment" Value="Tabular"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Task.Status}" Value="Error">
+                    <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Task.Status}" Value="Paused">
+                    <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <DataTemplate x:Key="DownloadItemTemplate" DataType="{x:Type vm:DownloadItemViewModel}">
-            <Border Background="{StaticResource SurfaceBrush}" 
-                    BorderBrush="{StaticResource BorderBrush}" 
-                    BorderThickness="1" 
-                    CornerRadius="10"
-                    Padding="16,14"
-                    Margin="0,0,0,8">
+            <Border Style="{StaticResource CardStyle}" Loaded="OnCardLoaded" MouseRightButtonUp="OnCardRightClick">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="34"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                    <ContentControl Grid.Column="0" Style="{StaticResource StatusGlyphStyle}" HorizontalAlignment="Left"/>
 
-                        <Border Grid.Column="0" Width="10" Height="10" CornerRadius="5" Margin="0,0,12,0" VerticalAlignment="Center">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="Background" Value="{Binding Task.Status, Converter={StaticResource StatusToColorConverter}}"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Task.Status}" Value="Downloading">
-                                            <DataTrigger.EnterActions>
-                                                <BeginStoryboard Name="BlinkingAnimation">
-                                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.4" Duration="0:0:0.8"/>
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </DataTrigger.EnterActions>
-                                            <DataTrigger.ExitActions>
-                                                <StopStoryboard BeginStoryboardName="BlinkingAnimation"/>
-                                            </DataTrigger.ExitActions>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                        </Border>
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Column="1" Text="{Binding DisplayTitle}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-
-                        <Border Grid.Column="2" Background="{StaticResource SurfaceHoverBrush}" CornerRadius="4" Padding="6,2" Margin="8,0,8,0" Visibility="{Binding ResolutionDisplay, Converter={StaticResource ProgressToVisibilityConverter}}" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding ResolutionDisplay}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
-                        </Border>
-
-                        <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding ToggleLogCommand}" ToolTip="Logs" Margin="0,0,4,0">
-                                <Path Data="M19,19H5V5H19M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M17,17H7V15H17M17,13H7V11H17M13,9H7V7H13" Fill="{StaticResource TextMutedBrush}" Width="16" Height="16" Stretch="Uniform"/>
-                            </Button>
-                            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding DataContext.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" ToolTip="Open Folder" Visibility="{Binding Task.Status, Converter={StaticResource StatusToActionsVisibilityConverter}}" Margin="0,0,4,0">
-                                <Path Data="M20,6H12L10,4H4A2,2 0 0,0 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8A2,2 0 0,0 20,6Z" Fill="{StaticResource TextSecondaryBrush}" Width="16" Height="16" Stretch="Uniform"/>
-                            </Button>
-                            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding DataContext.PlayFileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" ToolTip="Play Video" Visibility="{Binding Task.Status, Converter={StaticResource StatusToActionsVisibilityConverter}}" Margin="0,0,4,0">
-                                <Path Data="M8,5.14V19.14L19,12.14L8,5.14Z" Fill="{StaticResource TextSecondaryBrush}" Width="16" Height="16" Stretch="Uniform"/>
-                            </Button>
-                            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding DataContext.ResumeDownloadCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" ToolTip="Resume" Visibility="{Binding IsResumable, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,0,4,0">
-                                <Path Data="M8,5.14V19.14L19,12.14L8,5.14Z" Fill="{StaticResource SuccessBrush}" Width="16" Height="16" Stretch="Uniform"/>
-                            </Button>
-                            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding DataContext.PauseDownloadCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" ToolTip="Pause" Visibility="{Binding CanBePaused, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,0,4,0">
-                                <Path Data="M14,19H18V5H14M6,19H10V5H6V19Z" Fill="{StaticResource WarningBrush}" Width="16" Height="16" Stretch="Uniform"/>
-                            </Button>
-                            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding DataContext.CancelDownloadCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" ToolTip="Cancel (Deletes partial files)" Visibility="{Binding CanBeCancelled, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Fill="{StaticResource ErrorBrush}" Width="16" Height="16" Stretch="Uniform"/>
-                            </Button>
-                            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding DataContext.RemoveDownloadCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}" ToolTip="Remove from List" Visibility="{Binding CanBeRemoved, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Fill="{StaticResource TextMutedBrush}" Width="16" Height="16" Stretch="Uniform"/>
-                            </Button>
-                        </StackPanel>
-                    </Grid>
-
-                    <Grid Grid.Row="1" Margin="22,8,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Column="0" Text="{Binding ProgressDisplay}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Grid.Column="1" Text="{Binding ResolutionDisplay}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="8,0,0,0" Visibility="{Binding ResolutionDisplay, Converter={StaticResource ProgressToVisibilityConverter}}"/>
-                    </Grid>
-
-                    <ProgressBar Grid.Row="2" Style="{StaticResource DownloadProgressBar}" Value="{Binding Progress, Mode=OneWay}" IsIndeterminate="{Binding Task.IsIndeterminate, Mode=OneWay}" Maximum="100" Margin="22,8,0,0" Visibility="{Binding Task.Status, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=invert}"/>
-
-                    <!-- Error banner (row 3) and log panel (row 4) live in separate rows so they never overlap. -->
-                    <Border Grid.Row="3" Background="#15F44336" CornerRadius="6" Padding="8,6" Margin="22,8,0,0" Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <Grid>
+                        <!-- Full-width title and quality; task actions never crowd the title. -->
+                        <Grid Grid.Row="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <!-- Read-only TextBox instead of TextBlock: the text can be selected and copied. -->
-                            <TextBox Grid.Column="0" Text="{Binding ErrorMessage, Mode=OneWay}" IsReadOnly="True" Background="Transparent" BorderThickness="0" Padding="0" Foreground="{StaticResource ErrorBrush}" FontSize="11" TextWrapping="Wrap" Cursor="IBeam"/>
-                            <Button Grid.Column="1" Style="{StaticResource IconButtonStyle}" Command="{Binding CopyErrorCommand}" ToolTip="Copy error" VerticalAlignment="Top" Margin="8,0,0,0">
-                                <Path Data="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" Fill="{StaticResource ErrorBrush}" Width="14" Height="14" Stretch="Uniform"/>
-                            </Button>
-                        </Grid>
-                    </Border>
 
-                    <Border Grid.Row="4" Background="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Margin="22,8,0,0" Padding="8" Visibility="{Binding IsLogVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <Grid>
-                            <ScrollViewer Height="150" VerticalScrollBarVisibility="Auto">
-                                <TextBox Text="{Binding Task.UiLogText, Mode=OneWay}" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}" BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" FontSize="11" FontFamily="Consolas, Monospace"/>
-                            </ScrollViewer>
-                            <Button Style="{StaticResource IconButtonStyle}" Command="{Binding CopyLogCommand}" ToolTip="Copy full log" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,16,0">
-                                <Path Data="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" Fill="{StaticResource TextMutedBrush}" Width="14" Height="14" Stretch="Uniform"/>
-                            </Button>
+                            <TextBlock Grid.Column="0" Text="{Binding DisplayTitle}" ToolTip="{Binding TitleTooltip}" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" MaxHeight="44" VerticalAlignment="Center"/>
+
+                            <Border Grid.Column="1" Background="{DynamicResource SurfaceHoverBrush}" CornerRadius="{StaticResource ControlCornerRadius}" Padding="8,3" Margin="16,0,0,0" VerticalAlignment="Center"
+                                    Visibility="{Binding ResolutionDisplay, Converter={StaticResource StringToVisibilityConverter}}">
+                                <TextBlock Text="{Binding ResolutionDisplay}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </Border>
                         </Grid>
-                    </Border>
+
+                        <!-- Status, live metrics and a consistent labeled main action. -->
+                        <Grid Grid.Row="1" Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding StatusLine}" ToolTip="{Binding StatusLine}" Style="{StaticResource StatusLineStyle}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,20,0" VerticalAlignment="Center"
+                                        Visibility="{Binding IsTransferMetricsVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <StackPanel Orientation="Horizontal" Visibility="{Binding SpeedValue, Converter={StaticResource StringToVisibilityConverter}}">
+                                    <TextBlock Text="{Binding SpeedValue}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"
+                                               Typography.NumeralAlignment="Tabular" VerticalAlignment="Bottom"/>
+                                    <TextBlock Text="{Binding SpeedUnit}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="4,0,0,2" VerticalAlignment="Bottom"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding EtaText}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="12,0,0,2" VerticalAlignment="Bottom"
+                                           Typography.NumeralAlignment="Tabular" Visibility="{Binding EtaText, Converter={StaticResource StringToVisibilityConverter}}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <!-- Completed: Show in folder + Play -->
+                                <Button Style="{StaticResource QueueActionButtonStyle}" Padding="12,0" Command="{Binding DataContext.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}"
+                                        ToolTip="Show the file in its folder" AutomationProperties.Name="Show in folder" Margin="0,0,4,0"
+                                        Visibility="{Binding Task.Status, Converter={StaticResource StatusToActionsVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ContentControl Style="{StaticResource LucideIcon}" Content="{StaticResource Icon.FolderOpen}" Width="16" Height="16" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Show in folder"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource IconButtonStyle}" Command="{Binding DataContext.PlayFileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}"
+                                        ToolTip="Play" AutomationProperties.Name="Play" Margin="0,0,2,0"
+                                        Visibility="{Binding Task.Status, Converter={StaticResource StatusToActionsVisibilityConverter}}">
+                                    <ContentControl Style="{StaticResource LucideIconSolid}" Content="{StaticResource Icon.Play}" Width="15" Height="15"/>
+                                </Button>
+
+                                <!-- Failed: Retry (the one primary action) -->
+                                <Button Style="{StaticResource AccentButtonStyle}" Padding="12,0" Command="{Binding DataContext.ResumeDownloadCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}"
+                                        ToolTip="Try this download again" AutomationProperties.Name="Retry" Margin="0,0,4,0"
+                                        Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ContentControl Style="{StaticResource LucideIcon}" Content="{StaticResource Icon.Refresh}" Width="15" Height="15" Margin="0,0,7,0"/>
+                                        <TextBlock Text="Retry"/>
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Paused: Resume -->
+                                <Button Style="{StaticResource AccentButtonStyle}" Padding="12,0" Command="{Binding DataContext.ResumeDownloadCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}"
+                                        ToolTip="Continue this download" AutomationProperties.Name="Resume" Margin="0,0,4,0"
+                                        Visibility="{Binding IsPaused, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ContentControl Style="{StaticResource LucideIconSolid}" Content="{StaticResource Icon.Play}" Width="14" Height="14" Margin="0,0,7,0"/>
+                                        <TextBlock Text="Resume"/>
+                                    </StackPanel>
+                                </Button>
+
+                                <Button Style="{StaticResource QueueActionButtonStyle}" Command="{Binding DataContext.PauseDownloadCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}"
+                                         ToolTip="Pause this download" AutomationProperties.Name="Pause" Margin="0,0,4,0"
+                                         Visibility="{Binding CanBePaused, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ContentControl Style="{StaticResource LucideIconSolid}" Content="{StaticResource Icon.Pause}" Width="15" Height="15" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Pause"/>
+                                    </StackPanel>
+                                </Button>
+
+                                <!-- Show / hide the log: always visible, never buried in a menu -->
+                                <Button Style="{StaticResource IconButtonStyle}" Command="{Binding ToggleLogCommand}" Click="OnLogToggleClick"
+                                        ToolTip="Show or hide the log" AutomationProperties.Name="Show or hide the log" Margin="0,0,2,0">
+                                    <ContentControl Style="{StaticResource LucideIcon}" Content="{StaticResource Icon.Log}" Width="16" Height="16"/>
+                                </Button>
+
+                                <!-- Cancel: always one click away while a download is running or paused. Turns red on hover. -->
+                                <Button Style="{StaticResource DangerIconButtonStyle}" Command="{Binding DataContext.CancelDownloadCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}"
+                                        ToolTip="Cancel download (deletes the partial files)" AutomationProperties.Name="Cancel download" Margin="0,0,2,0"
+                                        Visibility="{Binding CanBeCancelled, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <ContentControl Style="{StaticResource LucideIcon}" Content="{StaticResource Icon.CancelCircle}" Width="15" Height="15"/>
+                                </Button>
+
+                                <!-- Remove: for finished items; clears the list entry and keeps the file -->
+                                <Button Style="{StaticResource IconButtonStyle}" Command="{Binding DataContext.RemoveDownloadCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" CommandParameter="{Binding}"
+                                        ToolTip="Remove from list (keeps the file)" AutomationProperties.Name="Remove from list" Margin="0,0,2,0"
+                                        Visibility="{Binding CanBeRemoved, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <ContentControl Style="{StaticResource LucideIcon}" Content="{StaticResource Icon.Cancel}" Width="15" Height="15"/>
+                                </Button>
+
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Row 2: progress (only while downloading or paused) -->
+                        <ProgressBar Grid.Row="2" Style="{StaticResource DownloadProgressBar}" Margin="0,10,0,0" Maximum="100"
+                                     AutomationProperties.Name="{Binding ProgressAutomationName}" Focusable="False"
+                                     Value="{Binding Progress, Mode=OneWay}" IsIndeterminate="{Binding IsProgressIndeterminate, Mode=OneWay}"
+                                     Visibility="{Binding IsProgressVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                        <!-- Row 3: failure explanation. The title is in the status line; here: what to do, plus raw details on demand. -->
+                        <Border Grid.Row="3" Background="{DynamicResource ErrorSoftBrush}" CornerRadius="{StaticResource ControlCornerRadius}" Padding="12,8" Margin="0,8,0,0"
+                                Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding ErrorHint}" FontSize="12.5" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimaryBrush}"
+                                           Visibility="{Binding ErrorHint, Converter={StaticResource StringToVisibilityConverter}}"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <Button Style="{StaticResource LinkButtonStyle}" Command="{Binding ToggleErrorDetailsCommand}" AutomationProperties.Name="{Binding ErrorDetailsToggleText}">
+                                        <TextBlock Text="{Binding ErrorDetailsToggleText}"/>
+                                    </Button>
+                                    <Button Style="{StaticResource LinkButtonStyle}" Command="{Binding CopyErrorCommand}" Margin="16,0,0,0" ToolTip="Copy the full error text" AutomationProperties.Name="Copy error">
+                                        <TextBlock Text="Copy error"/>
+                                    </Button>
+                                </StackPanel>
+                                <!-- Read-only TextBox instead of TextBlock: the raw yt-dlp text can be selected and copied. -->
+                                <TextBox Text="{Binding ErrorMessage, Mode=OneWay}" IsReadOnly="True" Background="Transparent" BorderThickness="0" Padding="0" Margin="0,8,0,0"
+                                         AutomationProperties.Name="Technical error details"
+                                         Foreground="{DynamicResource ErrorBrush}" FontSize="11.5" FontFamily="Cascadia Mono, Consolas, Monospace" TextWrapping="Wrap" Cursor="IBeam"
+                                         Visibility="{Binding IsErrorDetailsVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Row 4: log panel -->
+                        <Border Grid.Row="4" Background="{DynamicResource LogBackgroundBrush}" BorderBrush="{DynamicResource CardContourBrush}" BorderThickness="1" CornerRadius="{StaticResource ControlCornerRadius}" Margin="0,10,0,0" Padding="12"
+                                Visibility="{Binding IsLogVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Grid>
+                                <TextBox Text="{Binding Task.UiLogText, Mode=OneWay}" Height="220" Background="Transparent" Foreground="{DynamicResource TextSecondaryBrush}"
+                                         BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" FontSize="11.5" FontFamily="Cascadia Mono, Consolas, Monospace"
+                                         VerticalScrollBarVisibility="Auto" Padding="0,0,36,0" Cursor="IBeam"
+                                         TextChanged="OnLogTextChanged" PreviewMouseWheel="OnLogPreviewMouseWheel" RequestBringIntoView="OnLogRequestBringIntoView"
+                                         AutomationProperties.Name="Download log"/>
+                                <Button Style="{StaticResource IconButtonStyle}" Command="{Binding CopyLogCommand}" ToolTip="Copy the full log" AutomationProperties.Name="Copy log"
+                                        HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,14,0" Width="28" Height="28">
+                                    <ContentControl Style="{StaticResource LucideIcon}" Content="{StaticResource Icon.Copy}" Width="16" Height="16"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </Grid>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -142,6 +269,9 @@
             <Setter Property="Margin" Value="0"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="KeyboardNavigation.TabNavigation" Value="Continue"/>
+            <Setter Property="AutomationProperties.Name" Value="{Binding DisplayTitle}"/>
             <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -151,134 +281,192 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Footer dot: accent while something is active, muted when idle. No pulsing. -->
+        <Style x:Key="ActivityDotStyle" TargetType="Ellipse">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Height" Value="8"/>
+            <Setter Property="Fill" Value="{DynamicResource TextMutedBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ActiveDownloadCount, Converter={StaticResource CountToBoolConverter}}" Value="True">
+                    <Setter Property="Fill" Value="{DynamicResource AccentBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,0" Padding="20,14,16,10">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        <!-- Header: identity + window actions -->
+        <Grid Grid.Row="0" Margin="22,16,16,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Image Source="Assets/icon.png" Width="32" Height="32" Margin="0,0,12,0"/>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="YT Downloader Pro" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Native yt-dlp Host" FontSize="11" Foreground="{StaticResource TextMutedBrush}"/>
-                            <TextBlock Text=" • Crafted with ⚡ by muzammilAwan-dev" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="4,0,0,0"/>
-                        </StackPanel>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Image Source="Assets/icon.png" Width="28" Height="28" Margin="0,0,12,0"/>
+                <TextBlock Text="YT Downloader Pro" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <ToggleButton x:Name="LimitsToggle" Style="{StaticResource ToolbarToggleStyle}" Margin="0,0,8,0" ToolTip="Choose how many downloads run at once and cap the speed" AutomationProperties.Name="Download limits">
+                    <StackPanel Orientation="Horizontal">
+                        <ContentControl Style="{StaticResource LucideIcon}" Content="{StaticResource Icon.Sliders}" Width="16" Height="16" Margin="0,0,8,0"/>
+                        <TextBlock x:Name="LimitsSummaryText" Text="Limits" VerticalAlignment="Center"/>
                     </StackPanel>
-                </StackPanel>
+                </ToggleButton>
+                <Button Style="{StaticResource IconButtonStyle}" Click="OnMinimizeToTrayClick" ToolTip="Hide to the system tray (downloads keep running)" AutomationProperties.Name="Hide to tray" x:Name="MinimizeTrayButton">
+                    <ContentControl Style="{StaticResource LucideIcon}" Content="{StaticResource Icon.Minimize}" Width="16" Height="16"/>
+                </Button>
+                <Button Style="{StaticResource IconButtonStyle}" Click="OnSettingsClick" ToolTip="Settings and tools" AutomationProperties.Name="Settings and tools">
+                    <ContentControl Style="{StaticResource LucideIcon}" Content="{StaticResource Icon.Settings}" Width="18" Height="18"/>
+                </Button>
+            </StackPanel>
+        </Grid>
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource IconButtonStyle}" Click="OnMinimizeToTrayClick" ToolTip="Minimize to Tray" x:Name="MinimizeTrayButton">
-                        <Path Data="M19,13H5V11H19V13Z" Fill="{StaticResource TextSecondaryBrush}" Width="16" Height="16" Stretch="Uniform"/>
-                    </Button>
-                    <Button Style="{StaticResource IconButtonStyle}" Click="OnSettingsClick" ToolTip="Settings">
-                        <Path Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" Fill="{StaticResource TextSecondaryBrush}" Width="16" Height="16" Stretch="Uniform"/>
-                    </Button>
-                </StackPanel>
-            </Grid>
+        <!-- Filter tabs: only appear once the list is long enough to need them -->
+        <Border x:Name="FilterTrack" Grid.Row="1" HorizontalAlignment="Left" Margin="22,0,22,14" Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource CardContourBrush}" BorderThickness="1" CornerRadius="{StaticResource SurfaceCornerRadius}" Padding="2" Visibility="Collapsed">
+            <StackPanel Orientation="Horizontal">
+                <RadioButton x:Name="AllTab" Style="{StaticResource FilterTabStyle}" Content="All" Tag="0" GroupName="QueueFilter" IsChecked="True" Checked="OnFilterChecked"/>
+                <RadioButton x:Name="ActiveTab" Style="{StaticResource FilterTabStyle}" Content="Active" Tag="0" GroupName="QueueFilter" Checked="OnFilterChecked"/>
+                <RadioButton x:Name="DoneTab" Style="{StaticResource FilterTabStyle}" Content="Completed" Tag="0" GroupName="QueueFilter" Checked="OnFilterChecked"/>
+                <RadioButton x:Name="FailedTab" Style="{StaticResource FilterTabStyle}" Content="Failed" Tag="0" GroupName="QueueFilter" Checked="OnFilterChecked"/>
+            </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Background="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="20,0,20,12">
+        <!-- Limits panel (opens under the header). Same bindings and Save command as before. -->
+        <Border Grid.Row="2" Margin="22,0,22,14" Padding="18,16" CornerRadius="{StaticResource SurfaceCornerRadius}" Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource CardContourBrush}" BorderThickness="1"
+                Visibility="{Binding IsChecked, ElementName=LimitsToggle, Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Max tasks" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
-                    <ComboBox Style="{StaticResource DarkComboBox}" Text="{Binding Settings.MaxConcurrentDownloads}" IsEditable="True" Width="68" Margin="0,0,20,0" ToolTip="How many downloads run at the same time (1-15)">
+                <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                    <TextBlock Text="Downloads at once" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                    <ComboBox Style="{StaticResource DarkComboBox}" Text="{Binding Settings.MaxConcurrentDownloads}" IsEditable="True" Width="96"
+                              AutomationProperties.Name="Downloads at once" ToolTip="How many downloads run at the same time (1-15)">
                         <ComboBoxItem Content="1"/>
+                        <ComboBoxItem Content="2"/>
                         <ComboBoxItem Content="3"/>
                         <ComboBoxItem Content="5"/>
                         <ComboBoxItem Content="10"/>
                     </ComboBox>
-
-                    <TextBlock Text="Speed limit" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
-                    <ComboBox Style="{StaticResource DarkComboBox}" Text="{Binding Settings.SpeedLimit}" IsEditable="True" Width="92" Margin="0,0,8,0" ToolTip="Use 0 for unlimited, or formats like 500K, 2.5M, 10M">
-                        <ComboBoxItem Content="0"/>
-                        <ComboBoxItem Content="500K"/>
-                        <ComboBoxItem Content="1M"/>
-                        <ComboBoxItem Content="2.5M"/>
-                        <ComboBoxItem Content="5M"/>
-                        <ComboBoxItem Content="10M"/>
-                    </ComboBox>
-                    <TextBlock Text="0 = unlimited" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,16,0" FontSize="11"/>
-
-                    <Button Style="{StaticResource AccentButtonStyle}" Content="Apply" Command="{Binding SaveSettingsCommand}" Height="28" Padding="16,0" ToolTip="Save these limits"/>
                 </StackPanel>
 
-                <Button Grid.Column="1" Style="{StaticResource ActionButtonStyle}" Content="Clear completed" Command="{Binding ClearCompletedCommand}" Height="28" Padding="12,0" VerticalAlignment="Center" Visibility="{Binding HasCompletedDownloads, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <StackPanel Grid.Column="1" Margin="0,0,24,0">
+                    <TextBlock Text="Speed limit" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox Style="{StaticResource DarkComboBox}" Text="{Binding Settings.SpeedLimit}" IsEditable="True" Width="110"
+                                  AutomationProperties.Name="Speed limit" ToolTip="Use 0 for unlimited, or formats like 500K, 2.5M, 10M">
+                            <ComboBoxItem Content="0"/>
+                            <ComboBoxItem Content="500K"/>
+                            <ComboBoxItem Content="1M"/>
+                            <ComboBoxItem Content="2.5M"/>
+                            <ComboBoxItem Content="5M"/>
+                            <ComboBoxItem Content="10M"/>
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
 
-                <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0">
+                <!-- One full-width line (it wrapped into narrow lines at the minimum window width) -->
+                <TextBlock Grid.Row="1" Grid.ColumnSpan="4" Margin="0,10,0,0" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap"
+                           Text="Speed limit: 0 means unlimited; or type a value such as 500K, 2.5M or 10M. Changes also apply to downloads already running."/>
+
+                <Button Grid.Column="3" Style="{StaticResource AccentButtonStyle}" Content="Save limits" Command="{Binding SaveSettingsCommand}" Click="OnSaveLimitsClick"
+                        VerticalAlignment="Bottom" ToolTip="Save these limits and the folder below"/>
+
+                <!-- Cross-platform branch (2.5b): where downloads started from the browser are saved -->
+                <Grid Grid.Row="2" Grid.ColumnSpan="4" Margin="0,16,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Browser downloads folder" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
-                    <TextBox Grid.Column="1" Text="{Binding Settings.DownloadFolder}" Height="28" Padding="8,0" VerticalContentAlignment="Center" FontSize="12"
-                             Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" CaretBrush="{StaticResource TextPrimaryBrush}"
-                             ToolTip="Where downloads started from the browser are saved. Leave empty for the default (Downloads\YTDownloaderPro). Click Apply to save."/>
-                    <Button Grid.Column="2" Style="{StaticResource ActionButtonStyle}" Content="Browse..." Click="OnBrowseDownloadFolderClick" Height="28" Padding="12,0" Margin="8,0,0,0"/>
+                    <TextBlock Grid.ColumnSpan="2" Text="Browser downloads folder" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                    <TextBox Grid.Row="1" Text="{Binding Settings.DownloadFolder}" Height="32" Padding="10,0" VerticalContentAlignment="Center" FontSize="12.5"
+                             Background="{DynamicResource BackgroundBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}" CaretBrush="{DynamicResource TextPrimaryBrush}"
+                             AutomationProperties.Name="Browser downloads folder"
+                             ToolTip="Where downloads started from the browser are saved. Leave empty for the default (Downloads\YTDownloaderPro). Press Save limits to keep it."/>
+                    <Button Grid.Row="1" Grid.Column="1" Style="{StaticResource QueueActionButtonStyle}" Content="Browse..." Click="OnBrowseDownloadFolderClick" Padding="14,0" Margin="8,0,0,0"/>
                 </Grid>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="2">
-            <Grid Visibility="{Binding HasDownloads, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=invert}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <StackPanel HorizontalAlignment="Center">
-                    <Path Data="M180,124 L180,319 L353,222 Z M147,349 L365,349 L365,388 L147,388 Z" Fill="{StaticResource SurfaceHoverBrush}" Width="64" Height="64" Stretch="Uniform" HorizontalAlignment="Center"/>
-                    <TextBlock Text="No active downloads" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,20,0,8"/>
-                    <TextBlock Text="Use the Download button on YouTube, Instagram, Facebook and other supported sites to add videos" FontSize="13" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </Grid>
+        <!-- Queue -->
+        <Grid Grid.Row="3">
+            <!-- Nothing in the queue yet -->
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="420"
+                        Visibility="{Binding HasDownloads, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=invert}">
+                <ContentControl Style="{StaticResource LucideIconLarge}" Content="{StaticResource Icon.Download}" Width="40" Height="40" Foreground="{DynamicResource TextMutedBrush}" HorizontalAlignment="Center"/>
+                <TextBlock Text="No downloads yet" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,14,0,6"/>
+                <TextBlock Text="Click Download on a video in your browser and it will show up here."
+                           FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center"/>
+            </StackPanel>
 
-            <ScrollViewer Visibility="{Binding HasDownloads, Converter={StaticResource BoolToVisibilityConverter}}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="20,12" PanningMode="VerticalOnly">
-                <ListBox ItemsSource="{Binding Downloads}" ItemTemplate="{StaticResource DownloadItemTemplate}" ItemContainerStyle="{StaticResource DownloadListItemContainer}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True"/>
-            </ScrollViewer>
+            <!-- A filter tab has no matches -->
+            <TextBlock x:Name="FilterEmptyText" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center"
+                       FontSize="13" Foreground="{DynamicResource TextMutedBrush}"/>
+
+            <!-- ListBox scrolls on its own (no outer ScrollViewer), pixel-smooth -->
+             <ListBox ItemsSource="{Binding Downloads}" ItemTemplate="{StaticResource DownloadItemTemplate}" ItemContainerStyle="{StaticResource DownloadListItemContainer}"
+                      KeyboardNavigation.TabNavigation="Continue" AutomationProperties.Name="Downloads" GotKeyboardFocus="OnQueueKeyboardFocus"
+                     Padding="22,2,10,14" ScrollViewer.CanContentScroll="False" Visibility="{Binding HasDownloads, Converter={StaticResource BoolToVisibilityConverter}}"
+                     Focusable="False"/>
+
+            <!-- Toast: replaces the light-themed Windows message boxes -->
+            <Border x:Name="ToastHost" Visibility="Collapsed" Opacity="0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="20,0,20,18"
+                    Background="{DynamicResource SurfaceHoverBrush}" BorderBrush="{DynamicResource BorderStrongBrush}" BorderThickness="1" CornerRadius="{StaticResource SurfaceCornerRadius}" Padding="16,11"
+                    SnapsToDevicePixels="True">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.3" Color="Black"/>
+                </Border.Effect>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="ToastText" FontSize="12.5" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" MaxWidth="520" TextWrapping="Wrap"
+                               AutomationProperties.LiveSetting="Polite"/>
+                    <Button x:Name="ToastActionButton" Style="{StaticResource LinkButtonStyle}" Click="OnToastActionClick" Margin="16,0,0,0" Visibility="Collapsed"/>
+                </StackPanel>
+            </Border>
         </Grid>
 
-        <Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="20,8">
+        <!-- Footer: queue status on the left; "Clear finished" and total speed on the right -->
+        <Border Grid.Row="4" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="22,10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse Width="8" Height="8" Fill="{StaticResource AccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center">
-                        <Ellipse.Triggers>
-                            <EventTrigger RoutedEvent="Ellipse.Loaded">
-                                <BeginStoryboard>
-                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.3" Duration="0:0:1.2"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </Ellipse.Triggers>
-                    </Ellipse>
-                    <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                    <Ellipse Style="{StaticResource ActivityDotStyle}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="FooterText" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                 </StackPanel>
-
-                <TextBlock Grid.Column="1" Text="{Binding ActiveDownloadCount, Converter={StaticResource CountToTextConverter}}" FontSize="12" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="ClearFinishedButton" Style="{StaticResource QuietLinkStyle}" Content="Clear finished" Click="OnClearFinishedClick" Visibility="Collapsed" Margin="0,0,18,0"
+                            ToolTip="Remove completed and cancelled downloads from this list (files stay on disk)"/>
+                    <TextBlock x:Name="FooterSpeedText" Visibility="Collapsed" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"
+                               Typography.NumeralAlignment="Tabular" VerticalAlignment="Center" ToolTip="Total download speed"/>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

@@ -6,25 +6,38 @@ using YTDLPHost.Models;
 
 namespace YTDLPHost.Converters
 {
-    [ValueConversion(typeof(DownloadStatus), typeof(SolidColorBrush))]
+    /// <summary>
+    /// Maps a download status to its theme brush. Brushes come from App.xaml so the palette lives in one place;
+    /// the fallbacks only apply if a resource is missing.
+    /// </summary>
+    [ValueConversion(typeof(DownloadStatus), typeof(System.Windows.Media.Brush))]
     public class StatusToColorConverter : IValueConverter
     {
+        private static System.Windows.Media.Brush Theme(string key, string fallbackHex)
+        {
+            if (System.Windows.Application.Current?.TryFindResource(key) is System.Windows.Media.Brush brush) return brush;
+            var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(fallbackHex);
+            var fallback = new SolidColorBrush(color);
+            fallback.Freeze();
+            return fallback;
+        }
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is DownloadStatus status)
             {
                 return status switch
                 {
-                    DownloadStatus.Queued => new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x71, 0x71, 0x71)),
-                    DownloadStatus.Downloading => new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x3E, 0xA6, 0xFF)),
-                    DownloadStatus.Paused => new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFF, 0x98, 0x00)),
-                    DownloadStatus.Completed => new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x4C, 0xAF, 0x50)),
-                    DownloadStatus.Error => new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xF4, 0x43, 0x36)),
-                    DownloadStatus.Cancelled => new SolidColorBrush(System.Windows.Media.Color.FromRgb(0xAA, 0xAA, 0xAA)),
-                    _ => new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x71, 0x71, 0x71))
+                    DownloadStatus.Queued => Theme("TextMutedBrush", "#7F879B"),
+                    DownloadStatus.Downloading => Theme("AccentBrush", "#8B7CFF"),
+                    DownloadStatus.Paused => Theme("WarningBrush", "#FFB84D"),
+                    DownloadStatus.Completed => Theme("SuccessBrush", "#3DDC97"),
+                    DownloadStatus.Error => Theme("ErrorBrush", "#FF6B7A"),
+                    DownloadStatus.Cancelled => Theme("TextSecondaryBrush", "#A4ABBD"),
+                    _ => Theme("TextMutedBrush", "#7F879B")
                 };
             }
-            return new SolidColorBrush(System.Windows.Media.Color.FromRgb(0x71, 0x71, 0x71));
+            return Theme("TextMutedBrush", "#7F879B");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -42,11 +55,11 @@ namespace YTDLPHost.Converters
             {
                 return status switch
                 {
-                    DownloadStatus.Queued => "Queued",
+                    DownloadStatus.Queued => "In queue",
                     DownloadStatus.Downloading => "Downloading",
                     DownloadStatus.Paused => "Paused",
-                    DownloadStatus.Completed => "Complete",
-                    DownloadStatus.Error => "Error",
+                    DownloadStatus.Completed => "Completed",
+                    DownloadStatus.Error => "Failed",
                     DownloadStatus.Cancelled => "Cancelled",
                     _ => "Unknown"
                 };

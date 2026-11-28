@@ -24,6 +24,37 @@ public partial class MainWindow : Window
         AvaloniaXamlLoader.Load(this);
     }
 
+    private bool _fitted;
+
+    /// <summary>
+    /// The window is designed for 980 x 700, but it is never bigger than the screen allows: on a laptop (1366 x 768 at 125 %) that design size
+    /// would run off the bottom. Fit the size to the work area (the screen minus the taskbar), then centre it there.
+    /// </summary>
+    protected override void OnOpened(EventArgs e)
+    {
+        base.OnOpened(e);
+        if (_fitted) return;
+        _fitted = true;
+
+        var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
+        if (screen is null) return;   // no screens (the headless Gallery)
+
+        var area = screen.WorkingArea;
+        var fit = WindowFit.Compute(Width, Height, MinWidth, MinHeight, area.Width, area.Height, screen.Scaling);
+        MinWidth = fit.MinWidth;
+        MinHeight = fit.MinHeight;
+        Width = fit.Width;
+        Height = fit.Height;
+
+        // Centre once the new size (with the title bar) is known.
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            var frame = FrameSize ?? ClientSize;
+            int w = (int)(frame.Width * screen.Scaling), h = (int)(frame.Height * screen.Scaling);
+            Position = new PixelPoint(area.X + Math.Max(0, (area.Width - w) / 2), area.Y + Math.Max(0, (area.Height - h) / 2));
+        }, Avalonia.Threading.DispatcherPriority.Loaded);
+    }
+
     public MainWindow(MainViewModel viewModel) : this()
     {
         DataContext = viewModel;

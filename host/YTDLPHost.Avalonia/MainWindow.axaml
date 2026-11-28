@@ -9,7 +9,7 @@
         Title="YT Downloader Pro"
         Icon="/Assets/icon.png"
         Width="980" Height="700"
-        MinWidth="840" MinHeight="540"
+        MinWidth="760" MinHeight="460"
         WindowStartupLocation="CenterScreen">
 
   <!-- Step 4.6b: the layout of main's upgraded window. All the list logic (tabs, counts, footer, toast) comes from the shared view models. -->
@@ -105,7 +105,7 @@
 
     <!-- Limits panel (opens under the header): same settings and Save command as before, plus the browser downloads folder -->
     <Border Grid.Row="2" Classes="panel" Margin="22,0,22,14" Padding="18,16" IsVisible="{Binding #LimitsToggle.IsChecked}">
-      <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto,*,Auto">
+      <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,*,Auto">
         <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,24,0">
           <TextBlock Text="Downloads at once" FontSize="12" Classes="secondary" Margin="0,0,0,6" />
           <ComboBox Classes="small" IsEditable="True" Width="96" AutomationProperties.Name="Downloads at once"
@@ -132,17 +132,16 @@
               <x:String>5M</x:String>
               <x:String>10M</x:String>
             </ComboBox>
-            <TextBlock Text="0 = unlimited. Or type 500K, 2.5M, 10M" FontSize="12" Classes="muted" VerticalAlignment="Center" Margin="10,0,0,0" />
           </StackPanel>
         </StackPanel>
 
-        <TextBlock Grid.Row="0" Grid.Column="2" Text="Changes also apply to downloads already running." FontSize="12" Classes="muted"
-                   TextWrapping="Wrap" VerticalAlignment="Bottom" Margin="0,0,16,6" />
+        <TextBlock Grid.Row="1" Grid.ColumnSpan="4" Margin="0,10,0,0" FontSize="12" Classes="muted" TextWrapping="Wrap"
+                   Text="Speed limit: 0 means unlimited; or type a value such as 500K, 2.5M or 10M. Changes also apply to downloads already running." />
 
         <Button Grid.Row="0" Grid.Column="3" Classes="cta" Content="Save limits" Command="{Binding SaveSettingsCommand}"
                 VerticalAlignment="Bottom" ToolTip.Tip="Save these limits and the folder below" />
 
-        <Grid Grid.Row="1" Grid.ColumnSpan="4" Margin="0,14,0,0" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
+        <Grid Grid.Row="2" Grid.ColumnSpan="4" Margin="0,16,0,0" RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
           <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Browser downloads folder" FontSize="12" Classes="secondary" Margin="0,0,0,6" />
           <TextBox Grid.Row="1" Grid.Column="0" Classes="small" Text="{Binding Settings.DownloadFolder, Mode=TwoWay}"
                    PlaceholderText="Default: Downloads/YTDownloaderPro"
@@ -156,24 +155,30 @@
     <!-- Queue -->
     <Grid Grid.Row="3">
       <!-- Nothing in the queue yet -->
-      <StackPanel IsVisible="{Binding !Queue.HasAnyCards}" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="440">
-        <!-- A soft halo around the icon: the one decorative element of the app, and it says where downloads come from. -->
-        <Grid Width="84" Height="84" HorizontalAlignment="Center">
-          <Ellipse Fill="{DynamicResource AccentSubtleBrush}" />
-          <Ellipse Stroke="{DynamicResource AccentBorderBrush}" StrokeThickness="1" Margin="10" />
-          <ui:LucideIcon Data="{StaticResource Icon.Download}" StrokeWidth="1.9" Width="30" Height="30" Foreground="{DynamicResource AccentBrush}"
+      <StackPanel IsVisible="{Binding !Queue.HasAnyCards}" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
+        <!-- One quiet tile (a single visual, as empty-state guidance advises), a promise, and the three steps that fill this screen. -->
+        <Border Classes="emptytile" HorizontalAlignment="Center">
+          <ui:LucideIcon Data="{StaticResource Icon.Download}" StrokeWidth="1.9" Width="28" Height="28" Foreground="{DynamicResource AccentBrush}"
                          HorizontalAlignment="Center" VerticalAlignment="Center" />
-        </Grid>
-        <TextBlock Text="No downloads yet" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,22,0,6" />
-        <TextBlock Text="Click Download on a video in your browser and it will show up here." FontSize="13.5" Classes="secondary"
-                   TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,18,0,0">
-          <Border Classes="chip"><TextBlock Text="YouTube" Classes="muted" FontSize="11.5" /></Border>
-          <Border Classes="chip"><TextBlock Text="Instagram" Classes="muted" FontSize="11.5" /></Border>
-          <Border Classes="chip"><TextBlock Text="Facebook" Classes="muted" FontSize="11.5" /></Border>
-          <Border Classes="chip"><TextBlock Text="and more" Classes="muted" FontSize="11.5" /></Border>
+        </Border>
+        <TextBlock Text="No downloads yet" FontSize="20" FontWeight="Medium" HorizontalAlignment="Center" Margin="0,24,0,6" />
+        <TextBlock Text="Start one from your browser:" FontSize="13.5" Classes="secondary" HorizontalAlignment="Center" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="28" Margin="0,22,0,0">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Border Classes="step"><TextBlock Text="1" FontSize="11.5" FontWeight="SemiBold" Classes="secondary" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+            <TextBlock Text="Open a video" FontSize="13" Classes="secondary" VerticalAlignment="Center" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Border Classes="step"><TextBlock Text="2" FontSize="11.5" FontWeight="SemiBold" Classes="secondary" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+            <TextBlock Text="Click Download" FontSize="13" Classes="secondary" VerticalAlignment="Center" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Border Classes="step"><TextBlock Text="3" FontSize="11.5" FontWeight="SemiBold" Classes="secondary" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+            <TextBlock Text="Watch it appear here" FontSize="13" Classes="secondary" VerticalAlignment="Center" />
+          </StackPanel>
         </StackPanel>
-        <TextBlock Text="Downloads keep running when you close this window." FontSize="12" Classes="muted" HorizontalAlignment="Center" Margin="0,22,0,0" />
+        <TextBlock Text="YouTube, Instagram, Facebook and more. Downloads keep running when you close the window." FontSize="12" Classes="muted"
+                   HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,26,0,0" />
       </StackPanel>
 
       <!-- A filter tab has no matches -->
@@ -199,14 +204,18 @@
                 </ContextMenu>
               </Border.ContextMenu>
 
-              <Grid ColumnDefinitions="34,*">
-                <ui:LucideIcon Grid.Column="0" Classes="glyph"
-                               Classes.downloading="{Binding StatusKind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=downloading}"
-                               Classes.processing="{Binding StatusKind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=processing}"
-                               Classes.paused="{Binding StatusKind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=paused}"
-                               Classes.completed="{Binding StatusKind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=completed}"
-                               Classes.failed="{Binding StatusKind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=failed}"
-                               Classes.cancelled="{Binding StatusKind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=cancelled}" />
+              <Grid ColumnDefinitions="50,*">
+                <!-- State tile: shape and colour both tell the state -->
+                <Grid Grid.Column="0" Classes="tile"
+                      Classes.downloading="{Binding StatusKind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=downloading}"
+                      Classes.processing="{Binding StatusKind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=processing}"
+                      Classes.paused="{Binding StatusKind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=paused}"
+                      Classes.completed="{Binding StatusKind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=completed}"
+                      Classes.failed="{Binding StatusKind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=failed}"
+                      Classes.cancelled="{Binding StatusKind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=cancelled}">
+                  <Border Classes="tilebg" />
+                  <ui:LucideIcon />
+                </Grid>
 
                 <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 
@@ -287,12 +296,9 @@
                         </StackPanel>
                       </Button>
 
-                      <Button Classes="queue" IsVisible="{Binding CanBePaused}" ToolTip.Tip="Pause this download" AutomationProperties.Name="Pause"
+                      <Button Classes="round" IsVisible="{Binding CanBePaused}" ToolTip.Tip="Pause this download" AutomationProperties.Name="Pause"
                               Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).PauseDownloadCommand}" CommandParameter="{Binding}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                          <ui:LucideIcon Data="{StaticResource Icon.Pause}" IsSolid="True" Width="15" Height="15" />
-                          <TextBlock Text="Pause" />
-                        </StackPanel>
+                        <ui:LucideIcon Data="{StaticResource Icon.Pause}" IsSolid="True" Width="14" Height="14" />
                       </Button>
                     </StackPanel>
                   </Grid>

@@ -25,6 +25,33 @@ public class DownloadCardTextTests
     public void Title_reads_like_a_person_would_write_it(string raw, string expected) =>
         Assert.Equal(expected, Card(t => t.Title = raw).DisplayTitle);
 
+    [Theory]
+    [InlineData("I_Tested_The_World_s_Most_Dangerous_Animals", "I Tested The World\u2019s Most Dangerous Animals")]
+    [InlineData("Don_t_stop_1080p", "Don\u2019t stop")]
+    [InlineData("I_m_here_and_you_re_there", "I\u2019m here and you\u2019re there")]
+    [InlineData("Dogs_s_life", "Dogs\u2019s life")]
+    [InlineData("my_sister_s_video", "my sister\u2019s video")]
+    [InlineData("a_stunt_team", "a stunt team")]            // "_s" at the start of a longer word is not an apostrophe
+    public void Sanitised_apostrophes_come_back(string raw, string expected) => Assert.Equal(expected, Card(t => t.Title = raw).DisplayTitle);
+
+    [Theory]
+    [InlineData("Downloading Video...", "Downloading video")]
+    [InlineData("Downloading Audio...", "Downloading audio")]
+    [InlineData("Merging & Finalizing...", "Merging & finalizing")]
+    [InlineData("Extracting Info...", "Extracting info")]
+    [InlineData("Downloading YouTube data", "Downloading YouTube data")]   // a word with a capital inside is a name, not a Title Case word
+    public void Engine_phases_read_as_sentences(string phase, string expected)
+    {
+        var card = Card(t => { t.CurrentPhase = phase; t.Status = DownloadStatus.Downloading; t.IsIndeterminate = true; });
+        Assert.Equal(expected, card.StatusLine);
+    }
+
+    [Fact]
+    public void A_queued_item_without_a_title_is_a_new_download()
+    {
+        Assert.Equal("New download", Card(t => { t.Title = "Unknown"; t.Status = DownloadStatus.Queued; t.CurrentPhase = "Queued"; }).DisplayTitle);
+    }
+
     [Fact]
     public void Fetching_placeholder_only_while_actually_fetching()
     {
@@ -283,4 +310,45 @@ public class RateMathAndThemeTests
         var json = System.Text.Json.JsonSerializer.Serialize(new AppSettings { Theme = "Light" });
         Assert.Equal("Light", System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json)!.Theme);
     }
+}
+
+
+public class WindowFitTests
+{
+    // 1366 x 768 at 125 % is 1093 x 614 DIPs; the taskbar takes about 40 px.
+    [Fact]
+    public void A_small_laptop_screen_gets_a_window_that_fits()
+    {
+        var fit = WindowFit.Compute(980, 700, 760, 460, 1366, 728, 1.25);
+        Assert.True(fit.Height <= 728 / 1.25 - WindowFit.FrameAllowance);   // client + title bar < work area
+        Assert.True(fit.Width <= 1366 / 1.25 * WindowFit.MaxShare);
+        Assert.Equal(980, fit.Width);                                       // width was fine
+        Assert.InRange(fit.Height, 450, 540);
+    }
+
+    [Fact]
+    public void A_big_screen_keeps_the_design_size()
+    {
+        var fit = WindowFit.Compute(980, 700, 760, 460, 1920, 1040, 1.0);
+        Assert.Equal((980.0, 700.0, 760.0, 460.0), (fit.Width, fit.Height, fit.MinWidth, fit.MinHeight));
+    }
+
+    [Theory]
+    [InlineData(1024, 728, 1.25)]   // 1024 x 768 at 125 %: the guidance's own test case
+    [InlineData(1200, 860, 1.5)]    // 1200 x 900 at 150 %
+    [InlineData(800, 560, 1.0)]     // 800 x 600 at 100 %
+    [InlineData(1366, 728, 1.0)]
+    [InlineData(2560, 1400, 2.0)]
+    [InlineData(3840, 2100, 1.75)]
+    public void The_window_is_always_inside_the_work_area(double workW, double workH, double scale)
+    {
+        var fit = WindowFit.Compute(980, 700, 760, 460, workW, workH, scale);
+        Assert.True(fit.Width < workW / scale);
+        Assert.True(fit.Height + WindowFit.FrameAllowance <= workH / scale + 0.001);
+        Assert.True(fit.MinWidth <= fit.Width && fit.MinHeight <= fit.Height);
+    }
+
+    [Fact]
+    public void Nonsense_scale_is_treated_as_100_percent() =>
+        Assert.Equal(WindowFit.Compute(980, 700, 760, 460, 1920, 1040, 1.0), WindowFit.Compute(980, 700, 760, 460, 1920, 1040, 0));
 }

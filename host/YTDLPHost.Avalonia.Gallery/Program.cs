@@ -64,6 +64,17 @@ internal static class Program
         int count = 0;
         count += Capture(window, outDir, "01-empty");
 
+        // The owner's own screenshot: one download running and one waiting (names as yt-dlp's safe file names deliver them).
+        var live = Card(t =>
+        {
+            t.Title = "I_Tested_The_World_s_Most_Dangerous_Animals"; t.Resolution = "360p"; t.Status = DownloadStatus.Downloading;
+            t.Progress = 11.2; t.Speed = "2.14MiB/s"; t.Eta = "00:30"; t.FileSize = "74.53MiB"; t.CurrentPhase = "Downloading Video...";
+        });
+        var waiting = Card(t => { t.Title = "Unknown"; t.Resolution = "1080p"; t.Status = DownloadStatus.Queued; t.CurrentPhase = "Queued"; });
+        vm.Downloads.Add(live); vm.Downloads.Add(waiting);
+        count += Capture(window, outDir, "01b-two-downloads");
+        vm.Downloads.Remove(live); vm.Downloads.Remove(waiting);
+
         // Cards in every state (no "Queued" one: the queue would try to start it).
         var running = Card(t =>
         {
@@ -198,6 +209,9 @@ internal static class Program
 
         window.Width = window.MinWidth; window.Height = window.MinHeight;
         count += Capture(window, outDir, "15-minimum-size");
+        if (limits != null) limits.IsChecked = true;
+        count += Capture(window, outDir, "16-minimum-size-limits-open");
+        if (limits != null) limits.IsChecked = false;
 
         return count;
     }

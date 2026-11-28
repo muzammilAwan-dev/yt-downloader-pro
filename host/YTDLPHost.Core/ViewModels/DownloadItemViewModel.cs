@@ -40,9 +40,17 @@ namespace YTDLPHost.ViewModels
         private static readonly Regex ResolutionSuffix = new(@"[\s_]+\d{3,4}p$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex ExtraSpaces = new(@"\s{2,}", RegexOptions.Compiled);
 
+        // yt-dlp's safe file names turn an apostrophe into "_": "World's" arrives as "World_s". Restore the common English endings.
+        private static readonly Regex SanitizedApostrophe = new(@"(?<=\p{L})_(s|t|m|d|re|ve|ll)(?=_|\s|$|\p{P})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        // Phases arrive in Title Case from the engine ("Downloading Video"); on screen they read as a sentence ("Downloading video").
+        private static readonly Regex TitleCaseWord = new(@"(?<=\s)[A-Z](?=[a-z]+(?:\s|$|[.,!)]))", RegexOptions.Compiled);
+        internal static string SentenceCase(string phase) => TitleCaseWord.Replace(phase, m => m.Value.ToLowerInvariant());
+
         private static string CleanTitle(string raw)
         {
-            string text = raw.Replace('_', ' ');
+            string text = SanitizedApostrophe.Replace(raw, "\u2019$1");
+            text = text.Replace('_', ' ');
             text = ResolutionSuffix.Replace(text, "");
             text = ExtraSpaces.Replace(text, " ").Trim();
             return text.Length == 0 ? raw : text;
@@ -55,10 +63,9 @@ namespace YTDLPHost.ViewModels
                 bool unknown = string.IsNullOrWhiteSpace(Task.Title) || Task.Title == "Unknown" || Task.Title.StartsWith("Fetching", StringComparison.OrdinalIgnoreCase);
                 if (!unknown) return CleanTitle(Task.Title);
 
-                // "Fetching video..." only makes sense while it is actually being fetched.
-                return Task.Status == DownloadStatus.Downloading && !IsProcessing
-                    ? "Fetching video..."
-                    : "Untitled download";
+                // "Fetching video..." only makes sense while it is actually being fetched; a queued item has not started yet.
+                if (Task.Status == DownloadStatus.Downloading && !IsProcessing) return "Fetching video...";
+                return Task.Status == DownloadStatus.Queued ? "New download" : "Untitled download";
             }
         }
 
@@ -144,7 +151,7 @@ namespace YTDLPHost.ViewModels
                             : "In queue";
                 }
 
-                string phase = Task.CurrentPhase.Trim().TrimEnd('.', '\u2026');
+                string phase = SentenceCase(Task.CurrentPhase.Trim().TrimEnd('.', '\u2026'));
                 string line = string.IsNullOrEmpty(Task.PlaylistInfo) ? phase : $"{Task.PlaylistInfo} \u00B7 {phase}";
 
                 if (IsProcessing) return line;

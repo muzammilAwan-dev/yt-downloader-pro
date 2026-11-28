@@ -237,39 +237,102 @@
     </Style>
 
 
-    <!-- State glyph of a card: its shape and its colour both say what is happening. -->
-    <Style Selector="ui|LucideIcon.glyph">
-      <Setter Property="Width" Value="20" />
-      <Setter Property="Height" Value="20" />
+    <!-- State tile of a card: a rounded square tinted with the state colour, holding the glyph. Shape (the icon) and colour both say what is happening. -->
+    <Style Selector="Grid.tile">
+      <Setter Property="Width" Value="36" />
+      <Setter Property="Height" Value="36" />
       <Setter Property="VerticalAlignment" Value="Top" />
       <Setter Property="HorizontalAlignment" Value="Left" />
-      <Setter Property="Margin" Value="0,2,0,0" />
-      <Setter Property="Data" Value="{StaticResource Icon.Recent}" />
-      <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
     </Style>
-    <Style Selector="ui|LucideIcon.glyph.downloading">
+    <Style Selector="Grid.tile > Border.tilebg">
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+    </Style>
+    <Style Selector="Grid.tile > ui|LucideIcon">
+      <Setter Property="Width" Value="18" />
+      <Setter Property="Height" Value="18" />
+      <Setter Property="StrokeWidth" Value="2" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Data" Value="{StaticResource Icon.Recent}" />
+      <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+    </Style>
+    <Style Selector="Grid.tile.downloading > Border.tilebg, Grid.tile.processing > Border.tilebg">
+      <Setter Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
+    </Style>
+    <Style Selector="Grid.tile.downloading > ui|LucideIcon">
       <Setter Property="Data" Value="{StaticResource Icon.Download}" />
       <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
     </Style>
-    <Style Selector="ui|LucideIcon.glyph.processing">
+    <Style Selector="Grid.tile.processing > ui|LucideIcon">
       <Setter Property="Data" Value="{StaticResource Icon.Sync}" />
       <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
     </Style>
-    <Style Selector="ui|LucideIcon.glyph.paused">
+    <Style Selector="Grid.tile.paused > Border.tilebg">
+      <Setter Property="Background" Value="{DynamicResource WarningBrush}" />
+      <Setter Property="Opacity" Value="0.16" />
+    </Style>
+    <Style Selector="Grid.tile.paused > ui|LucideIcon">
       <Setter Property="Data" Value="{StaticResource Icon.Pause}" />
       <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
     </Style>
-    <Style Selector="ui|LucideIcon.glyph.completed">
+    <Style Selector="Grid.tile.completed > Border.tilebg">
+      <Setter Property="Background" Value="{DynamicResource SuccessBrush}" />
+      <Setter Property="Opacity" Value="0.16" />
+    </Style>
+    <Style Selector="Grid.tile.completed > ui|LucideIcon">
       <Setter Property="Data" Value="{StaticResource Icon.Check}" />
       <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
     </Style>
-    <Style Selector="ui|LucideIcon.glyph.failed">
+    <Style Selector="Grid.tile.failed > Border.tilebg">
+      <Setter Property="Background" Value="{DynamicResource ErrorSubtleBrush}" />
+    </Style>
+    <Style Selector="Grid.tile.failed > ui|LucideIcon">
       <Setter Property="Data" Value="{StaticResource Icon.Warning}" />
       <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
     </Style>
-    <Style Selector="ui|LucideIcon.glyph.cancelled">
+    <Style Selector="Grid.tile.cancelled > ui|LucideIcon">
       <Setter Property="Data" Value="{StaticResource Icon.Cancel}" />
+    </Style>
+
+    <!-- Round icon button: the quiet main action (Pause) of a running card. -->
+    <Style Selector="Button.round">
+      <Setter Property="Width" Value="32" />
+      <Setter Property="Height" Value="32" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="16" />
+      <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.round:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource BorderBrush}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+    </Style>
+    <Style Selector="Button.round:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SurfacePressedBrush}" />
+    </Style>
+
+    <!-- Empty state: one restrained tile, three numbered steps. -->
+    <Style Selector="Border.emptytile">
+      <Setter Property="Width" Value="64" />
+      <Setter Property="Height" Value="64" />
+      <Setter Property="CornerRadius" Value="18" />
+      <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BoxShadow" Value="{DynamicResource CardShadow}" />
+    </Style>
+    <Style Selector="Border.step">
+      <Setter Property="Width" Value="22" />
+      <Setter Property="Height" Value="22" />
+      <Setter Property="CornerRadius" Value="11" />
+      <Setter Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
     </Style>
 
     <!-- Cards: opaque, a quiet contour; stronger on hover; red when failed. -->
@@ -324,8 +387,8 @@
       <Setter Property="BorderBrush" Value="{DynamicResource ErrorBorderBrush}" />
     </Style>
     <Style Selector="TextBlock.title">
-      <Setter Property="FontSize" Value="14" />
-      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="FontSize" Value="14.5" />
+      <Setter Property="FontWeight" Value="Medium" />
     </Style>
     <Style Selector="TextBlock.title.done">
       <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
